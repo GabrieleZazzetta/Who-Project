@@ -1,142 +1,225 @@
+import 'package:flutter/material.dart';
 import '../models/assessment_models.dart';
 
-// Dati statici per iniziare
 class MockData {
-  
-  static List<MacroArea> getMpoxExistingFacilityStructure() {
-    return [
-      // MACRO AREA 1: INGRESSO E SCREENING
-      // Basato su Fig 4 "Entry area" e Tabella 2 "Screening" [cite: 375, 473]
-      MacroArea(
-        name: "Entry & Screening Zone",
-        subAreas: [
-          MicroArea(
-            id: "screen_01",
-            name: "Screening Station",
-            description: "Screen all persons at first point of contact.",
-            designPrinciples: [
-              "Visible and clearly labelled",
-              "Ensure 1m distance",
-              "Separate exits for suspected/non-suspected"
-            ],
-            questions: [
-              AssessmentQuestion(
-                id: "4.1.1",
-                questionText: "Location: Is the screening area placed at the entrance? Do all patients pass through it?",
-                citation: "Annex 2, Sec 4.1.1"
-              ),
-              AssessmentQuestion(
-                id: "4.1.2",
-                citation: "Annex 2, Sec 4.1.2",
-                questionText: "Patient Pathway: Are there separated exits for suspected cases and non-suspected cases?",
-              ),
-              AssessmentQuestion(
-                id: "4.1.3",
-                citation: "Annex 2, Sec 4.1.3",
-                questionText: "Physical Distance: Is there at least 1m distance between patients and staff? Are there physical barriers?",
-              ),
-              AssessmentQuestion(
-                id: "4.1.4",
-                citation: "Annex 2, Sec 4.1.4",
-                questionText: "Floor Surface: Is there more than 8 m² of surface available for each screening station?",
-              ),
-            ],
-          ),
-          MicroArea(
-            id: "wait_01",
-            name: "Waiting Area",
-            description: "Dedicated waiting area for patients waiting for triage.",
-            designPrinciples: ["Avoid overcrowding", "4m² per patient"],
-            questions: [
-               AssessmentQuestion(
-                id: "Annex 2, Sec. 4.2.1",
-                questionText: "Location: Is the waiting room located between screening and triage? Is access controlled?",
-                citation: "Annex 2, Sec 4.2.1"
-              ),
-            ]
-          ),
-        ],
-      ),
+  /// Carica la struttura "Fig 4 - Existing Facility with Dedicated FVD/Mpox Ward"
+  /// Basato sulle linee guida OMS (percorsi sporco/pulito e separazione flussi)
+  static FacilityLayout getMpoxExistingFacilityLayout() {
+    return FacilityLayout(
+      facilityName: "Existing Health Facility (Mpox Ward)",
+      mapImagePath: 'assets/maps/facility_map_fig4.png', // Assicurati di mettere l'immagine qui
+      zones: [
+        
+        // ==========================================
+        // 1. SCREENING (Pazienti)
+        // ==========================================
+        SpatialZone(
+          id: 'z1',
+          name: 'Screening',
+          coordinates: const MapCoordinates(top: 500, left: 75, width: 40, height: 40),
+          checklist: [
+            AssessmentQuestion(
+              id: 'q1_screening_flow',
+              category: AssessmentCategory.infectionPreventionControl,
+              text: 'Is the screening area located at the entrance of the health facility?',
+              recommendationText: 'Relocate the screening area to the entrance of the facility to ensure all patients, staff, and visitors are screened before entry.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q1_screening_distance',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is a minimum distance of 1 metre maintained between the screener and the patient?',
+              recommendationText: 'Ensure a physical barrier (e.g., table or plexiglass) is in place to maintain a 1-metre distance between screeners and individuals being screened.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+             AssessmentQuestion(
+              id: 'q1_screening_ppe',
+              category: AssessmentCategory.logistics,
+              text: 'Are screening staff equipped with appropriate PPE (medical mask, eye protection)?',
+              recommendationText: 'Provide medical masks and eye protection (goggles or face shield) to all screening staff.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
 
-      // MACRO AREA 2: AMMISSIONE E TRIAGE
-      // Basato su Fig 4 "Admission mpox pathway" [cite: 490]
-      MacroArea(
-        name: "Admission & Triage",
-        subAreas: [
-          MicroArea(
-            id: "triage_01",
-            name: "Triage / Consulting Room",
-            description: "Clinical assessment of suspected cases.",
-            designPrinciples: ["Single patient space", "12m² minimum", "Dedicated Donning/Doffing"],
-            questions: [], // Da riempire con Annex 2 Sec 4.3 [cite: 1127]
-          ),
-          MicroArea(
-             id: "resus_01",
-             name: "Resuscitation Room",
-             description: "Stabilization for emergency care.",
-             designPrinciples: ["Accessible by stretcher", "Hand hygiene available"],
-             questions: [] 
-          )
-        ],
-      ),
+        // ==========================================
+        // 2. WAITING AREA
+        // ==========================================
+        SpatialZone(
+          id: 'z2',
+          name: 'Waiting Area',
+          coordinates: const MapCoordinates(top: 705, left: 130, width: 40, height: 40),
+          checklist: [
+            AssessmentQuestion(
+              id: 'q2_waiting_segregation',
+              category: AssessmentCategory.infectionPreventionControl,
+              text: 'Is there a dedicated waiting area for suspected mpox cases, separate from the general waiting area?',
+              recommendationText: 'Designate a separate waiting area exclusively for suspected mpox cases to prevent cross-contamination.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q2_waiting_ventilation',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is the suspected case waiting area well-ventilated?',
+              recommendationText: 'Ensure adequate natural ventilation (e.g., open windows) or mechanical ventilation in the waiting area.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q2_waiting_distance',
+              category: AssessmentCategory.infectionPreventionControl,
+              text: 'Can a minimum distance of 1 metre be maintained between suspected patients in the waiting area?',
+              recommendationText: 'Arrange seating or mark floors to ensure a minimum of 1 metre distance between patients in the suspected case waiting area.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
 
-      // MACRO AREA 3: TRATTAMENTO (Cuore della Fig. 4)
-      // Basato su Fig 4 "Mpox treatment area" [cite: 437]
-      MacroArea(
-        name: "Mpox Treatment Ward",
-        subAreas: [
-          MicroArea(
-            id: "ward_suspect",
-            name: "Suspect Cases Ward",
-            description: "Individual rooms for suspected patients.",
-            designPrinciples: ["Private toilet", "Dedicated pathway"],
-            questions: [], // Annex 2 Sec 4.4 [cite: 1136]
-          ),
-          MicroArea(
-            id: "ward_confirmed",
-            name: "Confirmed Cases Ward",
-            description: "Isolation for confirmed patients.",
-            designPrinciples: ["Ideally single rooms", "Cohort if necessary"],
-            questions: [],
-          ),
-          MicroArea(
-            id: "nursing",
-            name: "Nursing Station",
-            description: "Area for staff monitoring.",
-            designPrinciples: ["Visibility of patients", "Clean/Dirty utility separation"],
-            questions: [],
-          ),
-          MicroArea(
-            id: "donning_doffing_ward",
-            name: "Donning / Doffing (Ward)",
-            description: "PPE change areas.",
-            designPrinciples: ["Separated areas", "Close proximity to rooms"],
-            questions: [],
-          ),
-        ],
-      ),
+        // ==========================================
+        // 3. TRIAGE CONSULTING ROOM
+        // ==========================================
+        SpatialZone(
+          id: 'z3',
+          name: 'Triage Consulting',
+          coordinates: const MapCoordinates(top: 720, left: 240, width: 40, height: 40),
+          checklist: [
+             AssessmentQuestion(
+              id: 'q3_triage_separation',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is the triage room for suspected cases separate from the general triage area?',
+              recommendationText: 'Establish a dedicated triage room or area for evaluating suspected mpox cases, physically separated from general triage.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q3_triage_ventilation',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is the triage room adequately ventilated?',
+              recommendationText: 'Ensure proper ventilation (natural or mechanical) in the dedicated triage room.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q3_triage_ppe',
+              category: AssessmentCategory.infectionPreventionControl,
+              text: 'Do staff in the triage room have access to and use required PPE (gloves, gown, medical mask, eye protection)?',
+              recommendationText: 'Ensure staff in the suspected case triage room wear a medical mask, eye protection, gown, and gloves.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
 
-      // MACRO AREA 4: SERVIZI E LOGISTICA
-      // Basato su Fig 4 "Administrative and service area" [cite: 419]
-      MacroArea(
-        name: "Logistics & Services",
-        subAreas: [
-          MicroArea(
-            id: "waste",
-            name: "Waste Management",
-            description: "Collection and segregation area.",
-            designPrinciples: ["Fenced area", "Incinerator downwind"],
-            questions: [], // Annex 2 Sec 2.3 [cite: 1082]
-          ),
-          MicroArea(
-            id: "morgue",
-            name: "Morgue",
-            description: "Holding area for deceased.",
-            designPrinciples: ["Accessible but not visible to public", "Separate exit"],
-            questions: [], // Annex 2 Sec 5.6 [cite: 1190]
-          ),
-        ],
-      ),
-    ];
+        // ==========================================
+        // 4. DOFFING AREA (Dirty)
+        // ==========================================
+        SpatialZone(
+          id: 'z4',
+          name: 'Doffing',
+          coordinates: const MapCoordinates(top: 640, left: 195, width: 40, height: 40),
+          checklist: [
+             AssessmentQuestion(
+              id: 'q4_doffing_location',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is the doffing area located at the exit of the patient care area (red zone)?',
+              recommendationText: 'Ensure the doffing area is positioned immediately at the exit of the patient care zone before re-entering clean areas.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q4_doffing_supplies',
+              category: AssessmentCategory.wash,
+              text: 'Are there adequate supplies for hand hygiene and infectious waste disposal in the doffing area?',
+              recommendationText: 'Provide alcohol-based hand rub or handwashing stations and leak-proof infectious waste bins in the doffing area.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q4_doffing_mirror',
+              category: AssessmentCategory.logistics,
+              text: 'Is there a mirror available in the doffing area to assist staff during PPE removal?',
+              recommendationText: 'Install a full-length mirror in the doffing area to allow staff to visually guide their PPE removal process safely.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
+
+        // ==========================================
+        // 5. DONNING AREA (Clean)
+        // ==========================================
+        SpatialZone(
+          id: 'z5',
+          name: 'Donning',
+          coordinates: const MapCoordinates(top: 640, left: 260, width: 40, height: 40),
+          checklist: [
+             AssessmentQuestion(
+              id: 'q5_donning_location',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is the donning area located before entering the patient care area (red zone)?',
+              recommendationText: 'Ensure the donning area is positioned strictly before the entrance to the patient care zone to prevent staff from entering without PPE.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q5_donning_supplies',
+              category: AssessmentCategory.logistics,
+              text: 'Is the donning area fully stocked with all required sizes of PPE?',
+              recommendationText: 'Maintain an adequate stock of all necessary PPE (gloves, gowns, masks, eye protection) in various sizes within the donning area.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+            AssessmentQuestion(
+              id: 'q5_donning_mirror',
+              category: AssessmentCategory.logistics,
+              text: 'Is there a mirror available in the donning area to assist staff in checking their PPE?',
+              recommendationText: 'Install a full-length mirror in the donning area so staff can verify correct PPE placement before entering the red zone.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
+
+        // ==========================================
+        // 6. STAFF AREA
+        // ==========================================
+        SpatialZone(
+          id: 'z6',
+          name: 'Staff Area',
+          coordinates: const MapCoordinates(top: 525, left: 220, width: 40, height: 40),
+          checklist: [
+            AssessmentQuestion(
+              id: 'q6_staff_rest',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is there a dedicated, clean rest area for staff, completely separate from patient care zones?',
+              recommendationText: 'Establish a designated staff rest area in the clean zone (green zone), physically separated from all patient care and suspected case areas.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+             AssessmentQuestion(
+              id: 'q6_staff_facilities',
+              category: AssessmentCategory.wash,
+              text: 'Are there dedicated toilet and handwashing facilities for staff only?',
+              recommendationText: 'Provide exclusive toilet and handwashing facilities for staff use, separate from those used by patients.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
+
+        // ==========================================
+        // 7. RESUSCITATION ROOM
+        // ==========================================
+        SpatialZone(
+          id: 'z7',
+          name: 'Resuscitation',
+          coordinates: const MapCoordinates(top: 855, left: 300, width: 40, height: 40),
+          checklist: [
+            AssessmentQuestion(
+              id: 'q7_resus_equipment',
+              category: AssessmentCategory.logistics,
+              text: 'Is the resuscitation room equipped with necessary emergency equipment (e.g., oxygen, suction, emergency drugs)?',
+              recommendationText: 'Ensure the resuscitation room is fully stocked with functional emergency medical equipment and supplies.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+             AssessmentQuestion(
+              id: 'q7_resus_space',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Is there sufficient space in the resuscitation room for staff to move freely around the patient?',
+              recommendationText: 'Clear unnecessary items to ensure 360-degree access around the patient bed for emergency interventions.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

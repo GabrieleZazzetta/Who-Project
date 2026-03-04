@@ -1,47 +1,84 @@
 import 'package:flutter/material.dart';
-// IMPORTANTE: Usa il nome del tuo pacchetto corretto qui sotto
-import '/models/assessment_models.dart';
+import '../models/assessment_models.dart';
 
 class AssessmentScreen extends StatefulWidget {
-  final MicroArea microArea;
+  final SpatialZone zone;
 
-  const AssessmentScreen({super.key, required this.microArea});
+  const AssessmentScreen({super.key, required this.zone});
 
   @override
   State<AssessmentScreen> createState() => _AssessmentScreenState();
 }
 
 class _AssessmentScreenState extends State<AssessmentScreen> {
-  
+  // Funzione per aggiornare lo stato quando si seleziona una risposta
+  void _updateAnswer(AssessmentQuestion question, ComplianceLevel level) {
+    setState(() {
+      question.selectedCompliance = level;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(widget.microArea.name),
-        backgroundColor: Colors.blue[800],
+        // Niente "leading", così appare la freccia per tornare alla mappa
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/who_logo.png',
+              height: 28,
+              fit: BoxFit.contain,
+              color: Colors.white,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                widget.zone.name, 
+                style: const TextStyle(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showDesignPrinciples(context),
-          )
+            icon: const Icon(Icons.check_circle_outline, size: 28),
+            tooltip: 'Save & Return',
+            onPressed: () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
         children: [
-          // Header informativo
+          // Header con la percentuale di completamento della stanza
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.blue[50],
+            color: Colors.white,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.assignment, color: Colors.blue),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Evaluate the following criteria based on WHO Annex 2 standards.",
-                    style: TextStyle(color: Colors.blue[900]),
-                  ),
+                const Text(
+                  "Area Assessment Checklist",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "${widget.zone.completionPercentage.toStringAsFixed(0)}% Completed",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
               ],
             ),
           ),
@@ -49,170 +86,212 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           // Lista delle domande
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: widget.microArea.questions.length,
+              padding: const EdgeInsets.all(12),
+              itemCount: widget.zone.checklist.length,
               itemBuilder: (context, index) {
-                final question = widget.microArea.questions[index];
+                final question = widget.zone.checklist[index];
                 return _buildQuestionCard(question);
               },
             ),
           ),
-
-          // Bottone di salvataggio
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(blurRadius: 5, color: Colors.black12)],
-            ),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[700],
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () {
-                Navigator.pop(context); // Torna alle bolle
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Assessment saved locally!")),
-                );
-              },
-              child: const Text("Save Assessment", style: TextStyle(color: Colors.white, fontSize: 18)),
-            ),
-          )
         ],
+      ),
+      // Tasto Flottante per salvare e tornare alla mappa
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Navigator.pop rimanda alla mappa, la quale chiamerà _refreshMap()
+          Navigator.pop(context);
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        icon: const Icon(Icons.save, color: Colors.white),
+        label: const Text("Save & Return to Map", style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
+  // Widget per la singola domanda
   Widget _buildQuestionCard(AssessmentQuestion question) {
+    // Determiniamo se mostrare il suggerimento (se la risposta è "Does Not Meet" o "Partially Meets")
+    bool showRecommendation = question.selectedCompliance == ComplianceLevel.doesNotMeet || 
+                              question.selectedCompliance == ComplianceLevel.partiallyMeets;
+
     return Card(
+      elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        // Se c'è un errore critico, il bordo della card diventa rosso
+        side: BorderSide(
+          color: question.isCriticalFailure ? Colors.red.shade300 : Colors.transparent,
+          width: 2,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Codice citazione (es. 4.1.1)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                question.citation,
-                style: TextStyle(fontSize: 12, color: Colors.grey[800], fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Testo domanda
+            // Testo della domanda
             Text(
-              question.questionText,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              question.text,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             
-            // Opzioni di Punteggio (Score)
-            const Text("Score:", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            // Bottoni touch-friendly per le risposte
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildScoreButton(question, 1, "Does not meet", Colors.red[100]!, Colors.red),
-                _buildScoreButton(question, 2, "Partial", Colors.orange[100]!, Colors.orange),
-                _buildScoreButton(question, 3, "Meets", Colors.green[100]!, Colors.green),
+                _buildComplianceButton(
+                  question: question,
+                  level: ComplianceLevel.meetsTarget,
+                  label: "Meets Target\n(3 pts)",
+                  color: Colors.green.shade600,
+                  icon: Icons.check_circle,
+                ),
+                const SizedBox(width: 8),
+                _buildComplianceButton(
+                  question: question,
+                  level: ComplianceLevel.partiallyMeets,
+                  label: "Partial\n(2 pts)",
+                  color: Colors.orange.shade500,
+                  icon: Icons.warning_amber_rounded,
+                ),
+                const SizedBox(width: 8),
+                _buildComplianceButton(
+                  question: question,
+                  level: ComplianceLevel.doesNotMeet,
+                  label: "Does Not Meet\n(1 pt)",
+                  color: Colors.red.shade600,
+                  icon: Icons.error_outline,
+                ),
               ],
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Campo commenti
-            TextField(
-              decoration: const InputDecoration(
-                labelText: "Comments / Observations",
-                border: OutlineInputBorder(),
-                isDense: true,
+
+            // LA KILLER FEATURE: Il suggerimento architettonico/clinico dinamico
+            if (showRecommendation) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: question.isCriticalFailure ? Colors.red.shade50 : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(
+                    left: BorderSide(
+                      color: question.isCriticalFailure ? Colors.red : Colors.orange, 
+                      width: 4
+                    )
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.lightbulb, 
+                      color: question.isCriticalFailure ? Colors.red : Colors.orange,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "HOW TO IMPROVE YOUR DESIGN",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: question.isCriticalFailure ? Colors.red.shade800 : Colors.orange.shade800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            question.recommendationText,
+                            style: const TextStyle(fontSize: 14, color: Colors.black87),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              onChanged: (val) {
-                question.comment = val; // Salvataggio "grezzo" nel modello
-              },
-              controller: TextEditingController(text: question.comment),
-            ),
+            ],
+            
+            // Bottoni aggiuntivi (Media e Note)
+            const SizedBox(height: 12),
+            Divider(color: Colors.grey.shade200),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () {
+                    // Logica futura: Aprire la fotocamera
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Camera module coming soon..."))
+                    );
+                  },
+                  icon: const Icon(Icons.camera_alt_outlined, size: 20),
+                  label: const Text("Add Photo"),
+                  style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    // Logica futura: Aggiungere note testuali
+                  },
+                  icon: const Icon(Icons.edit_note, size: 20),
+                  label: const Text("Add Note"),
+                  style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
+                ),
+              ],
+            )
           ],
         ),
       ),
     );
   }
 
-  // Widget helper per i bottoni colorati del punteggio
-  Widget _buildScoreButton(AssessmentQuestion question, int value, String label, Color bgColors, Color activeColor) {
-    bool isSelected = question.score == value;
-    
-    return InkWell(
-      onTap: () {
-        setState(() {
-          question.score = value;
-        });
-      },
-      child: Container(
-        width: 90,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor : Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? activeColor : Colors.grey[300]!,
-            width: 2,
+  // Costruisce i singoli bottoni di valutazione
+  Widget _buildComplianceButton({
+    required AssessmentQuestion question,
+    required ComplianceLevel level,
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
+    bool isSelected = question.selectedCompliance == level;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _updateAnswer(question, level),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? color : Colors.white,
+            border: Border.all(
+              color: isSelected ? color : Colors.grey.shade300,
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))]
+                : [],
           ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              "$value",
-              style: TextStyle(
-                fontSize: 20, 
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : Colors.grey[600],
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isSelected ? Colors.white : Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDesignPrinciples(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          width: double.infinity,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Design Principles", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              ...widget.microArea.designPrinciples.map((e) => ListTile(
-                leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-                title: Text(e),
-              )),
+              Icon(icon, color: isSelected ? Colors.white : color, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? Colors.white : Colors.grey.shade700,
+                ),
+              ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
