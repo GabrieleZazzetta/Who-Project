@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../models/assessment_models.dart';
 
 class MockData {
@@ -7,16 +6,19 @@ class MockData {
   static FacilityLayout getMpoxExistingFacilityLayout() {
     return FacilityLayout(
       facilityName: "Existing Health Facility (Mpox Ward)",
-      mapImagePath: 'assets/maps/facility_map_fig4.png', // Assicurati di mettere l'immagine qui
+      mapImagePath: 'assets/maps/facility_map_fig4.png', 
       zones: [
         
         // ==========================================
-        // 1. SCREENING (Pazienti)
+        // 1. SCREENING (Bolla tratteggiata arancione)
         // ==========================================
         SpatialZone(
           id: 'z1',
           name: 'Screening',
-          coordinates: const MapCoordinates(top: 500, left: 75, width: 40, height: 40),
+
+          coordinates: const MapCoordinates(top: 500, left: 75),
+          touchArea: const MapCoordinates(top: 450, left: 43, width: 78, height: 78),
+
           checklist: [
             AssessmentQuestion(
               id: 'q1_screening_flow',
@@ -43,12 +45,15 @@ class MockData {
         ),
 
         // ==========================================
-        // 2. WAITING AREA
+        // 2. WAITING AREA (Bolla grande rossa)
         // ==========================================
         SpatialZone(
           id: 'z2',
           name: 'Waiting Area',
-          coordinates: const MapCoordinates(top: 705, left: 130, width: 40, height: 40),
+
+          coordinates: const MapCoordinates(top: 662, left: 107),
+          touchArea: const MapCoordinates(top: 653, left: 89, width: 97, height: 97),
+
           checklist: [
             AssessmentQuestion(
               id: 'q2_waiting_segregation',
@@ -75,12 +80,15 @@ class MockData {
         ),
 
         // ==========================================
-        // 3. TRIAGE CONSULTING ROOM
+        // 3. TRIAGE CONSULTING ROOM (Bolla grande rossa)
         // ==========================================
         SpatialZone(
           id: 'z3',
           name: 'Triage Consulting',
-          coordinates: const MapCoordinates(top: 720, left: 240, width: 40, height: 40),
+
+          coordinates: const MapCoordinates(top: 662, left: 243),
+          touchArea: const MapCoordinates(top: 653, left: 204, width: 97, height: 97),
+          
           checklist: [
              AssessmentQuestion(
               id: 'q3_triage_separation',
@@ -107,12 +115,14 @@ class MockData {
         ),
 
         // ==========================================
-        // 4. DOFFING AREA (Dirty)
+        // 4. DOFFING AREA (Bolla tratteggiata azzurra)
         // ==========================================
         SpatialZone(
           id: 'z4',
           name: 'Doffing',
-          coordinates: const MapCoordinates(top: 640, left: 195, width: 40, height: 40),
+
+          coordinates: const MapCoordinates(top: 600, left: 185),
+          touchArea: const MapCoordinates(top: 605, left: 194, width: 53, height: 53),
           checklist: [
              AssessmentQuestion(
               id: 'q4_doffing_location',
@@ -139,12 +149,13 @@ class MockData {
         ),
 
         // ==========================================
-        // 5. DONNING AREA (Clean)
+        // 5. DONNING AREA (Bolla tratteggiata verde)
         // ==========================================
         SpatialZone(
           id: 'z5',
           name: 'Donning',
-          coordinates: const MapCoordinates(top: 640, left: 260, width: 40, height: 40),
+          coordinates: const MapCoordinates(top: 600, left: 250),
+          touchArea: const MapCoordinates(top: 605, left: 256, width: 53, height: 53),
           checklist: [
              AssessmentQuestion(
               id: 'q5_donning_location',
@@ -171,12 +182,13 @@ class MockData {
         ),
 
         // ==========================================
-        // 6. STAFF AREA
+        // 6. STAFF AREA (Bolla grande verde)
         // ==========================================
         SpatialZone(
           id: 'z6',
           name: 'Staff Area',
-          coordinates: const MapCoordinates(top: 525, left: 220, width: 40, height: 40),
+          coordinates: const MapCoordinates(top: 535, left: 220),
+          touchArea: const MapCoordinates(top: 470, left: 175, width: 97, height: 97),
           checklist: [
             AssessmentQuestion(
               id: 'q6_staff_rest',
@@ -196,12 +208,13 @@ class MockData {
         ),
 
         // ==========================================
-        // 7. RESUSCITATION ROOM
+        // 7. RESUSCITATION ROOM (Bolla grande rossa)
         // ==========================================
         SpatialZone(
           id: 'z7',
           name: 'Resuscitation',
-          coordinates: const MapCoordinates(top: 855, left: 300, width: 40, height: 40),
+          coordinates: const MapCoordinates(top: 860, left: 310),
+          touchArea: const MapCoordinates(top: 792, left: 252, width: 97, height: 97),
           checklist: [
             AssessmentQuestion(
               id: 'q7_resus_equipment',

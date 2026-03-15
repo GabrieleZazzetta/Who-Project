@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 
 // ==========================================
 // 1. ENUMS GLOBALI
@@ -87,8 +86,8 @@ class MapCoordinates {
   const MapCoordinates({
     required this.top,
     required this.left,
-    required this.width,
-    required this.height,
+    this.width = 0.0,
+    this.height = 0.0,
   });
 }
 
@@ -96,6 +95,7 @@ class SpatialZone {
   final String id;
   final String name;
   final MapCoordinates coordinates;
+  final MapCoordinates touchArea;   // AGGIUNGI QUESTO: Useremo questo per il CERCHIO AZZURRO
   
   // La lista di domande specifiche per questa singola stanza/area
   final List<AssessmentQuestion> checklist;
@@ -104,6 +104,7 @@ class SpatialZone {
     required this.id,
     required this.name,
     required this.coordinates,
+    required this.touchArea,
     required this.checklist,
   });
 

@@ -23,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
           _buildSectionHeader("PREFERENCES"),
           _buildSettingsTile(icon: Icons.language, title: "Language", subtitle: "English (UK)"),
           _buildSettingsTile(icon: Icons.dark_mode_outlined, title: "Dark Mode", trailing: Switch(value: false, onChanged: (val) {})),
-          _buildSettingsTile(icon: Icons.notifications_outlined, title: "Notifications", trailing: Switch(value: true, activeColor: const Color(0xFF005DA8), onChanged: (val) {})),
+          _buildSettingsTile(icon: Icons.notifications_outlined, title: "Notifications", trailing: Switch(value: true, activeThumbColor: const Color(0xFF005DA8), onChanged: (val) {})),
           
           const SizedBox(height: 24),
           
