@@ -19,21 +19,33 @@ The WHO Health Facilities Assessment Tool is an enterprise-grade, **offline-firs
 * [ ] **PDF Report Generation:** Automated, offline generation of printable structural reports and mitigation plans directly from the Isar local storage.
 * [ ] **Cloud Synchronization:** Delayed batch-sync with WHO central servers when connectivity is restored.
 
-## 📂 Folder Structure
+## 📂 Project Architecture
+The application is built using a modern, scalable, and modular **Offline-First** architecture. The `lib/` directory is structured as follows:
+
 ```text
 lib/
-├── data/
-│   └── mock_data.dart         # Temporary static data for layout and checklists
-├── models/
-│   └── assessment_models.dart # Core data structures (Facility, Zones, Questions)
-├── screens/
-│   ├── login_screen.dart      # Secure gateway
-│   ├── interactive_map.dart   # Core spatial evaluation engine
-│   ├── assessment_screen.dart # Checklist and photo evidence interface
-│   ├── assessments_list.dart  # History of performed evaluations
-│   └── settings_screen.dart   # App configurations & Sync
-└── main.dart                  # App entry point & Routing
+├── data/                           # Data Layer & Factory
+│   ├── facility_data_factory.dart  # Centralized factory routing data based on Disease & Facility Type
+│   └── mpox/                       # Disease-specific data modules (Mpox)
+│       └── mpox_existing_ward_data.dart # Blueprint & Checklist for Mpox Fig. 4 Ward
+├── models/                         # Data Models & Schemas
+│   ├── assessment_models.dart      # Core classes (AssessmentQuestion, SpatialZone, FacilityLayout)
+│   └── assessment_models.g.dart    # Auto-generated Isar Database bindings
+├── screens/                        # UI Layer
+│   ├── assessment_screen.dart      # Interactive checklist for health facility zones
+│   ├── assessments_list_screen.dart# Dashboard displaying all saved local assessments
+│   ├── interactive_map_screen.dart # Spatial assessment map with dynamic tappable pins
+│   ├── login_screen.dart           # App entry point & Authentication
+│   └── settings_screen.dart        # Application settings and preferences
+├── services/                       # Core Services
+│   └── database_service.dart       # Local NoSQL Database Engine (Isar CRUD operations)
+└── main.dart                       # App entry point, DB initialization, and Bottom Navigation
 ```
+
+### 🧠 Key Architectural Choices
+- Offline-First (Isar Database): All assessments are saved locally on the device using Isar, allowing operators to perform assessments in deep-field areas without internet connectivity.
+- Data Factory Pattern: Hardcoded data is modularized. The FacilityDataFactory dynamically loads the correct spatial layout and checklist based on the user's selection (e.g., Mpox vs. Ebola, Tents vs. Hospitals).
+- State Management: Ready for Riverpod integration (ProviderScope initialized in main.dart).
 
 ### 🗄 Data Flow (Offline-First Strategy)
 1) Input: Field inspectors evaluate zones using the interactive map. The UI provides large, invisible touch-targets for ease of use in protective gear.
