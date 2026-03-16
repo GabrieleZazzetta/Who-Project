@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // <-- Aggiunto per gestire lo stato
 import 'models/assessment_models.dart';
+import 'services/database_service.dart'; // <-- Aggiunto per il Database Isar
 import 'screens/interactive_map_screen.dart';
 import 'screens/assessments_list_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/login_screen.dart';
 
-void main() {
-  runApp(const WHOAssessmentApp());
+// Cambiamo il main in async per poter attendere l'avvio del database
+void main() async {
+  // Assicurati che Flutter sia pronto prima di fare operazioni native
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // ACCENDIAMO IL DATABASE ISAR!
+  await DatabaseService.instance.init();
+
+  runApp(
+    // Avvolgiamo l'app in un ProviderScope per Riverpod
+    const ProviderScope(
+      child: WHOAssessmentApp(),
+    ),
+  );
 }
 
 class WHOAssessmentApp extends StatelessWidget {
@@ -57,11 +71,9 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      // Il corpo cambia dinamicamente in base a _currentIndex
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      // Il corpo cambia dinamicamente in base a _currentIndex (ricaricando sempre i dati freschi!)
+      body: _pages[_currentIndex],
+      
       // BOTTOM NAVIGATION BAR
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -398,11 +410,10 @@ class FacilitySelectionScreen extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 70, 
         backgroundColor: Colors.white, 
-        surfaceTintColor: Colors.transparent,// <-- Sfondo bianco puro!
-        scrolledUnderElevation: 0, // Previene cambi di colore strani su Android
-        elevation: 1, // Leggerissima ombra per separare l'AppBar dal resto
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0, 
+        elevation: 1, 
         shadowColor: Colors.black.withOpacity(0.2),
-        // Coloriamo il testo e la freccia di blu scuro WHO per un super contrasto
         iconTheme: const IconThemeData(color: Color(0xFF003D73)), 
         title: Text("$_emergencyName Facilities", style: const TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold, fontSize: 20)),
         actions: [
@@ -425,9 +436,9 @@ class FacilitySelectionScreen extends StatelessWidget {
             child: Text("Select Facility Type", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.primary)),
           ),
           Expanded(
-            child: Center( // CENTRATO PER IL WEB
+            child: Center( 
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 800), // LARGHEZZA MAX PER IL WEB
+                constraints: const BoxConstraints(maxWidth: 800), 
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
@@ -456,7 +467,10 @@ class FacilitySelectionScreen extends StatelessWidget {
         trailing: Icon(isImplemented ? Icons.arrow_forward_ios : Icons.lock_outline, color: isImplemented ? Theme.of(context).colorScheme.primary : Colors.grey.shade400, size: 18),
         onTap: () {
           if (isImplemented) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => InteractiveMapScreen(facilityType: type)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => InteractiveMapScreen(
+              emergencyType: emergency, // <-- Passiamo SEMPRE l'emergenza selezionata alla mappa!
+              facilityType: type
+            )));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Module locked or in development.")));
           }

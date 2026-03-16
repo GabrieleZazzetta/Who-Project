@@ -1,164 +1,399 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/assessment_models.dart';
+import '../services/database_service.dart';
+import 'interactive_map_screen.dart';
 
-class AssessmentsListScreen extends StatelessWidget {
+class AssessmentsListScreen extends StatefulWidget {
   const AssessmentsListScreen({super.key});
+
+  @override
+  State<AssessmentsListScreen> createState() => _AssessmentsListScreenState();
+}
+
+class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
+  bool _isLoading = true;
+  List<FacilityLayout> _allAssessments = [];
+  List<FacilityLayout> _filteredAssessments = [];
+  
+  String _currentFilter = 'All'; // Filtri: All, Incomplete, Passed, Critical Fails
+  DateTime? _filterDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAssessments();
+  }
+
+  // Carica i dati veri dal Database
+  Future<void> _loadAssessments() async {
+    setState(() => _isLoading = true);
+    final data = await DatabaseService.instance.getAllAssessments();
+    
+    // Ordina dalla più recente alla più vecchia
+    data.sort((a, b) => b.dateCreated?.compareTo(a.dateCreated ?? DateTime.now()) ?? 0);
+    
+    setState(() {
+      _allAssessments = data;
+      _isLoading = false;
+    });
+    _applyFilters();
+  }
+
+  // --- IL CERVELLO DELLA VALUTAZIONE (Algoritmo Preciso PRO) ---
+  String _getAssessmentStatus(FacilityLayout facility) {
+    int totalQuestions = 0;
+    int answeredQuestions = 0;
+    bool hasCritical = false;
+
+    for (var zone in facility.zones) {
+      totalQuestions += zone.checklist.length;
+      for (var q in zone.checklist) {
+        if (q.selectedCompliance != ComplianceLevel.pending) {
+          answeredQuestions++;
+        }
+        if (q.isCriticalFailure) {
+          hasCritical = true;
+        }
+      }
+    }
+
+    double completionPct = totalQuestions == 0 ? 0 : (answeredQuestions / totalQuestions) * 100;
+
+    if (hasCritical) return 'Critical Fails';
+    if (completionPct < 100) return 'Incomplete';
+    return 'Passed';
+  }
+
+  // Applica i filtri grafici in memoria usando l'algoritmo esatto
+  void _applyFilters() {
+    List<FacilityLayout> temp = List.from(_allAssessments);
+
+    // 1. Filtro di Stato
+    if (_currentFilter != 'All') {
+      temp = temp.where((f) => _getAssessmentStatus(f) == _currentFilter).toList();
+    }
+
+    // 2. Filtro per Data
+    if (_filterDate != null) {
+      temp = temp.where((f) => 
+        f.dateCreated!.year == _filterDate!.year && 
+        f.dateCreated!.month == _filterDate!.month && 
+        f.dateCreated!.day == _filterDate!.day
+      ).toList();
+    }
+
+    setState(() {
+      _filteredAssessments = temp;
+    });
+  }
+
+  // Funzione per eliminare con Dialog di conferma (Funzione PRO)
+  Future<void> _confirmDelete(FacilityLayout facility) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text("Delete Assessment", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF003D73))),
+        content: const Text("Are you sure you want to permanently delete this assessment? This action cannot be undone."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await DatabaseService.instance.deleteAssessment(facility.id);
+      _loadAssessments(); // Ricarica la lista
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Assessment deleted successfully."), backgroundColor: Colors.green),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text("My Assessments", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Search coming soon")));
-            },
-          ),
-        ],
+        toolbarHeight: 70,
+        backgroundColor: Colors.white,
+        elevation: 1,
+        shadowColor: Colors.black.withOpacity(0.1),
+        title: const Text("Saved Assessments", style: TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          // Sezione: IN CORSO
-          const Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 12),
-            child: Text("IN PROGRESS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
-          ),
-          _buildAssessmentCard(
-            context: context,
-            facilityName: "Central City Hospital",
-            type: "Existing Facility (Mpox Ward)",
-            date: "Today, 10:30 AM",
-            score: 45,
-            status: "Incomplete",
-            statusColor: Colors.orange,
-            icon: Icons.local_hospital,
+          // 1. ZONA FILTRI
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFilterChip('All'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Incomplete'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Passed'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Critical Fails'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _filterDate ?? DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() => _filterDate = picked);
+                          _applyFilters();
+                        }
+                      },
+                      icon: const Icon(Icons.date_range, size: 20),
+                      label: Text(_filterDate == null ? "Filter by Date" : DateFormat('dd MMM yyyy').format(_filterDate!)),
+                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF005DA8)),
+                    ),
+                    if (_filterDate != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          setState(() => _filterDate = null);
+                          _applyFilters();
+                        },
+                      )
+                  ],
+                ),
+              ],
+            ),
           ),
           
-          const SizedBox(height: 24),
-          
-          // Sezione: COMPLETATI
-          const Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 12),
-            child: Text("COMPLETED", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
-          ),
-          _buildAssessmentCard(
-            context: context,
-            facilityName: "Camp Alpha - Sector B",
-            type: "Congregate Setting",
-            date: "Oct 12, 2023",
-            score: 85,
-            status: "Passed",
-            statusColor: Colors.green,
-            icon: Icons.house_siding,
-          ),
-          const SizedBox(height: 12),
-          _buildAssessmentCard(
-            context: context,
-            facilityName: "Regional Clinic South",
-            type: "Screening & Triage",
-            date: "Oct 10, 2023",
-            score: 32,
-            status: "Critical Fails",
-            statusColor: Colors.red,
-            icon: Icons.health_and_safety,
+          // 2. LISTA DELLE CARD
+          Expanded(
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : _filteredAssessments.isEmpty
+                ? const Center(child: Text("No assessments found.", style: TextStyle(color: Colors.grey, fontSize: 16)))
+                : RefreshIndicator(
+                    onRefresh: _loadAssessments,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _filteredAssessments.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        return _buildAssessmentCard(_filteredAssessments[index]);
+                      },
+                    ),
+                  ),
           ),
         ],
-      ),
-      // Pulsante per avviare un nuovo assessment
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // In un'app reale, questo riporterebbe alla tab Home
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Go to Home tab to start a new assessment")));
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  // Costruttore della singola Card di Assessment
-  Widget _buildAssessmentCard({
-    required BuildContext context, required String facilityName, required String type,
-    required String date, required int score, required String status,
-    required Color statusColor, required IconData icon,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+  // Costruisce la Card Istituzionale "PRO" (con Cerchio e Cestino)
+  Widget _buildAssessmentCard(FacilityLayout facility) {
+    // 1. Calcoliamo la percentuale esatta
+    int totalQuestions = 0;
+    int answeredQuestions = 0;
+    int criticalFailsCount = 0;
+
+    for (var zone in facility.zones) {
+      totalQuestions += zone.checklist.length;
+      for (var q in zone.checklist) {
+        if (q.selectedCompliance != ComplianceLevel.pending) answeredQuestions++;
+        if (q.isCriticalFailure) criticalFailsCount++;
+      }
+    }
+    double completionPct = totalQuestions == 0 ? 0 : (answeredQuestions / totalQuestions) * 100;
+
+    // 2. Otteniamo lo stato e i colori
+    String stateLabel = _getAssessmentStatus(facility);
+    Color stateColor;
+    if (stateLabel == 'Critical Fails') {
+      stateColor = Colors.red.shade600;
+    } else if (stateLabel == 'Passed') {
+      stateColor = Colors.green.shade600;
+    } else {
+      stateColor = Colors.orange.shade500;
+    }
+
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
-        border: Border.all(color: Colors.grey.shade100),
+        side: BorderSide(color: stateColor.withOpacity(0.5), width: 1.5),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Opening $facilityName...")));
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(10)),
-                      child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(facilityName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 4),
-                          Text(type, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                    // Score Circle
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: statusColor.withOpacity(0.5), width: 2),
-                      ),
-                      child: Text(
-                        "$score%",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: statusColor, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-                const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          // RIAPRI L'ISPEZIONE (Aggiornato con la navigazione della Factory)
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InteractiveMapScreen(
+                emergencyType: facility.emergencyType, 
+                facilityType: FacilityType.existingFacilityWithWard, 
+                assessmentId: facility.id, 
+              ),
+            ),
+          );
+          _loadAssessments(); // Ricarica al ritorno
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // HEADER ROW (Titolo, Badge e Cestino)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade500),
-                        const SizedBox(width: 6),
-                        Text(date, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                        Text(
+                          facility.facilityName.isEmpty ? "Unnamed Facility" : facility.facilityName, 
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${facility.emergencyType.name.toUpperCase()} Assessment • ${DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())}",
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                        ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                      child: Text(status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                )
-              ],
-            ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: stateColor.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                    child: Text(stateLabel.toUpperCase(), style: TextStyle(color: stateColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+                  ),
+                  const SizedBox(width: 8),
+                  // IL PULSANTE ELIMINA
+                  GestureDetector(
+                    onTap: () => _confirmDelete(facility),
+                    child: Icon(Icons.delete_outline, color: Colors.red.shade300, size: 26),
+                  ),
+                ],
+              ),
+              
+              Divider(color: Colors.grey.shade200, height: 32),
+              
+              // STATS ROW (Le 3 colonne)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 1. Progress Circle
+                  Column(
+                    children: [
+                      Text("Progress", style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CircularProgressIndicator(
+                              value: completionPct / 100,
+                              strokeWidth: 4,
+                              backgroundColor: Colors.grey.shade200,
+                              valueColor: AlwaysStoppedAnimation<Color>(stateColor),
+                            ),
+                            Center(
+                              child: Text(
+                                "${completionPct.toInt()}%",
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: stateColor),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // 2. Global Readiness
+                  Column(
+                    children: [
+                      Text("Readiness", style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text("${facility.globalReadinessScore.toStringAsFixed(0)}%", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.primary)),
+                    ],
+                  ),
+                  
+                  // 3. Critical Fails
+                  Column(
+                    children: [
+                      Text("Critical Fails", style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(criticalFailsCount.toString(), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: criticalFailsCount > 0 ? Colors.red.shade600 : Colors.green.shade600)),
+                    ],
+                  ),
+                  
+                  // 4. Continua Icona
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 16),
+                      Icon(Icons.arrow_forward_ios, color: Colors.grey.shade300, size: 24),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Costruisce la grafica delle "Capsule" per i filtri
+  Widget _buildFilterChip(String label) {
+    bool isSelected = _currentFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _currentFilter = label);
+        _applyFilters();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF005DA8) : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isSelected ? const Color(0xFF005DA8) : Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            fontSize: 13,
           ),
         ),
       ),

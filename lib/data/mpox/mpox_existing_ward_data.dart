@@ -1,11 +1,13 @@
-import '../models/assessment_models.dart';
+import '../../models/assessment_models.dart';
+import 'package:flutter/material.dart';
 
-class MockData {
+class MpoxExistingWardData {
   /// Carica la struttura "Fig 4 - Existing Facility with Dedicated FVD/Mpox Ward"
   /// Basato sulle linee guida OMS (percorsi sporco/pulito e separazione flussi)
-  static FacilityLayout getMpoxExistingFacilityLayout() {
+  static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Existing Health Facility (Mpox Ward)",
+      emergencyType: EmergencyType.mpox,
       mapImagePath: 'assets/maps/facility_map_fig4.png', 
       zones: [
         

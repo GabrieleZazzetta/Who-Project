@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
+
+// Questa riga dirà a Flutter di generare il codice del database
+part 'assessment_models.g.dart';
 
 // ==========================================
 // 1. ENUMS GLOBALI
@@ -13,63 +17,51 @@ enum FacilityType {
   congregateSetting 
 }
 
-// Livelli di conformità basati sugli standard WHO
-enum ComplianceLevel {
-  meetsTarget,      // 3 Punti (Verde)
-  partiallyMeets,   // 2 Punti (Giallo/Arancio)
-  doesNotMeet,      // 1 Punto (Rosso - Critico)
-  notApplicable,    // 0 Punti (Escluso dal calcolo)
-  pending           // Non ancora valutato
-}
+enum ComplianceLevel { meetsTarget, partiallyMeets, doesNotMeet, notApplicable, pending }
 
-// Categorie di valutazione per i grafici radar futuri
-enum AssessmentCategory {
-  infectionPreventionControl, // IPC (es. percorsi sporco/pulito)
-  wash,                       // Acqua, Servizi igienici, Rifiuti
-  spatialLayout,              // Dimensionamento, aerazione, distanze
-  logistics                   // Stoccaggio farmaci, DPI
-}
+enum AssessmentCategory { infectionPreventionControl, wash, spatialLayout, logistics }
 
 // ==========================================
 // 2. MODELLI DELLE DOMANDE E CHECKLIST
 // ==========================================
 
+@embedded
 class AssessmentQuestion {
-  final String id;
-  final String text;
-  final AssessmentCategory category;
+  String id;
+  String text;
   
-  // Killer Feature: Se la struttura "Does not meet", l'app suggerirà questo testo
-  final String recommendationText; 
+  @enumerated
+  AssessmentCategory category;
   
-  // Risultato della valutazione
+  String recommendationText; 
+  
+  @enumerated
   ComplianceLevel selectedCompliance;
   
-  // Possibilità di allegare una foto del difetto strutturale
   String? mediaPath; 
   String? note;
 
   AssessmentQuestion({
-    required this.id,
-    required this.text,
-    required this.category,
-    required this.recommendationText,
+    this.id = '',
+    this.text = '',
+    this.category = AssessmentCategory.infectionPreventionControl,
+    this.recommendationText = '',
     this.selectedCompliance = ComplianceLevel.pending,
     this.mediaPath,
     this.note,
   });
 
-  // Assegnazione dei pesi per il calcolo del Readiness Score
+  @ignore
   int get scoreValue {
     switch (selectedCompliance) {
       case ComplianceLevel.meetsTarget: return 3;
       case ComplianceLevel.partiallyMeets: return 2;
       case ComplianceLevel.doesNotMeet: return 1;
-      default: return 0; // pending o N/A non fanno punteggio
+      default: return 0; 
     }
   }
 
-  // Identifica se c'è un "Fatal Flaw" (Criticità bloccante)
+  @ignore
   bool get isCriticalFailure => selectedCompliance == ComplianceLevel.doesNotMeet;
 }
 
@@ -77,6 +69,7 @@ class AssessmentQuestion {
 // 3. MODELLI SPAZIALI (MAPPA)
 // ==========================================
 
+@embedded
 class MapCoordinates {
   final double top;
   final double left;
@@ -84,33 +77,30 @@ class MapCoordinates {
   final double height;
 
   const MapCoordinates({
-    required this.top,
-    required this.left,
+    this.top = 0.0,
+    this.left = 0.0,
     this.width = 0.0,
     this.height = 0.0,
   });
 }
 
+@embedded
 class SpatialZone {
-  final String id;
-  final String name;
-  final MapCoordinates coordinates;
-  final MapCoordinates touchArea;   // AGGIUNGI QUESTO: Useremo questo per il CERCHIO AZZURRO
-  
-  // La lista di domande specifiche per questa singola stanza/area
-  final List<AssessmentQuestion> checklist;
+  String id;
+  String name;
+  MapCoordinates coordinates;
+  MapCoordinates touchArea; // <--- Il touchArea inserito dal tuo collega
+  List<AssessmentQuestion> checklist;
 
   SpatialZone({
-    required this.id,
-    required this.name,
-    required this.coordinates,
-    required this.touchArea,
-    required this.checklist,
+    this.id = '',
+    this.name = '',
+    this.coordinates = const MapCoordinates(), 
+    this.touchArea = const MapCoordinates(),
+    this.checklist = const [],
   });
 
-  // --- LOGICA PRO: CALCOLO DELLO STATO DINAMICO ---
-  
-  // Calcola il Readiness Score (Percentuale da 0 a 100) di questa specifica zona
+  @ignore
   double get readinessScore {
     int totalPossibleScore = 0;
     int actualScore = 0;
@@ -118,7 +108,7 @@ class SpatialZone {
     for (var q in checklist) {
       if (q.selectedCompliance != ComplianceLevel.pending && 
           q.selectedCompliance != ComplianceLevel.notApplicable) {
-        totalPossibleScore += 3; // 3 è il punteggio massimo (Meets Target)
+        totalPossibleScore += 3; 
         actualScore += q.scoreValue;
       }
     }
@@ -127,30 +117,21 @@ class SpatialZone {
     return (actualScore / totalPossibleScore) * 100;
   }
 
-  // Verifica quanti item sono stati completati
-  double get completionPercentage {
+  @ignore
+  double get completionPercentage { 
     if (checklist.isEmpty) return 0.0;
     int completed = checklist.where((q) => q.selectedCompliance != ComplianceLevel.pending).length;
     return (completed / checklist.length) * 100;
   }
 
-  // Determina il colore della bolla sulla mappa in base allo stato delle risposte
+  @ignore
   Color get statusColor {
-    // 1. Se non ho ancora risposto a nulla, la zona è Grigia
     if (completionPercentage == 0) return Colors.grey.shade400;
-
-    // 2. Se c'è anche solo un "Does Not Meet" (Fatal Flaw), la zona diventa Rossa
     bool hasCritical = checklist.any((q) => q.isCriticalFailure);
     if (hasCritical) return Colors.red.shade600;
-
-    // 3. Se ho iniziato ma non ho finito, la zona è Arancione
     if (completionPercentage < 100) return Colors.orange.shade500;
-
-    // 4. Se ho finito e non ci sono rossi, ma c'è qualche "Parziale", la zona è Gialla
     bool hasPartial = checklist.any((q) => q.selectedCompliance == ComplianceLevel.partiallyMeets);
     if (hasPartial) return Colors.amber.shade500;
-
-    // 5. Se tutto è "Meets Target" (Perfetto), la zona è Verde
     return Colors.green.shade600;
   }
 }
@@ -159,29 +140,37 @@ class SpatialZone {
 // 4. MODELLO GLOBALE DELLA STRUTTURA
 // ==========================================
 
+@collection
 class FacilityLayout {
-  final String facilityName;
-  final String mapImagePath;
-  final List<SpatialZone> zones;
+  Id id = Isar.autoIncrement; // L'ID necessario al database Isar
+  
+  String facilityName;
+  String mapImagePath;
+  DateTime? dateCreated;
+  
+  @enumerated
+  EmergencyType emergencyType;
+  
+  List<SpatialZone> zones;
 
   FacilityLayout({
-    required this.facilityName,
-    required this.mapImagePath,
-    required this.zones,
+    this.facilityName = '',
+    this.mapImagePath = '',
+    this.dateCreated,
+    this.emergencyType = EmergencyType.mpox,
+    this.zones = const [], 
   });
 
-  // Calcola il Readiness Score Globale di tutto l'ospedale/campo
+  @ignore
   double get globalReadinessScore {
     double totalScore = 0;
     int validZonesCount = 0;
-
     for (var zone in zones) {
       if (zone.completionPercentage > 0) {
         totalScore += zone.readinessScore;
         validZonesCount++;
       }
     }
-
     if (validZonesCount == 0) return 0.0;
     return totalScore / validZonesCount;
   }

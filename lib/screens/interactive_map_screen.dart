@@ -1,14 +1,18 @@
-// interactive_map_screen.dart - File completo modificato
-
+// interactive_map_screen.dart - File completo modificato con Database Isar
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../models/assessment_models.dart';
-import '../data/mock_data.dart';
+import '../data/mpox/mpox_existing_ward_data.dart';
+import '../services/database_service.dart'; // <-- IMPORTANTE: Il nostro database!
 import 'assessment_screen.dart'; 
+import '../data/facility_data_factory.dart'; // <-- IMPORTANTE: La factory per i dati delle strutture
 
 class InteractiveMapScreen extends StatefulWidget {
+  final EmergencyType emergencyType;
   final FacilityType facilityType;
+  final int? assessmentId; // <-- Se nullo = nuova ispezione. Se ha un ID = carica l'esistente.
 
-  const InteractiveMapScreen({super.key, required this.facilityType});
+  const InteractiveMapScreen({super.key, required this.emergencyType, required this.facilityType, this.assessmentId});
 
   @override
   State<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
@@ -16,7 +20,7 @@ class InteractiveMapScreen extends StatefulWidget {
 
 class _InteractiveMapScreenState extends State<InteractiveMapScreen> with SingleTickerProviderStateMixin {
   late FacilityLayout layoutData;
-  final bool _showOverlayBoxes = true;
+  bool _isLoading = true; // Mostra un caricamento mentre Isar legge/scrive i dati
   
   late AnimationController _pulseController;
   final TransformationController _mapController = TransformationController();
@@ -24,22 +28,49 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
   @override
   void initState() {
     super.initState();
-    if (widget.facilityType == FacilityType.existingFacilityWithWard) {
-      layoutData = MockData.getMpoxExistingFacilityLayout();
-    } else {
-      layoutData = MockData.getMpoxExistingFacilityLayout();
-    }
+    _initDatabase(); // <-- Avvia il flusso del database
 
-    // Inizializza l'animazione: un ciclo continuo di 1.5 secondi avanti e indietro
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true); // Ripete all'infinito
+    )..repeat(reverse: true); 
   }
+
+  // --- LOGICA DATABASE ---
+  Future<void> _initDatabase() async {
+    if (widget.assessmentId != null) {
+      // 1. CARICA ISPEZIONE ESISTENTE
+      final existing = await DatabaseService.instance.getAssessmentById(widget.assessmentId!);
+      if (existing != null) {
+        layoutData = existing;
+      } else {
+        await _createNewAssessment();
+      }
+    } else {
+      // 2. CREA NUOVA ISPEZIONE E SALVALA SUBITO
+      await _createNewAssessment();
+    }
+    
+    // Ferma il caricamento e mostra la mappa
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _createNewAssessment() async {
+    // CHIEDIAMO ALLA FACTORY I DATI CORRETTI!
+    layoutData = FacilityDataFactory.getLayout(widget.emergencyType, widget.facilityType);
+    layoutData.dateCreated = DateTime.now(); 
+    
+    final generatedId = await DatabaseService.instance.saveAssessment(layoutData);
+    layoutData.id = generatedId; 
+  }
+  // -------------------------
 
   @override
   void dispose() {
-    // IMPORTANTE: Distruggere il controller quando si chiude la pagina
     _pulseController.dispose();
     _mapController.dispose();
     super.dispose();
@@ -51,18 +82,25 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    // Se stiamo leggendo/scrivendo sul db, mostra un loader
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF005DA8))),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         toolbarHeight: 70, 
         backgroundColor: Colors.white, 
-        surfaceTintColor: Colors.transparent, // <-- Sfondo bianco puro!
-        scrolledUnderElevation: 0, // Previene cambi di colore strani su Android
-        elevation: 1, // Leggerissima ombra per separare l'AppBar dal resto
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0, 
+        elevation: 1, 
         shadowColor: Colors.black.withOpacity(0.2),
-        // Coloriamo il testo e la freccia di blu scuro WHO per un super contrasto
         iconTheme: const IconThemeData(color: Color(0xFF003D73)), 
-        title: Text("Spatial Assessment", style: const TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold, fontSize: 20)),
+        title: const Text("Spatial Assessment", style: TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold, fontSize: 20)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 24.0),
@@ -78,7 +116,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
         
       body: Column(
         children: [
-          // Banner Informativo Elegante
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -106,8 +143,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
             ),
           ),
 
-          // Area Mappa
-          // Area Mappa
           Expanded(
             child: ClipRRect(
               child: InteractiveViewer(
@@ -118,13 +153,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
                 constrained: false, 
                 boundaryMargin: const EdgeInsets.all(double.infinity), 
                 child: SizedBox(
-                  
                   width: 800, 
                   height: 1150, 
-                  
                   child: Stack(
                     children: [
-                      // 1. Immagine di Sfondo
                       Image.asset(
                         layoutData.mapImagePath,
                         fit: BoxFit.contain,
@@ -133,8 +165,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
                           child: const Center(child: Text("Waiting for map asset...")),
                         ),
                       ),
-                      
-                      // 2. Generazione dinamica dei Pin
                       ...layoutData.zones.map((zone) => _buildTappableZone(zone)),
                     ],
                   ),
@@ -150,48 +180,46 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
   Widget _buildTappableZone(SpatialZone zone) {
     bool isCritical = zone.statusColor == Colors.red.shade600;
 
-    // Positioned.fill fa sì che questo blocco occupi tutta la mappa, 
-    // permettendoci di posizionare liberamente cerchio e tick ovunque vogliamo.
     return Positioned.fill(
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          
-          // ==========================================
-          // 1. IL CERCHIO AZZURRO CLICCABILE
-          // ==========================================
+          // 1. IL CERCHIO CLICCABILE (Ora visibile in azzurro per debug/mapping)
           Positioned(
-            top: zone.touchArea.top,       // <-- Usa touchArea!
+            top: zone.touchArea.top,       
             left: zone.touchArea.left,
             width: zone.touchArea.width,
             height: zone.touchArea.height,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () async {
+                // Vai alla schermata delle domande
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AssessmentScreen(zone: zone)),
                 );
+                
+                // --- MAGIA DATABASE ---
+                // Appena torni dalla schermata delle domande, SALVA l'intera ispezione!
+                // Tutte le modifiche fatte in memoria (punteggi, status) diventeranno permanenti.
+                await DatabaseService.instance.saveAssessment(layoutData);
+                
+                // Ridisegna i pin sulla mappa con i nuovi colori!
                 _refreshMap();
               },
               child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.3), // Mettilo trasparente alla fine
+                decoration: BoxDecoration( // <-- Rimosso const
+                  color: Colors.lightBlue.withOpacity(0.5), // <-- Azzurro semi-trasparente!
                   shape: BoxShape.circle,
                 ),
               ),
             ),
           ),
 
-          // ==========================================
-          // 2. IL TICK GRIGIO/ROSSO INDIPENDENTE
-          // ==========================================
+          // 2. IL TICK GRAFICO
           Positioned(
-            top: zone.coordinates.top,     // <-- Usa coordinates originali!
+            top: zone.coordinates.top,     
             left: zone.coordinates.left,
-            
-            // IgnorePointer è fondamentale qui: se l'utente preme per sbaglio
-            // sopra il tick, il tocco lo "attraversa" e colpisce il cerchio azzurro sotto.
             child: IgnorePointer(
               child: AnimatedBuilder(
                 animation: _pulseController,
