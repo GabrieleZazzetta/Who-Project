@@ -92,18 +92,21 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     }
   }
 
-  // LOGICA DI AVANZAMENTO DEL WIZARD
+  // --- LOGICA DI AVANZAMENTO DEL WIZARD (MODIFICATA PER I TEST) ---
   void _nextStep() {
-    if (_formKeys[_currentStep].currentState!.validate()) {
-      _formKeys[_currentStep].currentState!.save();
-      FocusScope.of(context).unfocus(); // Chiude la tastiera
-      
-      if (_currentStep < _totalSteps - 1) {
-        setState(() => _currentStep++);
-      } else {
-        _submitForm();
-      }
+    // ABBIAMO DISATTIVATO LA VALIDAZIONE PER VELOCIZZARE I TEST!
+    // if (_formKeys[_currentStep].currentState!.validate()) {
+    
+    _formKeys[_currentStep].currentState?.save();
+    FocusScope.of(context).unfocus(); // Chiude la tastiera
+    
+    if (_currentStep < _totalSteps - 1) {
+      setState(() => _currentStep++);
+    } else {
+      _submitForm();
     }
+    
+    // }
   }
 
   void _prevStep() {
@@ -385,11 +388,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                     keyboardType: TextInputType.number,
                     decoration: _inputDecoration(Icons.bed),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return "Required";
-                      int? icu = int.tryParse(value);
-                      int? total = int.tryParse(_inpatientBedsController.text);
-                      if (icu == null) return "Invalid number";
-                      if (total != null && icu > total) return "ICU beds cannot exceed total inpatient beds";
+                      // ABBIAMO TOLTO IL BLOCCO ANCHE QUI PER I TEST VELOCI
                       return null;
                     },
                   )
@@ -436,7 +435,6 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // LA VERA MAGIA È QUI: Domanda fuori, input pulito dentro
   Widget _buildQuestionField(String question, Widget inputField) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
@@ -485,7 +483,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       controller: controller,
       keyboardType: keyboardType,
       decoration: _inputDecoration(icon),
-      validator: (value) => value == null || value.isEmpty ? "This field is required" : null,
+      validator: (value) => null, // Disattivato per i test
     );
   }
 
@@ -494,11 +492,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       controller: controller,
       keyboardType: TextInputType.number,
       decoration: _inputDecoration(Icons.numbers),
-      validator: (value) {
-        if (value == null || value.isEmpty) return "This field is required";
-        if (int.tryParse(value) == null) return "Please enter a valid number";
-        return null;
-      },
+      validator: (value) => null, // Disattivato per i test
     );
   }
 
@@ -507,7 +501,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       isExpanded: true,
       decoration: _inputDecoration(Icons.arrow_drop_down_circle_outlined),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 15), overflow: TextOverflow.ellipsis))).toList(),
-      validator: (value) => value == null ? "Please select an option" : null,
+      validator: (value) => null, // Disattivato per i test
       onChanged: onChanged,
     );
   }

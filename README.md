@@ -20,6 +20,7 @@ The WHO Health Facilities Assessment Tool is an enterprise-grade, **offline-firs
 * [ ] **Cloud Synchronization:** Delayed batch-sync with WHO central servers when connectivity is restored.
 
 ## 📂 Project Architecture
+
 The application is built using a modern, scalable, and modular **Offline-First** architecture. The `lib/` directory is structured as follows:
 
 ```text
@@ -29,13 +30,15 @@ lib/
 │   └── mpox/                       # Disease-specific data modules (Mpox)
 │       └── mpox_existing_ward_data.dart # Blueprint & Checklist for Mpox Fig. 4 Ward
 ├── models/                         # Data Models & Schemas
-│   ├── assessment_models.dart      # Core classes (AssessmentQuestion, SpatialZone, FacilityLayout)
+│   ├── assessment_models.dart      # Core classes (AssessmentQuestion, SpatialZone, FacilityLayout, GeneralFacilityInfo)
 │   └── assessment_models.g.dart    # Auto-generated Isar Database bindings
 ├── screens/                        # UI Layer
 │   ├── assessment_screen.dart      # Interactive checklist for health facility zones
 │   ├── assessments_list_screen.dart# Dashboard displaying all saved local assessments
 │   ├── interactive_map_screen.dart # Spatial assessment map with dynamic tappable pins
 │   ├── login_screen.dart           # App entry point & Authentication
+│   ├── pre_assessment_screen.dart  # Wizard form for facility metadata and services (WHO Standards)
+│   ├── register_screen.dart        # WHO & External staff registration with dynamic validation
 │   └── settings_screen.dart        # Application settings and preferences
 ├── services/                       # Core Services
 │   └── database_service.dart       # Local NoSQL Database Engine (Isar CRUD operations)
