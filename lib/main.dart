@@ -7,6 +7,7 @@ import 'screens/interactive_map_screen.dart';
 import 'screens/assessments_list_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/pre_assessment_screen.dart';
 
 // Cambiamo il main in async per poter attendere l'avvio del database
 void main() async {
@@ -467,10 +468,19 @@ class FacilitySelectionScreen extends StatelessWidget {
         trailing: Icon(isImplemented ? Icons.arrow_forward_ios : Icons.lock_outline, color: isImplemented ? Theme.of(context).colorScheme.primary : Colors.grey.shade400, size: 18),
         onTap: () {
           if (isImplemented) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => InteractiveMapScreen(
-              emergencyType: emergency, // <-- Passiamo SEMPRE l'emergenza selezionata alla mappa!
-              facilityType: type
-            )));
+            if (emergency == EmergencyType.mpox) {
+              // SE È MPOX: Passa prima dal form dei metadati!
+              Navigator.push(context, MaterialPageRoute(builder: (context) => PreAssessmentScreen(
+                emergencyType: emergency,
+                facilityType: type,
+              )));
+            } else {
+              // PER LE ALTRE MALATTIE: Va dritto alla mappa (per ora)
+              Navigator.push(context, MaterialPageRoute(builder: (context) => InteractiveMapScreen(
+                emergencyType: emergency,
+                facilityType: type
+              )));
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Module locked or in development.")));
           }

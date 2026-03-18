@@ -147,6 +147,7 @@ class FacilityLayout {
   String facilityName;
   String mapImagePath;
   DateTime? dateCreated;
+  GeneralFacilityInfo? generalInfo; // <-- NUOVO: Dati del form pre-ispezione
   
   @enumerated
   EmergencyType emergencyType;
@@ -174,4 +175,45 @@ class FacilityLayout {
     if (validZonesCount == 0) return 0.0;
     return totalScore / validZonesCount;
   }
+}
+
+@embedded
+class GeneralFacilityInfo {
+  // --- Metadati Nascosti (Generazione Report) ---
+  String? assessedDisease; 
+  String? assessedFacilityType; 
+
+  // --- 1. Assessment information ---
+  DateTime? assessmentDate;
+  String? assessorName;
+  String? assessorEmail;
+  String? assessorPhone;
+
+  // --- 2. Geographical location ---
+  String? country;
+  String? region;
+  String? district;
+  String? city;
+  String? facilityAddressOrGps;
+  String? facilityLocationRecord;
+
+  // --- 3. Facility identification ---
+  String? facilityCode;
+  String? facilityName;
+  String? managingAuthority;
+  String? facilityDirectorName;
+  String? facilityDirectorPhone;
+  String? facilityDirectorEmail;
+  String? respondentName;
+  String? respondentPosition;
+  String? structureType;
+  String? existingHealthcareFacilityType;
+
+  // --- 4. Existing healthcare facility services ---
+  String? offersOutpatient;
+  String? offersInpatient;
+  int? inpatientBeds;
+  int? icuBeds;
+  String? has24hEmergency;
+  String? hasIcuOrHdu;
 }
