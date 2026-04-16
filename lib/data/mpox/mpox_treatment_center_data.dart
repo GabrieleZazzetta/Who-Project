@@ -15,9 +15,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z1_screening',
           name: 'Screening',
-          coordinates: const MapCoordinates(top: 464, left: 97),
+          coordinates: const MapCoordinates(top: 466, left: 99),
           touchArea:
-              const MapCoordinates(top: 449, left: 82, width: 30, height: 30),
+              const MapCoordinates(top: 441, left: 74, width: 51, height: 51),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_1_1',
@@ -76,9 +76,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z2_waiting',
           name: 'Waiting Area',
-          coordinates: const MapCoordinates(top: 615, left: 135),
+          coordinates: const MapCoordinates(top: 617, left: 138),
           touchArea:
-              const MapCoordinates(top: 600, left: 120, width: 30, height: 30),
+              const MapCoordinates(top: 585, left: 106, width: 64, height: 64),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_4_2_1',
@@ -120,6 +120,62 @@ class MpoxTreatmentCenterData {
                 recommendationText:
                     'Prepare an overflow area (e.g., an adjacent tent or room) with basic seating and ventilation.',
                 selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_5',
+                category: AssessmentCategory.wash,
+                text:
+                    'Do all toilets have functioning handwashing stations within a 5-meter radius?',
+                recommendationText:
+                    'Install functional handwashing stations with soap and water immediately outside all toilets.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_6',
+                category: AssessmentCategory.wash,
+                text:
+                    'Are there at least two usable and sex-separated toilets available for patients?',
+                recommendationText:
+                    'Ensure male and female toilets are distinctly separated and functional.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_7',
+                category: AssessmentCategory.wash,
+                text:
+                    'Is there at least one improved and usable toilet facility that meets the needs for menstrual hygiene management (MHM)?',
+                recommendationText:
+                    'Provide a private MHM toilet with a washing area and proper disposal bins.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_8',
+                category: AssessmentCategory.wash,
+                text:
+                    'Is there at least one improved and usable toilet designed to meet the needs of people with reduced mobility?',
+                recommendationText:
+                    'Install ramps and handrails in at least one toilet for disabled access.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_9',
+                category: AssessmentCategory.wash,
+                text:
+                    'In pediatric wards (if applicable), are the hand hygiene station and toilets designed according to children\'s needs?',
+                recommendationText:
+                    'Lower the height of handwashing stations and toilets in the pediatric area.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_10',
+                category: AssessmentCategory.wash,
+                text:
+                    'Is the presence of at least one toilet for every 20 users guaranteed?',
+                recommendationText:
+                    'Construct additional latrines or toilets to meet the 1:20 ratio.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_4_2_6',
+                category: AssessmentCategory.wash,
+                text:
+                    'Are there dedicated toilets directly accessible from the waiting room that meet the general criteria?',
+                recommendationText:
+                    'Assign specific toilets solely for the use of patients in the waiting room.',
+                selectedCompliance: ComplianceLevel.pending),
           ],
         ),
 
@@ -129,9 +185,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z3_triage',
           name: 'Triage Room',
-          coordinates: const MapCoordinates(top: 615, left: 208),
+          coordinates: const MapCoordinates(top: 617, left: 210),
           touchArea:
-              const MapCoordinates(top: 600, left: 193, width: 30, height: 30),
+              const MapCoordinates(top: 585, left: 178, width: 64, height: 64),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_4_3_1',
@@ -174,17 +230,17 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z4_triage_donning',
           name: 'Triage Donning',
-          coordinates: const MapCoordinates(top: 565, left: 188),
+          coordinates: const MapCoordinates(top: 569, left: 190),
           touchArea:
-              const MapCoordinates(top: 550, left: 173, width: 30, height: 30),
+              const MapCoordinates(top: 551, left: 172, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
         ),
         SpatialZone(
           id: 'z5_triage_doffing',
           name: 'Triage Doffing',
-          coordinates: const MapCoordinates(top: 565, left: 231),
+          coordinates: const MapCoordinates(top: 568, left: 231),
           touchArea:
-              const MapCoordinates(top: 550, left: 216, width: 30, height: 30),
+              const MapCoordinates(top: 550, left: 213, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
         ),
 
@@ -196,7 +252,7 @@ class MpoxTreatmentCenterData {
           name: 'Staff & Admin Area',
           coordinates: const MapCoordinates(top: 212, left: 141),
           touchArea:
-              const MapCoordinates(top: 197, left: 126, width: 30, height: 30),
+              const MapCoordinates(top: 180, left: 108, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_1_2',
@@ -263,9 +319,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z7_storage',
           name: 'Storage & Pharmacy',
-          coordinates: const MapCoordinates(top: 72, left: 137),
+          coordinates: const MapCoordinates(top: 74, left: 140),
           touchArea:
-              const MapCoordinates(top: 57, left: 122, width: 30, height: 30),
+              const MapCoordinates(top: 41, left: 107, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_4_2',
@@ -300,9 +356,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z8_waste',
           name: 'Waste Area',
-          coordinates: const MapCoordinates(top: 57, left: 216),
+          coordinates: const MapCoordinates(top: 62, left: 218),
           touchArea:
-              const MapCoordinates(top: 42, left: 201, width: 30, height: 30),
+              const MapCoordinates(top: 27, left: 185, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_3_1',
@@ -345,9 +401,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z9_reprocessing',
           name: 'Reprocessing',
-          coordinates: const MapCoordinates(top: 201, left: 216),
+          coordinates: const MapCoordinates(top: 204, left: 218),
           touchArea:
-              const MapCoordinates(top: 186, left: 201, width: 30, height: 30),
+              const MapCoordinates(top: 171, left: 185, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_4_5_1',
@@ -398,9 +454,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z10_laundry',
           name: 'Laundry',
-          coordinates: const MapCoordinates(top: 124, left: 216),
+          coordinates: const MapCoordinates(top: 134, left: 219),
           touchArea:
-              const MapCoordinates(top: 109, left: 201, width: 30, height: 30),
+              const MapCoordinates(top: 101, left: 186, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_4_6_1',
@@ -419,9 +475,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z11_morgue',
           name: 'Morgue',
-          coordinates: const MapCoordinates(top: 744, left: 325),
+          coordinates: const MapCoordinates(top: 744, left: 328),
           touchArea:
-              const MapCoordinates(top: 729, left: 310, width: 30, height: 30),
+              const MapCoordinates(top: 725, left: 309, width: 38, height: 38),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_1_4',
@@ -434,105 +490,36 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 12. GENERAL TOILETS
-        // ==========================================
-        SpatialZone(
-          id: 'z12_toilets',
-          name: 'General Toilets',
-          coordinates: const MapCoordinates(top: 580, left: 135),
-          touchArea:
-              const MapCoordinates(top: 565, left: 120, width: 30, height: 30),
-          checklist: [
-            AssessmentQuestion(
-                id: 'tc_2_4_5',
-                category: AssessmentCategory.wash,
-                text:
-                    'Do all toilets have functioning handwashing stations within a 5-meter radius?',
-                recommendationText:
-                    'Install functional handwashing stations with soap and water immediately outside all toilets.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_2_4_6',
-                category: AssessmentCategory.wash,
-                text:
-                    'Are there at least two usable and sex-separated toilets available for patients?',
-                recommendationText:
-                    'Ensure male and female toilets are distinctly separated and functional.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_2_4_7',
-                category: AssessmentCategory.wash,
-                text:
-                    'Is there at least one improved and usable toilet facility that meets the needs for menstrual hygiene management (MHM)?',
-                recommendationText:
-                    'Provide a private MHM toilet with a washing area and proper disposal bins.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_2_4_8',
-                category: AssessmentCategory.wash,
-                text:
-                    'Is there at least one improved and usable toilet designed to meet the needs of people with reduced mobility?',
-                recommendationText:
-                    'Install ramps and handrails in at least one toilet for disabled access.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_2_4_9',
-                category: AssessmentCategory.wash,
-                text:
-                    'In pediatric wards (if applicable), are the hand hygiene station and toilets designed according to children\'s needs?',
-                recommendationText:
-                    'Lower the height of handwashing stations and toilets in the pediatric area.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_2_4_10',
-                category: AssessmentCategory.wash,
-                text:
-                    'Is the presence of at least one toilet for every 20 users guaranteed?',
-                recommendationText:
-                    'Construct additional latrines or toilets to meet the 1:20 ratio.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
-                id: 'tc_4_2_6',
-                category: AssessmentCategory.wash,
-                text:
-                    'Are there dedicated toilets directly accessible from the waiting room that meet the general criteria?',
-                recommendationText:
-                    'Assign specific toilets solely for the use of patients in the waiting room.',
-                selectedCompliance: ComplianceLevel.pending),
-          ],
-        ),
-
         // ******************************************
         // CLUSTER 1: MPOX SUSPECT
         // ******************************************
         SpatialZone(
             id: 'c1_room',
             name: 'Suspect Room',
-            coordinates: const MapCoordinates(top: 635, left: 409),
+            coordinates: const MapCoordinates(top: 637, left: 412),
             touchArea: const MapCoordinates(
-                top: 620, left: 394, width: 30, height: 30),
+                top: 595, left: 370, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c1_donning',
             name: 'Suspect Donning',
-            coordinates: const MapCoordinates(top: 610, left: 355),
+            coordinates: const MapCoordinates(top: 610, left: 357),
             touchArea: const MapCoordinates(
-                top: 595, left: 340, width: 30, height: 30),
+                top: 592, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_doffing',
             name: 'Suspect Doffing',
-            coordinates: const MapCoordinates(top: 658, left: 355),
+            coordinates: const MapCoordinates(top: 659, left: 357),
             touchArea: const MapCoordinates(
-                top: 643, left: 340, width: 30, height: 30),
+                top: 641, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_nursing',
             name: 'Suspect Nursing St.',
-            coordinates: const MapCoordinates(top: 632, left: 323),
+            coordinates: const MapCoordinates(top: 633, left: 325),
             touchArea: const MapCoordinates(
-                top: 617, left: 308, width: 30, height: 30),
+                top: 612, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
 
         // ******************************************
@@ -541,30 +528,30 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c2_room',
             name: 'Probable Room',
-            coordinates: const MapCoordinates(top: 482, left: 488),
+            coordinates: const MapCoordinates(top: 484, left: 491),
             touchArea: const MapCoordinates(
-                top: 467, left: 473, width: 30, height: 30),
+                top: 442, left: 449, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c2_donning',
             name: 'Probable Donning',
-            coordinates: const MapCoordinates(top: 460, left: 433),
+            coordinates: const MapCoordinates(top: 460, left: 437),
             touchArea: const MapCoordinates(
-                top: 445, left: 418, width: 30, height: 30),
+                top: 442, left: 419, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_doffing',
             name: 'Probable Doffing',
-            coordinates: const MapCoordinates(top: 503, left: 433),
+            coordinates: const MapCoordinates(top: 505, left: 436),
             touchArea: const MapCoordinates(
-                top: 488, left: 418, width: 30, height: 30),
+                top: 487, left: 418, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_nursing',
             name: 'Probable Nursing St.',
-            coordinates: const MapCoordinates(top: 479, left: 403),
+            coordinates: const MapCoordinates(top: 480, left: 405),
             touchArea: const MapCoordinates(
-                top: 464, left: 388, width: 30, height: 30),
+                top: 459, left: 383, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
 
         // ******************************************
@@ -573,30 +560,30 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c3_room',
             name: 'Confirmed Room',
-            coordinates: const MapCoordinates(top: 321, left: 412),
+            coordinates: const MapCoordinates(top: 326, left: 414),
             touchArea: const MapCoordinates(
-                top: 306, left: 397, width: 30, height: 30),
+                top: 283, left: 372, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c3_donning',
             name: 'Confirmed Donning',
-            coordinates: const MapCoordinates(top: 299, left: 358),
+            coordinates: const MapCoordinates(top: 301, left: 359),
             touchArea: const MapCoordinates(
-                top: 284, left: 343, width: 30, height: 30),
+                top: 283, left: 341, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_doffing',
             name: 'Confirmed Doffing',
-            coordinates: const MapCoordinates(top: 344, left: 358),
+            coordinates: const MapCoordinates(top: 347, left: 358),
             touchArea: const MapCoordinates(
-                top: 329, left: 343, width: 30, height: 30),
+                top: 329, left: 340, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_nursing',
             name: 'Confirmed Nursing St.',
-            coordinates: const MapCoordinates(top: 321, left: 325),
+            coordinates: const MapCoordinates(top: 323, left: 326),
             touchArea: const MapCoordinates(
-                top: 306, left: 310, width: 30, height: 30),
+                top: 301, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
       ],
     );

@@ -31,12 +31,13 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
               height: 28,
               fit: BoxFit.contain,
               color: Colors.white,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox.shrink(),
             ),
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                widget.zone.name, 
+                widget.zone.name,
                 style: const TextStyle(fontSize: 16),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -46,7 +47,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle_outline, size: 28),
-            tooltip: 'Save & Return',
+            tooltip: 'Return to Map',
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 8),
@@ -61,14 +62,25 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Area Assessment Checklist",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ==========================================
+                // LA SOLUZIONE DEFINITIVA ALL'OVERFLOW È QUI
+                // ==========================================
+                const Expanded(
+                  child: Text(
+                    "Area Assessment Checklist",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow:
+                        TextOverflow.ellipsis, // Aggiunge i ... se troppo lungo
+                  ),
                 ),
+                const SizedBox(width: 12), // Spazio vitale tra testo e badge
+                // ==========================================
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -82,7 +94,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
               ],
             ),
           ),
-          
+
           // Lista delle domande
           Expanded(
             child: ListView.builder(
@@ -96,15 +108,16 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           ),
         ],
       ),
-      // Tasto Flottante per salvare e tornare alla mappa
+      // Tasto Flottante per tornare alla mappa (senza Save)
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Navigator.pop rimanda alla mappa, la quale chiamerà _refreshMap()
+          // Navigator.pop rimanda alla mappa
           Navigator.pop(context);
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
-        icon: const Icon(Icons.save, color: Colors.white),
-        label: const Text("Save & Return to Map", style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.map, color: Colors.white),
+        label:
+            const Text("Return to Map", style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -112,8 +125,9 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
   // Widget per la singola domanda
   Widget _buildQuestionCard(AssessmentQuestion question) {
     // Determiniamo se mostrare il suggerimento (se la risposta è "Does Not Meet" o "Partially Meets")
-    bool showRecommendation = question.selectedCompliance == ComplianceLevel.doesNotMeet || 
-                              question.selectedCompliance == ComplianceLevel.partiallyMeets;
+    bool showRecommendation =
+        question.selectedCompliance == ComplianceLevel.doesNotMeet ||
+            question.selectedCompliance == ComplianceLevel.partiallyMeets;
 
     return Card(
       elevation: 2,
@@ -122,7 +136,9 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         borderRadius: BorderRadius.circular(12),
         // Se c'è un errore critico, il bordo della card diventa rosso
         side: BorderSide(
-          color: question.isCriticalFailure ? Colors.red.shade300 : Colors.transparent,
+          color: question.isCriticalFailure
+              ? Colors.red.shade300
+              : Colors.transparent,
           width: 2,
         ),
       ),
@@ -137,7 +153,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
-            
+
             // Bottoni touch-friendly per le risposte
             Row(
               children: [
@@ -173,21 +189,25 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: question.isCriticalFailure ? Colors.red.shade50 : Colors.orange.shade50,
+                  color: question.isCriticalFailure
+                      ? Colors.red.shade50
+                      : Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(8),
                   border: Border(
-                    left: BorderSide(
-                      color: question.isCriticalFailure ? Colors.red : Colors.orange, 
-                      width: 4
-                    )
-                  ),
+                      left: BorderSide(
+                          color: question.isCriticalFailure
+                              ? Colors.red
+                              : Colors.orange,
+                          width: 4)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.lightbulb, 
-                      color: question.isCriticalFailure ? Colors.red : Colors.orange,
+                      Icons.lightbulb,
+                      color: question.isCriticalFailure
+                          ? Colors.red
+                          : Colors.orange,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -199,13 +219,16 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: question.isCriticalFailure ? Colors.red.shade800 : Colors.orange.shade800,
+                              color: question.isCriticalFailure
+                                  ? Colors.red.shade800
+                                  : Colors.orange.shade800,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             question.recommendationText,
-                            style: const TextStyle(fontSize: 14, color: Colors.black87),
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -214,7 +237,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                 ),
               ),
             ],
-            
+
             // Bottoni aggiuntivi (Media e Note)
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade200),
@@ -224,13 +247,13 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                 TextButton.icon(
                   onPressed: () {
                     // Logica futura: Aprire la fotocamera
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Camera module coming soon..."))
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Camera module coming soon...")));
                   },
                   icon: const Icon(Icons.camera_alt_outlined, size: 20),
                   label: const Text("Add Photo"),
-                  style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
+                  style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700),
                 ),
                 TextButton.icon(
                   onPressed: () {
@@ -238,7 +261,8 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   },
                   icon: const Icon(Icons.edit_note, size: 20),
                   label: const Text("Add Note"),
-                  style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
+                  style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700),
                 ),
               ],
             )
@@ -272,7 +296,12 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             ),
             borderRadius: BorderRadius.circular(8),
             boxShadow: isSelected
-                ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))]
+                ? [
+                    BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3))
+                  ]
                 : [],
           ),
           child: Column(
