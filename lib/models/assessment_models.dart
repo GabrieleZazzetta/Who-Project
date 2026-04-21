@@ -10,16 +10,27 @@ part 'assessment_models.g.dart';
 
 enum EmergencyType { mpox, ebola, sars }
 
-enum FacilityType { 
-  screeningAndIsolation, 
-  existingFacilityWithWard, 
-  standAloneCenter, 
-  congregateSetting 
+enum FacilityType {
+  screeningAndIsolation,
+  existingFacilityWithWard,
+  standAloneCenter,
+  congregateSetting
 }
 
-enum ComplianceLevel { meetsTarget, partiallyMeets, doesNotMeet, notApplicable, pending }
+enum ComplianceLevel {
+  meetsTarget,
+  partiallyMeets,
+  doesNotMeet,
+  notApplicable,
+  pending
+}
 
-enum AssessmentCategory { infectionPreventionControl, wash, spatialLayout, logistics }
+enum AssessmentCategory {
+  infectionPreventionControl,
+  wash,
+  spatialLayout,
+  logistics
+}
 
 // ==========================================
 // 2. MODELLI DELLE DOMANDE E CHECKLIST
@@ -29,16 +40,16 @@ enum AssessmentCategory { infectionPreventionControl, wash, spatialLayout, logis
 class AssessmentQuestion {
   String id;
   String text;
-  
+
   @enumerated
   AssessmentCategory category;
-  
-  String recommendationText; 
-  
+
+  String recommendationText;
+
   @enumerated
   ComplianceLevel selectedCompliance;
-  
-  String? mediaPath; 
+
+  List<String>? mediaPaths; // <--- MODIFICATO: Ora è una lista di percorsi!
   String? note;
 
   AssessmentQuestion({
@@ -47,22 +58,27 @@ class AssessmentQuestion {
     this.category = AssessmentCategory.infectionPreventionControl,
     this.recommendationText = '',
     this.selectedCompliance = ComplianceLevel.pending,
-    this.mediaPath,
+    this.mediaPaths, // <--- MODIFICATO
     this.note,
   });
 
   @ignore
   int get scoreValue {
     switch (selectedCompliance) {
-      case ComplianceLevel.meetsTarget: return 3;
-      case ComplianceLevel.partiallyMeets: return 2;
-      case ComplianceLevel.doesNotMeet: return 1;
-      default: return 0; 
+      case ComplianceLevel.meetsTarget:
+        return 3;
+      case ComplianceLevel.partiallyMeets:
+        return 2;
+      case ComplianceLevel.doesNotMeet:
+        return 1;
+      default:
+        return 0;
     }
   }
 
   @ignore
-  bool get isCriticalFailure => selectedCompliance == ComplianceLevel.doesNotMeet;
+  bool get isCriticalFailure =>
+      selectedCompliance == ComplianceLevel.doesNotMeet;
 }
 
 // ==========================================
@@ -89,13 +105,13 @@ class SpatialZone {
   String id;
   String name;
   MapCoordinates coordinates;
-  MapCoordinates touchArea; // <--- Il touchArea inserito dal tuo collega
+  MapCoordinates touchArea;
   List<AssessmentQuestion> checklist;
 
   SpatialZone({
     this.id = '',
     this.name = '',
-    this.coordinates = const MapCoordinates(), 
+    this.coordinates = const MapCoordinates(),
     this.touchArea = const MapCoordinates(),
     this.checklist = const [],
   });
@@ -106,9 +122,9 @@ class SpatialZone {
     int actualScore = 0;
 
     for (var q in checklist) {
-      if (q.selectedCompliance != ComplianceLevel.pending && 
+      if (q.selectedCompliance != ComplianceLevel.pending &&
           q.selectedCompliance != ComplianceLevel.notApplicable) {
-        totalPossibleScore += 3; 
+        totalPossibleScore += 3;
         actualScore += q.scoreValue;
       }
     }
@@ -118,9 +134,11 @@ class SpatialZone {
   }
 
   @ignore
-  double get completionPercentage { 
+  double get completionPercentage {
     if (checklist.isEmpty) return 0.0;
-    int completed = checklist.where((q) => q.selectedCompliance != ComplianceLevel.pending).length;
+    int completed = checklist
+        .where((q) => q.selectedCompliance != ComplianceLevel.pending)
+        .length;
     return (completed / checklist.length) * 100;
   }
 
@@ -130,7 +148,8 @@ class SpatialZone {
     bool hasCritical = checklist.any((q) => q.isCriticalFailure);
     if (hasCritical) return Colors.red.shade600;
     if (completionPercentage < 100) return Colors.orange.shade500;
-    bool hasPartial = checklist.any((q) => q.selectedCompliance == ComplianceLevel.partiallyMeets);
+    bool hasPartial = checklist
+        .any((q) => q.selectedCompliance == ComplianceLevel.partiallyMeets);
     if (hasPartial) return Colors.amber.shade500;
     return Colors.green.shade600;
   }
@@ -142,16 +161,16 @@ class SpatialZone {
 
 @collection
 class FacilityLayout {
-  Id id = Isar.autoIncrement; // L'ID necessario al database Isar
-  
+  Id id = Isar.autoIncrement;
+
   String facilityName;
   String mapImagePath;
   DateTime? dateCreated;
-  GeneralFacilityInfo? generalInfo; // <-- NUOVO: Dati del form pre-ispezione
-  
+  GeneralFacilityInfo? generalInfo;
+
   @enumerated
   EmergencyType emergencyType;
-  
+
   List<SpatialZone> zones;
 
   FacilityLayout({
@@ -159,7 +178,7 @@ class FacilityLayout {
     this.mapImagePath = '',
     this.dateCreated,
     this.emergencyType = EmergencyType.mpox,
-    this.zones = const [], 
+    this.zones = const [],
   });
 
   @ignore
@@ -179,17 +198,14 @@ class FacilityLayout {
 
 @embedded
 class GeneralFacilityInfo {
-  // --- Metadati Nascosti (Generazione Report) ---
-  String? assessedDisease; 
-  String? assessedFacilityType; 
+  String? assessedDisease;
+  String? assessedFacilityType;
 
-  // --- 1. Assessment information ---
   DateTime? assessmentDate;
   String? assessorName;
   String? assessorEmail;
   String? assessorPhone;
 
-  // --- 2. Geographical location ---
   String? country;
   String? region;
   String? district;
@@ -197,7 +213,6 @@ class GeneralFacilityInfo {
   String? facilityAddressOrGps;
   String? facilityLocationRecord;
 
-  // --- 3. Facility identification ---
   String? facilityCode;
   String? facilityName;
   String? managingAuthority;
@@ -209,7 +224,6 @@ class GeneralFacilityInfo {
   String? structureType;
   String? existingHealthcareFacilityType;
 
-  // --- 4. Existing healthcare facility services ---
   String? offersOutpatient;
   String? offersInpatient;
   int? inpatientBeds;

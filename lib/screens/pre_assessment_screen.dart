@@ -28,10 +28,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   ];
 
   // --- 1. Assessment Info ---
-  // NUOVO CAMPO: Titolo dell'ispezione
   final TextEditingController _assessmentNameController =
       TextEditingController();
-
   DateTime? _assessmentDate = DateTime.now();
   final TextEditingController _assessorNameController = TextEditingController();
   final TextEditingController _assessorEmailController =
@@ -74,7 +72,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
 
   @override
   void dispose() {
-    _assessmentNameController.dispose(); // <-- Dispose del nuovo campo
+    _assessmentNameController.dispose();
     _assessorNameController.dispose();
     _assessorEmailController.dispose();
     _assessorPhoneController.dispose();
@@ -132,11 +130,11 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()));
 
+    // Creiamo il layout ma NON LO SALVIAMO nel database. Vive solo in RAM.
     final layoutData = FacilityDataFactory.getLayout(
         widget.emergencyType, widget.facilityType);
     layoutData.dateCreated = DateTime.now();
 
-    // Assegniamo il titolo personalizzato (o uno di default se lo lasciano vuoto)
     layoutData.facilityName = _assessmentNameController.text.isNotEmpty
         ? _assessmentNameController.text
         : "Unnamed Assessment";
@@ -155,8 +153,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       ..facilityAddressOrGps = _addressController.text
       ..facilityLocationRecord = _locationRecord
       ..facilityCode = _facilityCodeController.text
-      ..facilityName = _facilityNameController
-          .text // Questo rimane il nome reale della struttura
+      ..facilityName = _facilityNameController.text
       ..managingAuthority = _managingAuthority
       ..facilityDirectorName = _directorNameController.text
       ..facilityDirectorPhone = _directorPhoneController.text
@@ -172,19 +169,17 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       ..has24hEmergency = _has24hEmergency
       ..hasIcuOrHdu = _hasIcuOrHdu;
 
-    final generatedId =
-        await DatabaseService.instance.saveAssessment(layoutData);
-
     if (mounted) Navigator.pop(context);
 
     if (mounted) {
+      // Passiamo l'oggetto `layoutData` non salvato invece dell'ID
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => InteractiveMapScreen(
             emergencyType: widget.emergencyType,
             facilityType: widget.facilityType,
-            assessmentId: generatedId,
+            preFilledData: layoutData, // <-- Nuovo campo!
           ),
         ),
       );
@@ -305,11 +300,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       children: [
         _buildInfoBanner(
             "Please enter a title to easily identify this assessment later, along with the assessor details."),
-
-        // --- IL NUOVO CAMPO TITOLO ISPEZIONE ---
         _buildQuestionField("Assessment Title (e.g. Hospital North - Baseline)",
             _buildTextInput(_assessmentNameController, Icons.title)),
-
         _buildQuestionField(
           "Date of assessment",
           InkWell(

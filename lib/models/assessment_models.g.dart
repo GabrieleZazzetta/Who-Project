@@ -1113,10 +1113,10 @@ const AssessmentQuestionSchema = Schema(
       name: r'id',
       type: IsarType.string,
     ),
-    r'mediaPath': PropertySchema(
+    r'mediaPaths': PropertySchema(
       id: 2,
-      name: r'mediaPath',
-      type: IsarType.string,
+      name: r'mediaPaths',
+      type: IsarType.stringList,
     ),
     r'note': PropertySchema(
       id: 3,
@@ -1154,9 +1154,15 @@ int _assessmentQuestionEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.id.length * 3;
   {
-    final value = object.mediaPath;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    final list = object.mediaPaths;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
     }
   }
   {
@@ -1178,7 +1184,7 @@ void _assessmentQuestionSerialize(
 ) {
   writer.writeByte(offsets[0], object.category.index);
   writer.writeString(offsets[1], object.id);
-  writer.writeString(offsets[2], object.mediaPath);
+  writer.writeStringList(offsets[2], object.mediaPaths);
   writer.writeString(offsets[3], object.note);
   writer.writeString(offsets[4], object.recommendationText);
   writer.writeByte(offsets[5], object.selectedCompliance.index);
@@ -1196,7 +1202,7 @@ AssessmentQuestion _assessmentQuestionDeserialize(
             reader.readByteOrNull(offsets[0])] ??
         AssessmentCategory.infectionPreventionControl,
     id: reader.readStringOrNull(offsets[1]) ?? '',
-    mediaPath: reader.readStringOrNull(offsets[2]),
+    mediaPaths: reader.readStringList(offsets[2]),
     note: reader.readStringOrNull(offsets[3]),
     recommendationText: reader.readStringOrNull(offsets[4]) ?? '',
     selectedCompliance: _AssessmentQuestionselectedComplianceValueEnumMap[
@@ -1221,7 +1227,7 @@ P _assessmentQuestionDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
@@ -1459,31 +1465,31 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathIsNull() {
+      mediaPathsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'mediaPath',
+        property: r'mediaPaths',
       ));
     });
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathIsNotNull() {
+      mediaPathsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'mediaPath',
+        property: r'mediaPaths',
       ));
     });
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathEqualTo(
-    String? value, {
+      mediaPathsElementEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1491,15 +1497,15 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathGreaterThan(
-    String? value, {
+      mediaPathsElementGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1507,15 +1513,15 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathLessThan(
-    String? value, {
+      mediaPathsElementLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1523,16 +1529,16 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathBetween(
-    String? lower,
-    String? upper, {
+      mediaPathsElementBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1543,13 +1549,13 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathStartsWith(
+      mediaPathsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1557,13 +1563,13 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathEndsWith(
+      mediaPathsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1571,10 +1577,10 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathContains(String value, {bool caseSensitive = true}) {
+      mediaPathsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -1582,10 +1588,10 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathMatches(String pattern, {bool caseSensitive = true}) {
+      mediaPathsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -1593,22 +1599,111 @@ extension AssessmentQuestionQueryFilter
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathIsEmpty() {
+      mediaPathsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: '',
       ));
     });
   }
 
   QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
-      mediaPathIsNotEmpty() {
+      mediaPathsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'mediaPath',
+        property: r'mediaPaths',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssessmentQuestion, AssessmentQuestion, QAfterFilterCondition>
+      mediaPathsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'mediaPaths',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 

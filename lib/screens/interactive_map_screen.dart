@@ -12,12 +12,15 @@ class InteractiveMapScreen extends StatefulWidget {
   final FacilityType facilityType;
   final int?
       assessmentId; // <-- Se nullo = nuova ispezione. Se ha un ID = carica l'esistente.
+  final FacilityLayout? preFilledData; // <-- NUOVO: Accetta i dati dal Form!
 
-  const InteractiveMapScreen(
-      {super.key,
-      required this.emergencyType,
-      required this.facilityType,
-      this.assessmentId});
+  const InteractiveMapScreen({
+    super.key,
+    required this.emergencyType,
+    required this.facilityType,
+    this.assessmentId,
+    this.preFilledData, // <-- Aggiunto al costruttore!
+  });
 
   @override
   State<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
@@ -43,30 +46,49 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     )..repeat(reverse: true);
   }
 
-  // --- LOGICA DATABASE CORRETTA (CON FIX LISTA BLOCCATA) ---
+  // --- NUOVA FUNZIONE DI CONTROLLO ANTI-FANTASMA ---
+  // Verifica se esiste almeno una risposta REALE (3, 2 o 1 punto)
+  bool _hasRealAnswers() {
+    for (var zone in layoutData.zones) {
+      for (var question in zone.checklist) {
+        if (question.selectedCompliance == ComplianceLevel.meetsTarget ||
+            question.selectedCompliance == ComplianceLevel.partiallyMeets ||
+            question.selectedCompliance == ComplianceLevel.doesNotMeet) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // --- LOGICA DATABASE CORRETTA (CON RAM E FIX LISTA) ---
   Future<void> _initDatabase() async {
     try {
       if (widget.assessmentId != null) {
-        // 1. CARICA ISPEZIONE ESISTENTE
+        // 1. CARICA ISPEZIONE ESISTENTE (Dal Database)
         final existing = await DatabaseService.instance
             .getAssessmentById(widget.assessmentId!);
         if (existing != null) {
           layoutData = existing;
 
-          // --- FIX BUG CLICK E MEMORIA ---
           // Se la vecchia ispezione non ha la valutazione generale, la aggiungiamo!
           bool hasGeneralZone = layoutData.zones
               .any((z) => z.id == 'general_facility_assessment');
           if (!hasGeneralZone) {
-            // SBLOCCHIAMO LA LISTA PRIMA DI AGGIUNGERE LA BOLLA FANTASMA
             layoutData.zones = List<SpatialZone>.from(layoutData.zones);
             layoutData.zones.add(getGeneralFacilityZone());
           }
         } else {
           await _createNewAssessment();
         }
+      } else if (widget.preFilledData != null) {
+        // 2. CREA NUOVA ISPEZIONE USANDO I DATI DEL FORM (Dalla RAM)
+        layoutData = widget.preFilledData!;
+        // Sblocco lista e aggiunta bolla fantasma
+        layoutData.zones = List<SpatialZone>.from(layoutData.zones);
+        layoutData.zones.add(getGeneralFacilityZone());
       } else {
-        // 2. CREA NUOVA ISPEZIONE IN MEMORIA (Senza salvare)
+        // 3. FALLBACK DI SICUREZZA
         await _createNewAssessment();
       }
     } catch (e) {
@@ -141,8 +163,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         actions: [
           // --- IL NUOVO BOTTONE PRO (COMPATTO E MODERNO) ---
           Container(
-            margin: const EdgeInsets.only(
-                right: 4), // Margine ridotto per recuperare spazio
+            margin: const EdgeInsets.only(right: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF005DA8).withOpacity(0.1),
               shape: BoxShape.circle,
@@ -150,8 +171,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             child: IconButton(
               tooltip: 'General Facility Assessment',
               icon: const Icon(Icons.domain_verification,
-                  color: Color(0xFF005DA8),
-                  size: 24), // Icona leggermente più compatta
+                  color: Color(0xFF005DA8), size: 24),
               onPressed: () async {
                 final generalZone = layoutData.zones
                     .firstWhere((z) => z.id == 'general_facility_assessment');
@@ -163,18 +183,8 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                           AssessmentScreen(zone: generalZone)),
                 );
 
-                bool hasAnsweredAtLeastOne = false;
-                for (var z in layoutData.zones) {
-                  for (var q in z.checklist) {
-                    if (q.selectedCompliance != ComplianceLevel.pending) {
-                      hasAnsweredAtLeastOne = true;
-                      break;
-                    }
-                  }
-                  if (hasAnsweredAtLeastOne) break;
-                }
-
-                if (hasAnsweredAtLeastOne) {
+                // --- SALVATAGGIO BLINDATO ---
+                if (_hasRealAnswers()) {
                   final savedId =
                       await DatabaseService.instance.saveAssessment(layoutData);
                   layoutData.id = savedId;
@@ -186,11 +196,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
 
           // --- LOGO WHO ---
           Padding(
-            padding: const EdgeInsets.only(
-                right: 12.0), // Padding ridotto per dare respiro al titolo
+            padding: const EdgeInsets.only(right: 12.0),
             child: Image.asset(
               'assets/images/who_logo_info.png',
-              height: 45, // Leggermente scalato
+              height: 45,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.public, color: Color(0xFF005DA8)),
@@ -244,7 +253,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                       // --- INIZIO TRUCCO COORDINATE PRO ---
                       GestureDetector(
                         onTapDown: (TapDownDetails details) {
-                          // Questo stamperà le coordinate esatte nella tua console!
                           final int x = details.localPosition.dx.toInt();
                           final int y = details.localPosition.dy.toInt();
                           print("📍 PIXEL ESATTI -> top (Y): $y, left (X): $x");
@@ -265,8 +273,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                       // Filtriamo la zona "fantasma" per non disegnarla!
                       ...layoutData.zones
                           .where((zone) =>
-                              zone.id !=
-                              'general_facility_assessment') // <-- IL FILTRO MAGICO
+                              zone.id != 'general_facility_assessment')
                           .map((zone) => _buildTappableZone(zone)),
                     ],
                   ),
@@ -302,20 +309,8 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                       builder: (context) => AssessmentScreen(zone: zone)),
                 );
 
-                // Verifica se l'utente ha risposto ad almeno UNA domanda
-                bool hasAnsweredAtLeastOne = false;
-                for (var z in layoutData.zones) {
-                  for (var q in z.checklist) {
-                    if (q.selectedCompliance != ComplianceLevel.pending) {
-                      hasAnsweredAtLeastOne = true;
-                      break;
-                    }
-                  }
-                  if (hasAnsweredAtLeastOne) break;
-                }
-
-                // Salva nel database SOLO se l'utente ha iniziato l'ispezione
-                if (hasAnsweredAtLeastOne) {
+                // --- SALVATAGGIO BLINDATO ---
+                if (_hasRealAnswers()) {
                   final savedId =
                       await DatabaseService.instance.saveAssessment(layoutData);
                   layoutData.id = savedId;

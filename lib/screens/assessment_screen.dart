@@ -17,20 +17,16 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
 
-  // Variabili per il Carosello (Solo per il General Assessment)
   TabController? _tabController;
   List<String> _sectionNames = [];
   Map<String, List<AssessmentQuestion>> _groupedQuestions = {};
 
-  // Questo controlla se stiamo guardando la "bolla fantasma" o una bolla normale
   bool get isGeneralAssessment =>
       widget.zone.id == 'general_facility_assessment';
 
   @override
   void initState() {
     super.initState();
-
-    // Selezioniamo l'interfaccia a Tabs SOLO se è il General Assessment
     if (isGeneralAssessment) {
       _groupQuestionsForGeneral();
       _tabController = TabController(length: _sectionNames.length, vsync: this);
@@ -43,7 +39,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     super.dispose();
   }
 
-  // --- MOTORE DI RAGGRUPPAMENTO (Solo per General Assessment) ---
   void _groupQuestionsForGeneral() {
     _groupedQuestions = {
       'Accesses & Flows': [],
@@ -67,7 +62,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     _sectionNames = _groupedQuestions.keys.toList();
   }
 
-  // Aggiorna lo stato della risposta
   void _updateAnswer(AssessmentQuestion question, ComplianceLevel level) {
     setState(() {
       if (question.selectedCompliance == level) {
@@ -78,7 +72,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     });
   }
 
-  // --- LOGICA AGGIUNTA NOTA ---
   Future<void> _addNoteDialog(AssessmentQuestion question) async {
     TextEditingController noteController =
         TextEditingController(text: question.note);
@@ -121,23 +114,102 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     }
   }
 
-  // --- LOGICA FOTOCAMERA ---
-  Future<void> _takePhoto(AssessmentQuestion question) async {
+  void _showPhotoMenu(BuildContext context, AssessmentQuestion question) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF005DA8)),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(question, ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.photo_library, color: Color(0xFF005DA8)),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(question, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(
+      AssessmentQuestion question, ImageSource source) async {
     try {
       final XFile? photo =
-          await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+          await _picker.pickImage(source: source, imageQuality: 80);
       if (photo != null) {
         setState(() {
-          question.mediaPath = photo.path;
+          question.mediaPaths ??= [];
+          question.mediaPaths!.add(photo.path);
         });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text("Error taking photo: $e"),
+            content: Text("Error picking image: $e"),
             backgroundColor: Colors.red),
       );
     }
+  }
+
+  // --- NUOVA LOGICA: VISUALIZZATORE A SCHERMO INTERO CON ZOOM ---
+  void _showFullScreenImage(BuildContext context, String path) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(
+              10), // Leggero margine dai bordi del telefono
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // InteractiveViewer permette il "Pinch to Zoom" (zoom con le due dita)
+              InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: kIsWeb
+                    ? Image.network(path, fit: BoxFit.contain)
+                    : Image.file(File(path), fit: BoxFit.contain),
+              ),
+              // Bottone di chiusura in alto a destra
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -151,7 +223,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           overflow: TextOverflow.ellipsis,
         ),
-        // Mostra il menu a scorrimento SOLO se è l'ispezione generale
         bottom: isGeneralAssessment && _tabController != null
             ? TabBar(
                 controller: _tabController,
@@ -168,11 +239,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       ),
       body: Column(
         children: [
-          // ==========================================
-          // HEADER DINAMICO (Cambia in base alla modalità)
-          // ==========================================
           if (isGeneralAssessment) ...[
-            // HEADER PRO (Per il General Assessment)
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -214,7 +281,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             ),
             Divider(height: 1, color: Colors.grey.shade200),
           ] else ...[
-            // HEADER CLASSICO (Per le bolle normali della mappa)
             Container(
               padding: const EdgeInsets.all(16),
               color: Colors.white,
@@ -252,14 +318,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               ),
             ),
           ],
-
-          // ==========================================
-          // CORPO DELLA PAGINA (Tabs o Singola Lista)
-          // ==========================================
           Expanded(
             child: isGeneralAssessment && _tabController != null
                 ? TabBarView(
-                    // VISTA A CAROSELLO (Per il General Assessment)
                     controller: _tabController,
                     children: _sectionNames.map((section) {
                       final questionsInSection = _groupedQuestions[section]!;
@@ -273,7 +334,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     }).toList(),
                   )
                 : ListView.builder(
-                    // VISTA STANDARD (Per le bolle normali)
                     padding: const EdgeInsets.all(12),
                     itemCount: widget.zone.checklist.length,
                     itemBuilder: (context, index) {
@@ -314,7 +374,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   fontSize: 15, fontWeight: FontWeight.w600, height: 1.4),
             ),
             const SizedBox(height: 16),
-
             Row(
               children: [
                 _buildComplianceButton(
@@ -342,7 +401,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 ),
               ],
             ),
-
             if (showRecommendation) ...[
               const SizedBox(height: 16),
               Container(
@@ -394,8 +452,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 ),
               ),
             ],
-
-            // NOTA SALVATA
             if (question.note != null && question.note!.isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(
@@ -424,53 +480,74 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 ),
               ),
             ],
-
-            // FOTO SALVATA
-            if (question.mediaPath != null) ...[
+            if (question.mediaPaths != null &&
+                question.mediaPaths!.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: kIsWeb
-                        ? Image.network(question.mediaPath!,
-                            height: 120,
-                            width: double.infinity,
-                            fit: BoxFit.cover)
-                        : Image.file(File(question.mediaPath!),
-                            height: 120,
-                            width: double.infinity,
-                            fit: BoxFit.cover),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () => setState(() => question.mediaPath = null),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: const Icon(Icons.delete,
-                            color: Colors.white, size: 18),
+              SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: question.mediaPaths!.length,
+                  itemBuilder: (context, imgIndex) {
+                    final path = question.mediaPaths![imgIndex];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Stack(
+                        children: [
+                          // --- AGGIUNTO IL GESTURE DETECTOR SULLA MINIATURA ---
+                          GestureDetector(
+                            onTap: () => _showFullScreenImage(context, path),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: kIsWeb
+                                  ? Image.network(path,
+                                      height: 100,
+                                      width: 100,
+                                      fit: BoxFit.cover)
+                                  : Image.file(File(path),
+                                      height: 100,
+                                      width: 100,
+                                      fit: BoxFit.cover),
+                            ),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  question.mediaPaths!.removeAt(imgIndex);
+                                  if (question.mediaPaths!.isEmpty) {
+                                    question.mediaPaths = null;
+                                  }
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.close,
+                                    color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             ],
-
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade200),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
-                  onPressed: () => _takePhoto(question),
-                  icon: const Icon(Icons.camera_alt_outlined, size: 20),
-                  label: Text(question.mediaPath == null
-                      ? "Add Photo"
-                      : "Retake Photo"),
+                  onPressed: () => _showPhotoMenu(context, question),
+                  icon: const Icon(Icons.add_a_photo_outlined, size: 20),
+                  label: const Text("Add Photo"),
                   style: TextButton.styleFrom(
                       foregroundColor: Colors.grey.shade700),
                 ),
