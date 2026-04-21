@@ -7,17 +7,23 @@ The WHO Health Facilities Assessment Tool is an enterprise-grade, **offline-firs
 * **Framework:** Flutter / Dart
 * **UI/UX:** Material 3 Design Guidelines, custom enterprise UI components.
 * **Database:** **Isar (NoSQL Object Database)**. Fully implemented for robust offline-first capabilities, complex nested data handling (Facility -> Zones -> Questions), and zero-latency UI performance.
-* **State Management:** StatefulWidgets (migrating to robust state management for database synchronization).
-* **Export Engine:** Native PDF generation fueled by Isar's object-oriented structure.
+* **State Management:** **Riverpod (v2)**. Fully integrated for predictable, robust state management and seamless UI updates.
+* **Hardware Sensors:** Camera integration via `image_picker` for capturing field evidence during assessments.
+* **Export Engine:** `pdf` and `printing` modules integrated, paving the way for native PDF report generation fueled by Isar's object-oriented structure.
 
-## 🚀 Key Features
-* [x] **Secure SSO Interface:** Pre-provisioned login architecture for WHO authorized personnel.
+## 🚀 Key Features & Implementation Status
+* [x] **Secure SSO Interface & Registration:** Pre-provisioned login architecture and dynamic registration form for WHO authorized personnel and external staff.
 * [x] **Emergency Context Selection:** Modular pathways for specific outbreaks (Mpox active; Ebola/SARI upcoming).
-* [x] **Spatial Assessment Integration:** Interactive blueprints for various facility typologies (Screening, Existing Wards, Stand-Alone Centres).
+* [x] **Mpox Assessment Modules:** Fully implemented blueprints and checklists for:
+  * Existing Facility with Dedicated Ward (Fig. 4)
+  * Stand-Alone Treatment Centre (Fig. 5)
+  * Congregate Settings / Camps (Fig. 6)
+* [x] **Pre-Assessment Wizard:** Form for facility metadata and services based on WHO standards.
 * [x] **Glove-Friendly Interactive Map:** Dynamic layout evaluation using scalable, gesture-enabled maps with expanded, opaque hit-test areas (80x80px) designed for operators wearing heavy PPE.
 * [x] **Offline Data Entry & Database:** Real-time persistence of zone evaluations (Green/Yellow/Red indicators) via Isar NoSQL, surviving app restarts and crashes.
-* [ ] **PDF Report Generation:** Automated, offline generation of printable structural reports and mitigation plans directly from the Isar local storage.
-* [ ] **Cloud Synchronization:** Delayed batch-sync with WHO central servers when connectivity is restored.
+* [x] **Photo Evidence Collection:** Ability to attach photos directly to assessment criteria.
+* [x] **Offline Data Analytics:** Advanced local dashboard (`analytics_screen`) calculating global readiness scores, compliance breakdown, critical failures, and geographical rankings.
+* [ ] **PDF Report Generation:** Automated, offline generation of printable structural reports and mitigation plans directly from the Isar local storage (Dependencies installed, logic in progress).
 
 ## 📂 Project Architecture
 
@@ -27,12 +33,16 @@ The application is built using a modern, scalable, and modular **Offline-First**
 lib/
 ├── data/                           # Data Layer & Factory
 │   ├── facility_data_factory.dart  # Centralized factory routing data based on Disease & Facility Type
+│   ├── general_facility_data.dart  # Shared questions/data across facilities
 │   └── mpox/                       # Disease-specific data modules (Mpox)
-│       └── mpox_existing_ward_data.dart # Blueprint & Checklist for Mpox Fig. 4 Ward
+│       ├── mpox_existing_ward_data.dart      # Blueprint & Checklist for Mpox Fig. 4 Ward
+│       ├── mpox_treatment_center_data.dart   # Blueprint & Checklist for Stand-Alone Centre
+│       └── mpox_congregate_setting_data.dart # Blueprint & Checklist for Congregate Settings
 ├── models/                         # Data Models & Schemas
-│   ├── assessment_models.dart      # Core classes (AssessmentQuestion, SpatialZone, FacilityLayout, GeneralFacilityInfo)
+│   ├── assessment_models.dart      # Core classes (AssessmentQuestion, SpatialZone, FacilityLayout)
 │   └── assessment_models.g.dart    # Auto-generated Isar Database bindings
 ├── screens/                        # UI Layer
+│   ├── analytics_screen.dart       # Dashboard with KPIs, charts, and Geo-readiness rankings
 │   ├── assessment_screen.dart      # Interactive checklist for health facility zones
 │   ├── assessments_list_screen.dart# Dashboard displaying all saved local assessments
 │   ├── interactive_map_screen.dart # Spatial assessment map with dynamic tappable pins
@@ -42,23 +52,24 @@ lib/
 │   └── settings_screen.dart        # Application settings and preferences
 ├── services/                       # Core Services
 │   └── database_service.dart       # Local NoSQL Database Engine (Isar CRUD operations)
-└── main.dart                       # App entry point, DB initialization, and Bottom Navigation
+└── main.dart                       # App entry point, Riverpod Scope, DB init, and Bottom NavBar
 ```
 
 ### 🧠 Key Architectural Choices
-- Offline-First (Isar Database): All assessments are saved locally on the device using Isar, allowing operators to perform assessments in deep-field areas without internet connectivity.
-- Data Factory Pattern: Hardcoded data is modularized. The FacilityDataFactory dynamically loads the correct spatial layout and checklist based on the user's selection (e.g., Mpox vs. Ebola, Tents vs. Hospitals).
-- State Management: Ready for Riverpod integration (ProviderScope initialized in main.dart).
+- **Offline-First (Isar Database):** All assessments are saved locally on the device using Isar, allowing operators to perform assessments in deep-field areas without internet connectivity.
+- **ProviderScope / Riverpod:** State management handles data sharing across the application with zero boilerplate.
+- **Data Factory Pattern:** Hardcoded data is modularized. The `FacilityDataFactory` dynamically loads the correct spatial layout and checklist based on the user's selection (e.g., Mpox vs. Ebola, Tents vs. Hospitals).
 
 ### 🗄 Data Flow (Offline-First Strategy)
-1) Input: Field inspectors evaluate zones using the interactive map. The UI provides large, invisible touch-targets for ease of use in protective gear.
-2) Local Persistence: Data is immediately serialized and stored in the Isar Database.
-3) Output (Reporting): The stored FacilityLayout object (containing all nested zones, checklists, and images) is injected directly into a PDF generator to create official reports locally.
+1) **Input:** Field inspectors evaluate zones using the interactive map. The UI provides large, invisible touch-targets for ease of use in protective gear. Images can be added using the device camera.
+2) **Local Persistence:** Data is immediately serialized and stored in the Isar Database.
+3) **Analytics:** A dedicated local dashboard aggregates Isar offline data into metrics and geographical rankings.
+4) **Output (Reporting):** The stored `FacilityLayout` object (containing all nested zones, checklists, and images) will be injected directly into a PDF generator to create official reports locally.
 
 ## 🛠 Getting Started (How to Run)
 
 ### Prerequisites
-* Flutter SDK (>= 3.0.0)
+* Flutter SDK (>= 3.1.0)
 * Dart SDK
 
 ### Installation
@@ -68,19 +79,19 @@ lib/
    ```
 
 2. Install dependencies:
-    ```bash
-    flutter pub get
-    ```
+   ```bash
+   flutter pub get
+   ```
 
-3. Generate Isar Database Files: (Crucial step: The app uses Isar, which requires generated code for the models)
-    ```bash
-    flutter pub run build_runner build --delete-conflicting-outputs
-     ```
+3. Generate Isar Database Files & Riverpod Code: (Crucial step: The app uses Isar, which requires generated code for the models)
+   ```bash
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
 
 4. Run the app:
-     ```bash
-     flutter run
-      ```
+   ```bash
+   flutter run
+   ```
 
 ## ⚠️ Known Issues & Technical Workarounds
 
@@ -92,7 +103,7 @@ lib/
 dependency_overrides:
   isar_flutter_libs:
     git:
-      url: [https://github.com/MrLittleWhite/isar_flutter_libs.git](https://github.com/MrLittleWhite/isar_flutter_libs.git)
+      url: https://github.com/MrLittleWhite/isar_flutter_libs.git
 ```
 Note: This override can be safely removed once the official Isar package releases a patch for AGP 8.0+ compliance.
 
