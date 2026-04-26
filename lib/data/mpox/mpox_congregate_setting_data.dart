@@ -16,7 +16,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z1_screening_reception',
           name: 'Screening Reception',
-          coordinates: const MapCoordinates(top: 463, left: 561),
+          coordinates: const MapCoordinates(top: 430, left: 588),
           touchArea:
               const MapCoordinates(top: 426, left: 524, width: 81, height: 81),
           checklist: _getScreeningChecklist(),
@@ -28,7 +28,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z2_screening_settlement',
           name: 'Screening',
-          coordinates: const MapCoordinates(top: 470, left: 351),
+          coordinates: const MapCoordinates(top: 436, left: 376),
           touchArea:
               const MapCoordinates(top: 430, left: 311, width: 81, height: 81),
           checklist: _getScreeningChecklist(),
@@ -40,7 +40,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z3_waiting',
           name: 'Waiting Room',
-          coordinates: const MapCoordinates(top: 470, left: 265),
+          coordinates: const MapCoordinates(top: 431, left: 287),
           touchArea:
               const MapCoordinates(top: 430, left: 225, width: 81, height: 81),
           checklist: [
@@ -93,7 +93,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4_consulting',
           name: 'Consulting Room',
-          coordinates: const MapCoordinates(top: 486, left: 129),
+          coordinates: const MapCoordinates(top: 444, left: 102),
           touchArea:
               const MapCoordinates(top: 446, left: 89, width: 81, height: 81),
           checklist: [
@@ -138,7 +138,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4a_consulting_donning',
           name: 'Consulting Donning',
-          coordinates: const MapCoordinates(top: 490, left: 190),
+          coordinates: const MapCoordinates(top: 468, left: 201),
           touchArea:
               const MapCoordinates(top: 472, left: 172, width: 37, height: 37),
           checklist: _getConsultingPPEChecklist(),
@@ -150,7 +150,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4b_consulting_doffing',
           name: 'Consulting Doffing',
-          coordinates: const MapCoordinates(top: 526, left: 175),
+          coordinates: const MapCoordinates(top: 528, left: 189),
           touchArea:
               const MapCoordinates(top: 508, left: 157, width: 37, height: 37),
           checklist: _getConsultingPPEChecklist(),
@@ -162,7 +162,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5_temp_isolation',
           name: 'Temporary Isolation',
-          coordinates: const MapCoordinates(top: 594, left: 127),
+          coordinates: const MapCoordinates(top: 552, left: 98),
           touchArea:
               const MapCoordinates(top: 554, left: 87, width: 81, height: 81),
           checklist: [
@@ -215,7 +215,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5a_temp_iso_donning',
           name: 'Temp Iso Donning',
-          coordinates: const MapCoordinates(top: 572, left: 186),
+          coordinates: const MapCoordinates(top: 565, left: 203),
           touchArea:
               const MapCoordinates(top: 554, left: 168, width: 37, height: 37),
           checklist: _getTempIsolationPPEChecklist(),
@@ -227,7 +227,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5b_temp_iso_doffing',
           name: 'Temp Iso Doffing',
-          coordinates: const MapCoordinates(top: 610, left: 186),
+          coordinates: const MapCoordinates(top: 618, left: 171),
           touchArea:
               const MapCoordinates(top: 592, left: 168, width: 37, height: 37),
           checklist: _getTempIsolationPPEChecklist(),
@@ -239,7 +239,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6_treatment_area',
           name: 'Treatment Area',
-          coordinates: const MapCoordinates(top: 689, left: 181),
+          coordinates: const MapCoordinates(top: 658, left: 139),
           touchArea:
               const MapCoordinates(top: 649, left: 141, width: 81, height: 81),
           checklist: [
@@ -316,7 +316,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6a_treatment_donning',
           name: 'Treatment Donning',
-          coordinates: const MapCoordinates(top: 641, left: 223),
+          coordinates: const MapCoordinates(top: 620, left: 235),
           touchArea:
               const MapCoordinates(top: 623, left: 205, width: 37, height: 37),
           checklist: _getTreatmentPPEChecklist(),
@@ -328,7 +328,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6b_treatment_doffing',
           name: 'Treatment Doffing',
-          coordinates: const MapCoordinates(top: 673, left: 240),
+          coordinates: const MapCoordinates(top: 678, left: 240),
           touchArea:
               const MapCoordinates(top: 655, left: 222, width: 37, height: 37),
           checklist: _getTreatmentPPEChecklist(),
@@ -340,18 +340,10 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z7_staff_area',
           name: 'Staff Area',
-          coordinates: const MapCoordinates(top: 566, left: 466),
+          coordinates: const MapCoordinates(top: 528, left: 494),
           touchArea:
               const MapCoordinates(top: 526, left: 426, width: 81, height: 81),
           checklist: [
-            AssessmentQuestion(
-                id: 'cs_2_1_2',
-                category: AssessmentCategory.spatialLayout,
-                text:
-                    'Are the areas clearly divided and identified between an area for personnel in PPE/patients and an area exclusively for staff?',
-                recommendationText:
-                    'Install physical barriers (e.g., fencing) to strictly separate the clean staff area from all patient zones.',
-                selectedCompliance: ComplianceLevel.pending),
             AssessmentQuestion(
                 id: 'cs_2_1_5',
                 category: AssessmentCategory.spatialLayout,
@@ -361,20 +353,34 @@ class MpoxCongregateSettingData {
                     'Secure the entire camp facility with a single continuous fence and guard the entry points.',
                 selectedCompliance: ComplianceLevel.pending),
             AssessmentQuestion(
-                id: 'cs_2_2_1',
-                category: AssessmentCategory.logistics,
-                text:
-                    'Does the electrical system comply with national regulations and is it equipped with a functioning emergency power system?',
-                recommendationText:
-                    'Provide a backup generator or solar panels to ensure continuous power supply to the camp facility.',
-                selectedCompliance: ComplianceLevel.pending),
-            AssessmentQuestion(
                 id: 'cs_2_2_2',
                 category: AssessmentCategory.logistics,
                 text:
                     'Does the fire safety system comply with national regulations and is an evacuation plan available and known to staff and patients?',
                 recommendationText:
                     'Distribute fire extinguishers and establish a clear evacuation assembly point for the camp.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
+        // ==========================================
+        // 7B. STAFF NURSING STATION
+        // ==========================================
+        SpatialZone(
+          id: 'cs_z7b_nursing_station',
+          name: 'Staff Nursing Station',
+          coordinates: const MapCoordinates(
+              top: 530, left: 318), // Aggiusta questi pixel sulla mappa
+          touchArea:
+              const MapCoordinates(top: 525, left: 258, width: 81, height: 81),
+          checklist: [
+            AssessmentQuestion(
+                id: 'cs_2_2_1',
+                category: AssessmentCategory.logistics,
+                text:
+                    'Does the electrical system comply with national regulations and is it equipped with a functioning emergency power system?',
+                recommendationText:
+                    'Provide a backup generator or solar panels to ensure continuous power supply to the camp facility.',
                 selectedCompliance: ComplianceLevel.pending),
             AssessmentQuestion(
                 id: 'cs_2_2_4',
@@ -388,12 +394,34 @@ class MpoxCongregateSettingData {
         ),
 
         // ==========================================
+        // 7C. STAFF CHANGING ROOM
+        // ==========================================
+        SpatialZone(
+          id: 'cs_z7c_staff_changing',
+          name: 'Staff Changing Room',
+          coordinates: const MapCoordinates(
+              top: 632, left: 539), // Aggiusta questi pixel sulla mappa
+          touchArea:
+              const MapCoordinates(top: 630, left: 476, width: 81, height: 81),
+          checklist: [
+            AssessmentQuestion(
+                id: 'cs_2_1_2',
+                category: AssessmentCategory.spatialLayout,
+                text:
+                    'Are the areas clearly divided and identified between an area for personnel in PPE/patients and an area exclusively for staff?',
+                recommendationText:
+                    'Install physical barriers (e.g., fencing) to strictly separate the clean staff area from all patient zones.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
+        // ==========================================
         // 8. STORAGE
         // ==========================================
         SpatialZone(
           id: 'cs_z8_storage',
           name: 'Storage',
-          coordinates: const MapCoordinates(top: 671, left: 426),
+          coordinates: const MapCoordinates(top: 632, left: 452),
           touchArea:
               const MapCoordinates(top: 631, left: 386, width: 81, height: 81),
           checklist: [
@@ -430,7 +458,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z9_waste',
           name: 'Waste Area',
-          coordinates: const MapCoordinates(top: 691, left: 327),
+          coordinates: const MapCoordinates(top: 651, left: 353),
           touchArea:
               const MapCoordinates(top: 651, left: 287, width: 81, height: 81),
           checklist: [
