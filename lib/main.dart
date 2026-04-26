@@ -443,7 +443,7 @@ class FacilitySelectionScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
-                    _buildFacilityItem(context: context, title: "Screening, Triage & Temporary Isolation", subtitle: "Fig. 2 - Tents/Temporary structures for early detection.", type: FacilityType.screeningAndIsolation, isImplemented: false),
+                    _buildFacilityItem(context: context, title: "Screening, Triage & Temporary Isolation", subtitle: "Fig. 2 - Tents/Temporary structures for early detection.", type: FacilityType.screeningAndIsolation, isImplemented: true),
                     _buildFacilityItem(context: context, title: "Existing Facility with Dedicated Ward", subtitle: "Fig. 4 - Repurposed wing within a hospital.", type: FacilityType.existingFacilityWithWard, isImplemented: true),
                     _buildFacilityItem(context: context, title: "Stand-Alone Treatment Centre", subtitle: "Fig. 5 - Large scale temporary treatment center.", type: FacilityType.standAloneCenter, isImplemented: false),
                     _buildFacilityItem(context: context, title: "Congregate Settings (Camps)", subtitle: "Fig. 6 - For refugee camps and crowded settings.", type: FacilityType.congregateSetting, isImplemented: false),

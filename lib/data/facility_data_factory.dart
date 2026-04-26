@@ -1,6 +1,7 @@
 // lib/data/facility_data_factory.dart
 import '../models/assessment_models.dart';
 import 'mpox/mpox_existing_ward_data.dart';
+import 'mpox/mpox_screening_triage_data.dart';
 
 class FacilityDataFactory {
   // Genera il layout in base alla malattia e alla struttura scelta
@@ -13,6 +14,8 @@ class FacilityDataFactory {
           return MpoxExistingWardData.getLayout(); // L'unica attualmente pronta!
           
         case FacilityType.screeningAndIsolation:
+          return MpoxScreeningTriageData.getLayout(); // <-- Nuova mappa collegata!
+
         case FacilityType.standAloneCenter:
         case FacilityType.congregateSetting:
           // Le faremo in futuro, per ora restituiamo la base come sicurezza

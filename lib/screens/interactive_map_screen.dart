@@ -155,18 +155,25 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> with Single
                 child: SizedBox(
                   width: 800, 
                   height: 1150, 
-                  child: Stack(
-                    children: [
-                      Image.asset(
-                        layoutData.mapImagePath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade200,
-                          child: const Center(child: Text("Waiting for map asset...")),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: (details) {
+                      // Stampa nel terminale le coordinate esatte al tocco!
+                      debugPrint('📍 MAPPA PREMUTA -> top (Y): ${details.localPosition.dy.toInt()}, left (X): ${details.localPosition.dx.toInt()}');
+                    },
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          layoutData.mapImagePath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey.shade200,
+                            child: const Center(child: Text("Waiting for map asset...")),
+                          ),
                         ),
-                      ),
-                      ...layoutData.zones.map((zone) => _buildTappableZone(zone)),
-                    ],
+                        ...layoutData.zones.map((zone) => _buildTappableZone(zone)),
+                      ],
+                    ),
                   ),
                 ),
               ),
