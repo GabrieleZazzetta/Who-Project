@@ -566,7 +566,7 @@ class FacilitySelectionScreen extends StatelessWidget {
                         subtitle:
                             "Fig. 2 - Tents/Temporary structures for early detection.",
                         type: FacilityType.screeningAndIsolation,
-                        isImplemented: false),
+                        isImplemented: true),
                     _buildFacilityItem(
                         context: context,
                         title: "Existing Facility with Dedicated Ward",

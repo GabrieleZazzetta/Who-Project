@@ -1,8 +1,9 @@
 // lib/data/facility_data_factory.dart
 import '../models/assessment_models.dart';
 import 'mpox/mpox_existing_ward_data.dart';
-import 'mpox/mpox_treatment_center_data.dart'; // <-- NUOVO IMPORT
-import 'mpox/mpox_congregate_setting_data.dart'; // <-- NUOVO IMPORT
+import 'mpox/mpox_treatment_center_data.dart';
+import 'mpox/mpox_congregate_setting_data.dart';
+import 'mpox/mpox_screening_triage_data.dart';
 
 class FacilityDataFactory {
   // Genera il layout in base alla malattia e alla struttura scelta
@@ -15,18 +16,17 @@ class FacilityDataFactory {
           return MpoxExistingWardData.getLayout();
 
         case FacilityType.standAloneCenter:
-          return MpoxTreatmentCenterData.getLayout(); // <-- ORA E' COLLEGATO!
+          return MpoxTreatmentCenterData.getLayout();
 
         case FacilityType.congregateSetting:
-          return MpoxCongregateSettingData.getLayout(); // <-- ORA E' COLLEGATO!
+          return MpoxCongregateSettingData.getLayout();
 
         case FacilityType.screeningAndIsolation:
-          // Questa la faremo in futuro, per ora restituiamo la base come sicurezza
-          return MpoxExistingWardData.getLayout();
+          return MpoxScreeningTriageData.getLayout();
       }
     }
 
-    // Fallback di sicurezza (Ebola e SARI sono ancora bloccate nella UI)
+    // Fallback di sicurezza
     return MpoxExistingWardData.getLayout();
   }
 }
