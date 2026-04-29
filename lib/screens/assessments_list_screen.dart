@@ -4,6 +4,7 @@ import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
 import 'analytics_screen.dart'; // <-- IMPORTANTE: Aggiunto per far funzionare il bottone Analytics
+import '../services/report_export_service.dart'; // <-- Aggiunto import del servizio Word
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
 
@@ -579,6 +580,24 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                             fontWeight: FontWeight.w900,
                             fontSize: 10,
                             letterSpacing: 0.5)),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      try {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Generating Editable Report..."), duration: Duration(seconds: 1)),
+                        );
+                        // Chiama il servizio distaccato dalla UI
+                        await ReportExportService.exportAssessmentToEditableWord(context, facility);
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Failed to generate report: $e"), backgroundColor: Colors.red),
+                        );
+                      }
+                    },
+                    child: Icon(Icons.download_rounded,
+                        color: const Color(0xFF005DA8), size: 26),
                   ),
                   const SizedBox(width: 8),
                   GestureDetector(

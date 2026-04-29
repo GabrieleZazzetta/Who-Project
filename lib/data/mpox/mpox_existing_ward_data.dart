@@ -1,5 +1,4 @@
 import '../../models/assessment_models.dart';
-import 'package:flutter/material.dart';
 
 class MpoxExistingWardData {
   /// Carica la struttura "Fig 4 - Existing Facility with Dedicated FVD/Mpox Ward"

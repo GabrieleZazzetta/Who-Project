@@ -18,8 +18,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   String _selectedYear = 'All Years';
 
   // Liste uniche per i dropdown
-  List<String> _availableCountries = ['All Countries'];
-  List<String> _availableYears = ['All Years'];
+  final List<String> _availableCountries = ['All Countries'];
+  final List<String> _availableYears = ['All Years'];
 
   @override
   void initState() {
@@ -86,12 +86,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         for (var q in zone.checklist) {
           if (q.selectedCompliance != ComplianceLevel.pending) {
             totalQuestionsAnswered++;
-            if (q.selectedCompliance == ComplianceLevel.meetsTarget)
+            if (q.selectedCompliance == ComplianceLevel.meetsTarget) {
               meetsTargetCount++;
-            if (q.selectedCompliance == ComplianceLevel.partiallyMeets)
+            }
+            if (q.selectedCompliance == ComplianceLevel.partiallyMeets) {
               partialCount++;
-            if (q.selectedCompliance == ComplianceLevel.doesNotMeet)
+            }
+            if (q.selectedCompliance == ComplianceLevel.doesNotMeet) {
               doesNotMeetCount++;
+            }
             if (q.isCriticalFailure) criticalFailsCount++;
           }
         }

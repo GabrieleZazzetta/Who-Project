@@ -1,5 +1,4 @@
 import '../../models/assessment_models.dart';
-import 'package:flutter/material.dart';
 
 class MpoxScreeningTriageData {
   /// Carica la prima struttura: "Screening, Triage & Temporary Isolation"
