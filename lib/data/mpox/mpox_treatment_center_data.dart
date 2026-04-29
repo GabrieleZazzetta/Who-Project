@@ -15,7 +15,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z1_screening',
           name: 'Screening',
-          coordinates: const MapCoordinates(top: 466, left: 99),
+          coordinates: const MapCoordinates(top: 438, left: 112),
           touchArea:
               const MapCoordinates(top: 441, left: 74, width: 51, height: 51),
           checklist: [
@@ -76,7 +76,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z2_waiting',
           name: 'Waiting Area',
-          coordinates: const MapCoordinates(top: 617, left: 138),
+          coordinates: const MapCoordinates(top: 579, left: 152),
           touchArea:
               const MapCoordinates(top: 585, left: 106, width: 64, height: 64),
           checklist: [
@@ -185,7 +185,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z3_triage',
           name: 'Triage Room',
-          coordinates: const MapCoordinates(top: 617, left: 210),
+          coordinates: const MapCoordinates(top: 590, left: 233),
           touchArea:
               const MapCoordinates(top: 585, left: 178, width: 64, height: 64),
           checklist: [
@@ -225,12 +225,87 @@ class MpoxTreatmentCenterData {
         ),
 
         // ==========================================
+        // 3B. RESUSCITATION ROOM
+        // ==========================================
+        SpatialZone(
+          id: 'z3b_resuscitation',
+          name: 'Resuscitation Room',
+          coordinates: const MapCoordinates(top: 656, left: 226),
+          touchArea:
+              const MapCoordinates(top: 655, left: 179, width: 64, height: 64),
+          checklist: [
+            AssessmentQuestion(
+                id: 'tc_2_2_1',
+                category: AssessmentCategory.logistics,
+                text:
+                    'Is the electrical system compliant and equipped with a functioning emergency power supply system (critical for life-saving equipment)?',
+                recommendationText:
+                    'Ensure uninterrupted backup power specifically for the resuscitation area.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_4_3_4_resus', // Adattata da triage
+                category: AssessmentCategory.spatialLayout,
+                text:
+                    'Does the room have sufficient space and is it fully equipped with necessary clinical supplies and a trolley for immediate resuscitation?',
+                recommendationText:
+                    'Ensure ample space around the bed for multiple staff members to work during emergencies.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_2_5',
+                category: AssessmentCategory.infectionPreventionControl,
+                text:
+                    'Are the finishing materials smooth, non-porous, and easy to clean/disinfect?',
+                recommendationText:
+                    'Ensure all surfaces in the resuscitation room can withstand harsh chemical disinfection.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
+        // ==========================================
+        // 3C. DIAGNOSTIC AREA & LABORATORY
+        // ==========================================
+        SpatialZone(
+          id: 'z3c_diagnostic_lab',
+          name: 'Diagnostic & Laboratory',
+          coordinates:
+              const MapCoordinates(top: 475, left: 237), // Aggiusta pixel
+          touchArea:
+              const MapCoordinates(top: 475, left: 189, width: 64, height: 64),
+          checklist: [
+            AssessmentQuestion(
+                id: 'tc_2_1_2_lab',
+                category: AssessmentCategory.spatialLayout,
+                text:
+                    'Is the laboratory/diagnostic area clearly divided, with controlled access to prevent unauthorized entry?',
+                recommendationText:
+                    'Install secure doors and clear biohazard signage at the laboratory entrance.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_2_3_lab',
+                category: AssessmentCategory.infectionPreventionControl,
+                text:
+                    'Is adequate ventilation guaranteed (mechanical or natural) to safely handle potentially infectious samples?',
+                recommendationText:
+                    'Ensure specialized extractor fans or biosafety cabinets are functional if handling Mpox samples.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_5_lab',
+                category: AssessmentCategory.wash,
+                text:
+                    'Is a functional handwashing station available immediately inside or at the exit of the diagnostic area?',
+                recommendationText:
+                    'Install a dedicated hand sink for staff handling diagnostic samples.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
+        // ==========================================
         // 4 & 5. TRIAGE DONNING & DOFFING
         // ==========================================
         SpatialZone(
           id: 'z4_triage_donning',
           name: 'Triage Donning',
-          coordinates: const MapCoordinates(top: 569, left: 190),
+          coordinates: const MapCoordinates(top: 543, left: 198),
           touchArea:
               const MapCoordinates(top: 551, left: 172, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
@@ -238,9 +313,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z5_triage_doffing',
           name: 'Triage Doffing',
-          coordinates: const MapCoordinates(top: 568, left: 231),
+          coordinates: const MapCoordinates(top: 543, left: 241),
           touchArea:
-              const MapCoordinates(top: 550, left: 213, width: 36, height: 36),
+              const MapCoordinates(top: 552, left: 215, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
         ),
 
@@ -250,9 +325,9 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z6_staff_admin',
           name: 'Staff & Admin Area',
-          coordinates: const MapCoordinates(top: 212, left: 141),
+          coordinates: const MapCoordinates(top: 176, left: 156),
           touchArea:
-              const MapCoordinates(top: 180, left: 108, width: 66, height: 66),
+              const MapCoordinates(top: 182, left: 109, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_1_2',
@@ -319,7 +394,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z7_storage',
           name: 'Storage & Pharmacy',
-          coordinates: const MapCoordinates(top: 74, left: 140),
+          coordinates: const MapCoordinates(top: 43, left: 157),
           touchArea:
               const MapCoordinates(top: 41, left: 107, width: 66, height: 66),
           checklist: [
@@ -351,14 +426,43 @@ class MpoxTreatmentCenterData {
         ),
 
         // ==========================================
+        // 7B. PHARMACY
+        // ==========================================
+        SpatialZone(
+          id: 'z7b_pharmacy',
+          name: 'Pharmacy',
+          coordinates: const MapCoordinates(top: 112, left: 157),
+          touchArea:
+              const MapCoordinates(top: 111, left: 107, width: 66, height: 66),
+          checklist: [
+            AssessmentQuestion(
+                id: 'tc_5_6_3', // Dalla tua foto "5.7 Other services"
+                category: AssessmentCategory.logistics,
+                text:
+                    'Is there a pharmacy available, strategically located near the treatment area, and is the indoor temperature compliant with stored drug requirements?',
+                recommendationText:
+                    'Install AC and temperature monitoring logs to protect pharmaceutical stock.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_1_2_pharm',
+                category: AssessmentCategory.spatialLayout,
+                text:
+                    'Is the pharmacy secure and located in a clean zone, preventing cross-contamination from patient areas?',
+                recommendationText:
+                    'Ensure the pharmacy is only accessible via clean staff pathways.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
+        // ==========================================
         // 8. WASTE AREA
         // ==========================================
         SpatialZone(
           id: 'z8_waste',
           name: 'Waste Area',
-          coordinates: const MapCoordinates(top: 62, left: 218),
+          coordinates: const MapCoordinates(top: 24, left: 234),
           touchArea:
-              const MapCoordinates(top: 27, left: 185, width: 66, height: 66),
+              const MapCoordinates(top: 28, left: 186, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
                 id: 'tc_2_3_1',
@@ -401,7 +505,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z9_reprocessing',
           name: 'Reprocessing',
-          coordinates: const MapCoordinates(top: 204, left: 218),
+          coordinates: const MapCoordinates(top: 174, left: 236),
           touchArea:
               const MapCoordinates(top: 171, left: 185, width: 66, height: 66),
           checklist: [
@@ -454,7 +558,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z10_laundry',
           name: 'Laundry',
-          coordinates: const MapCoordinates(top: 134, left: 219),
+          coordinates: const MapCoordinates(top: 105, left: 236),
           touchArea:
               const MapCoordinates(top: 101, left: 186, width: 66, height: 66),
           checklist: [
@@ -475,7 +579,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z11_morgue',
           name: 'Morgue',
-          coordinates: const MapCoordinates(top: 744, left: 328),
+          coordinates: const MapCoordinates(top: 748, left: 334),
           touchArea:
               const MapCoordinates(top: 725, left: 309, width: 38, height: 38),
           checklist: [
@@ -490,37 +594,82 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
+        // ==========================================
+        // 12. DISCHARGE AREA
+        // ==========================================
+        SpatialZone(
+          id: 'z12_discharge',
+          name: 'Discharge Area',
+          coordinates:
+              const MapCoordinates(top: 720, left: 529), // Aggiusta pixel
+          touchArea:
+              const MapCoordinates(top: 727, left: 503, width: 38, height: 38),
+          checklist: [
+            AssessmentQuestion(
+                id: 'tc_5_4_1_discharge', // Derivata dalla 5.4.1 sulle pathways
+                category: AssessmentCategory.spatialLayout,
+                text:
+                    'Is there a dedicated and clearly marked discharge pathway for patients (tested negative or referred) that avoids crossing suspect/confirmed patient paths?',
+                recommendationText:
+                    'Create a dedicated "green" exit route for discharged patients to prevent re-exposure.',
+                selectedCompliance: ComplianceLevel.pending),
+            AssessmentQuestion(
+                id: 'tc_2_4_5_discharge',
+                category: AssessmentCategory.wash,
+                text:
+                    'Are handwashing stations and final disinfection points available before patients leave the facility?',
+                recommendationText:
+                    'Ensure a final WASH station is mandatory before exiting the compound.',
+                selectedCompliance: ComplianceLevel.pending),
+          ],
+        ),
+
         // ******************************************
         // CLUSTER 1: MPOX SUSPECT
         // ******************************************
         SpatialZone(
             id: 'c1_room',
             name: 'Suspect Room',
-            coordinates: const MapCoordinates(top: 637, left: 412),
+            coordinates: const MapCoordinates(top: 626, left: 447),
             touchArea: const MapCoordinates(
                 top: 595, left: 370, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c1_donning',
             name: 'Suspect Donning',
-            coordinates: const MapCoordinates(top: 610, left: 357),
+            coordinates: const MapCoordinates(top: 585, left: 343),
             touchArea: const MapCoordinates(
                 top: 592, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_doffing',
             name: 'Suspect Doffing',
-            coordinates: const MapCoordinates(top: 659, left: 357),
+            coordinates: const MapCoordinates(top: 663, left: 343),
             touchArea: const MapCoordinates(
                 top: 641, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_nursing',
             name: 'Suspect Nursing St.',
-            coordinates: const MapCoordinates(top: 633, left: 325),
+            coordinates: const MapCoordinates(top: 603, left: 309),
             touchArea: const MapCoordinates(
                 top: 612, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
+
+        SpatialZone(
+            id: 'c1_clean_utility',
+            name: 'Clean Utility (Suspect)',
+            coordinates: const MapCoordinates(top: 554, left: 393),
+            touchArea: const MapCoordinates(
+                top: 563, left: 366, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
+        SpatialZone(
+            id: 'c1_soiled_utility',
+            name: 'Soiled Utility (Suspect)',
+            coordinates: const MapCoordinates(top: 693, left: 393),
+            touchArea: const MapCoordinates(
+                top: 673, left: 361, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
 
         // ******************************************
         // CLUSTER 2: MPOX PROBABLE
@@ -528,31 +677,48 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c2_room',
             name: 'Probable Room',
-            coordinates: const MapCoordinates(top: 484, left: 491),
+            coordinates: const MapCoordinates(top: 478, left: 526),
             touchArea: const MapCoordinates(
                 top: 442, left: 449, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c2_donning',
             name: 'Probable Donning',
-            coordinates: const MapCoordinates(top: 460, left: 437),
+            coordinates: const MapCoordinates(top: 434, left: 422),
             touchArea: const MapCoordinates(
                 top: 442, left: 419, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_doffing',
             name: 'Probable Doffing',
-            coordinates: const MapCoordinates(top: 505, left: 436),
+            coordinates: const MapCoordinates(top: 510, left: 421),
             touchArea: const MapCoordinates(
                 top: 487, left: 418, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_nursing',
             name: 'Probable Nursing St.',
-            coordinates: const MapCoordinates(top: 480, left: 405),
+            coordinates: const MapCoordinates(top: 449, left: 389),
             touchArea: const MapCoordinates(
                 top: 459, left: 383, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
+
+        SpatialZone(
+            id: 'c2_clean_utility',
+            name: 'Clean Utility (Probable)',
+            coordinates:
+                const MapCoordinates(top: 402, left: 468), // Aggiusta pixel
+            touchArea: const MapCoordinates(
+                top: 411, left: 440, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
+        SpatialZone(
+            id: 'c2_soiled_utility',
+            name: 'Soiled Utility (Probable)',
+            coordinates:
+                const MapCoordinates(top: 538, left: 472), // Aggiusta pixel
+            touchArea: const MapCoordinates(
+                top: 520, left: 441, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
 
         // ******************************************
         // CLUSTER 3: MPOX CONFIRMED
@@ -560,31 +726,48 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c3_room',
             name: 'Confirmed Room',
-            coordinates: const MapCoordinates(top: 326, left: 414),
+            coordinates: const MapCoordinates(top: 320, left: 451),
             touchArea: const MapCoordinates(
                 top: 283, left: 372, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c3_donning',
             name: 'Confirmed Donning',
-            coordinates: const MapCoordinates(top: 301, left: 359),
+            coordinates: const MapCoordinates(top: 277, left: 347),
             touchArea: const MapCoordinates(
                 top: 283, left: 341, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_doffing',
             name: 'Confirmed Doffing',
-            coordinates: const MapCoordinates(top: 347, left: 358),
+            coordinates: const MapCoordinates(top: 356, left: 345),
             touchArea: const MapCoordinates(
                 top: 329, left: 340, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_nursing',
             name: 'Confirmed Nursing St.',
-            coordinates: const MapCoordinates(top: 323, left: 326),
+            coordinates: const MapCoordinates(top: 292, left: 312),
             touchArea: const MapCoordinates(
                 top: 301, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
+
+        SpatialZone(
+            id: 'c3_clean_utility',
+            name: 'Clean Utility (Confirmed)',
+            coordinates:
+                const MapCoordinates(top: 247, left: 393), // Aggiusta pixel
+            touchArea: const MapCoordinates(
+                top: 253, left: 362, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
+        SpatialZone(
+            id: 'c3_soiled_utility',
+            name: 'Soiled Utility (Confirmed)',
+            coordinates:
+                const MapCoordinates(top: 379, left: 395), // Aggiusta pixel
+            touchArea: const MapCoordinates(
+                top: 362, left: 363, width: 38, height: 38),
+            checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
       ],
     );
   }
@@ -715,5 +898,58 @@ class MpoxTreatmentCenterData {
               'Position the nursing station so staff can visually monitor patients without entering the red zone.',
           selectedCompliance: ComplianceLevel.pending),
     ];
+  }
+
+  static List<AssessmentQuestion> _getUtilityRoomChecklist(
+      {required bool isCleanUtility}) {
+    if (isCleanUtility) {
+      return [
+        AssessmentQuestion(
+            id: 'tc_2_1_2_clean',
+            category: AssessmentCategory.spatialLayout,
+            text:
+                'Is the Clean Utility room strictly separated from dirty areas and accessible without crossing contaminated zones?',
+            recommendationText:
+                'Ensure clean supplies are stored in a designated "Green" zone.',
+            selectedCompliance: ComplianceLevel.pending),
+        AssessmentQuestion(
+            id: 'tc_4_5_6_clean', // Dalla sezione storage sterile
+            category: AssessmentCategory.logistics,
+            text:
+                'Is the storage organized, with controlled temperature/humidity to protect clean/sterile supplies?',
+            recommendationText:
+                'Monitor temperature and ensure shelving is clean and off the floor.',
+            selectedCompliance: ComplianceLevel.pending),
+      ];
+    } else {
+      // Soiled Utility (Dirty)
+      return [
+        AssessmentQuestion(
+            id:
+                'tc_4_5_3_soiled', // Dalla sezione reprocessing (dirty receiving)
+            category: AssessmentCategory.infectionPreventionControl,
+            text:
+                'Is the Soiled Utility area clearly marked, well-ventilated, and equipped with containment measures for dirty devices/linen?',
+            recommendationText:
+                'Install strong extractors and provide sealed bins for soiled items.',
+            selectedCompliance: ComplianceLevel.pending),
+        AssessmentQuestion(
+            id: 'tc_2_3_2_soiled',
+            category: AssessmentCategory.wash,
+            text:
+                'Is the 3-bin waste segregation system functional and utilized correctly in this soiled area?',
+            recommendationText:
+                'Provide distinct, large bins for infectious waste and soiled linen.',
+            selectedCompliance: ComplianceLevel.pending),
+        AssessmentQuestion(
+            id: 'tc_2_4_5_soiled',
+            category: AssessmentCategory.wash,
+            text:
+                'Is a functional handwashing station available immediately within the soiled utility room?',
+            recommendationText:
+                'Ensure staff can wash hands immediately after handling soiled items.',
+            selectedCompliance: ComplianceLevel.pending),
+      ];
+    }
   }
 }
