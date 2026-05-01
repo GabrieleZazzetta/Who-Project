@@ -5,6 +5,7 @@ import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
 import 'analytics_screen.dart'; // <-- IMPORTANTE: Aggiunto per far funzionare il bottone Analytics
 import '../services/report_export_service.dart'; // <-- Aggiunto import del servizio Word
+import 'global_map_screen.dart'; // <-- Aggiunto import per la mappa globale
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
 
@@ -176,6 +177,24 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
             style: TextStyle(
                 color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
         actions: [
+          // --- IL NUOVO BOTTONE MAPPA GLOBALE ---
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const GlobalMapScreen()),
+                );
+              },
+              icon: const Icon(Icons.public, color: Color(0xFF005DA8)),
+              label: const Text("Map",
+                  style: TextStyle(
+                      color: Color(0xFF005DA8), fontWeight: FontWeight.bold)),
+              style: TextButton.styleFrom(backgroundColor: Colors.blue.shade50),
+            ),
+          ),
           // --- IL NUOVO BOTTONE PER LA PAGINA ANALYTICS ---
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
