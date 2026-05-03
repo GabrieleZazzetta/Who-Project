@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
-import 'analytics_screen.dart'; // <-- IMPORTANTE: Aggiunto per far funzionare il bottone Analytics
-import '../services/report_export_service.dart'; // <-- Aggiunto import del servizio Word
-import 'global_map_screen.dart'; // <-- Aggiunto import per la mappa globale
+import 'analytics_screen.dart';
+import '../services/report_export_service.dart';
+import 'global_map_screen.dart';
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
 
@@ -21,10 +21,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
   List<FacilityLayout> _allAssessments = [];
   List<FacilityLayout> _filteredAssessments = [];
 
-  // Controlli per i nuovi filtri e ricerca
   final TextEditingController _searchController = TextEditingController();
-  String _currentFilter =
-      'All'; // Filtri: All, In Progress, Completed, Critical Fails
+  String _currentFilter = 'All';
   DateTime? _filterDate;
   SortOption _currentSort = SortOption.newest;
 
@@ -41,7 +39,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     super.dispose();
   }
 
-  // Carica i dati dal Database
   Future<void> _loadAssessments() async {
     setState(() => _isLoading = true);
     final data = await DatabaseService.instance.getAllAssessments();
@@ -53,7 +50,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     _applyFilters();
   }
 
-  // --- L'ALGORITMO DI CLASSIFICAZIONE (Aggiornato) ---
   String _getAssessmentStatus(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -74,17 +70,14 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     double completionPct =
         totalQuestions == 0 ? 0 : (answeredQuestions / totalQuestions) * 100;
 
-    // Le nuove regole di classificazione
     if (completionPct < 100) return 'In Progress';
     if (hasCritical) return 'Critical Fails';
     return 'Completed';
   }
 
-  // --- MOTORE DI RICERCA E FILTRAGGIO ---
   void _applyFilters() {
     List<FacilityLayout> temp = List.from(_allAssessments);
 
-    // 1. Ricerca per Nome
     final query = _searchController.text.toLowerCase();
     if (query.isNotEmpty) {
       temp = temp
@@ -92,13 +85,11 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
           .toList();
     }
 
-    // 2. Filtro di Stato
     if (_currentFilter != 'All') {
       temp =
           temp.where((f) => _getAssessmentStatus(f) == _currentFilter).toList();
     }
 
-    // 3. Filtro per Data
     if (_filterDate != null) {
       temp = temp
           .where((f) =>
@@ -108,7 +99,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
           .toList();
     }
 
-    // 4. Ordinamento (Ranking)
     if (_currentSort == SortOption.newest) {
       temp.sort((a, b) =>
           b.dateCreated?.compareTo(a.dateCreated ?? DateTime.now()) ?? 0);
@@ -173,29 +163,13 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
         shadowColor: Colors.black.withOpacity(0.1),
+        // Il titolo ora ha molto più spazio e non verrà tagliato
         title: const Text("Saved Assessments",
             style: TextStyle(
                 color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
         actions: [
-          // --- IL NUOVO BOTTONE MAPPA GLOBALE ---
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const GlobalMapScreen()),
-                );
-              },
-              icon: const Icon(Icons.public, color: Color(0xFF005DA8)),
-              label: const Text("Map",
-                  style: TextStyle(
-                      color: Color(0xFF005DA8), fontWeight: FontWeight.bold)),
-              style: TextButton.styleFrom(backgroundColor: Colors.blue.shade50),
-            ),
-          ),
-          // --- IL NUOVO BOTTONE PER LA PAGINA ANALYTICS ---
+          // Rimosso il bottone MAP da qui
+          // Lasciato solo il bottone Analytics per un look più pulito
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: TextButton.icon(
@@ -217,40 +191,77 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
       ),
       body: Column(
         children: [
-          // 1. ZONA SEARCH BAR E GEO STATS
+          // 1. ZONA SEARCH BAR E BOTTONE MAPPA
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Barra di Ricerca
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: "Search assessment by name...",
-                    prefixIcon:
-                        const Icon(Icons.search, color: Color(0xFF005DA8)),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () {
-                              _searchController.clear();
-                              FocusScope.of(context).unfocus();
-                            },
+                Row(
+                  children: [
+                    // Barra di Ricerca che prende lo spazio rimanente
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: "Search assessment by name...",
+                          prefixIcon: const Icon(Icons.search,
+                              color: Color(0xFF005DA8)),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear,
+                                      color: Colors.grey),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    FocusScope.of(context).unfocus();
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Nuovo Bottone Mappa perfettamente integrato
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF005DA8),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF005DA8).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none),
-                  ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon:
+                            const Icon(Icons.map_outlined, color: Colors.white),
+                        tooltip: "View on Map",
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const GlobalMapScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 
-                // Grafico Geografico (ora gestisce il titolo in automatico)
+                // Grafico Geografico
                 if (_allAssessments.isNotEmpty) ...[
                   _buildGeoStats(),
                 ]
@@ -281,12 +292,9 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Riga: Filtro Data + Ordinamento
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Filtro Data
                     TextButton.icon(
                       onPressed: () async {
                         DateTime? picked = await showDatePicker(
@@ -316,10 +324,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                           _applyFilters();
                         },
                       ),
-
                     const Spacer(),
-
-                    // Menu di Ordinamento
                     DropdownButtonHideUnderline(
                       child: DropdownButton<SortOption>(
                         value: _currentSort,
@@ -392,24 +397,20 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
-  // --- DASHBOARD GEOGRAFICA ---
   Widget _buildGeoStats() {
     Map<String, List<double>> regionScores = {};
     for (var f in _allAssessments) {
-      // Estraiamo la regione, ma se è nulla o vuota la ignoriamo completamente
       String region = f.generalInfo?.region ?? '';
-      if (region.trim().isEmpty) continue; // Salta le regioni non specificate
+      if (region.trim().isEmpty) continue;
 
       if (!regionScores.containsKey(region)) regionScores[region] = [];
       regionScores[region]!.add(f.globalReadinessScore);
     }
 
-    // Se nessuna ispezione ha una regione specificata, nascondiamo tutto il blocco
     if (regionScores.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Se ci sono regioni, disegniamo il titolo e il grafico
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
@@ -489,7 +490,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
-  // --- CARD SINGOLA ISPEZIONE ---
   Widget _buildAssessmentCard(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -527,10 +527,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () async {
-          // --- FIX NAVIGATORE: Traduce la stringa del DB nel FacilityType corretto ---
-          FacilityType typeToOpen =
-              FacilityType.existingFacilityWithWard; // Fallback di default
-
+          FacilityType typeToOpen = FacilityType.existingFacilityWithWard;
           final savedTypeStr = facility.generalInfo?.assessedFacilityType;
 
           if (savedTypeStr == "Mpox stand-alone treatment centre") {
@@ -543,7 +540,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
             typeToOpen = FacilityType.screeningAndIsolation;
           }
 
-          // Naviga passando il tipo corretto
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -554,7 +550,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
               ),
             ),
           );
-          _loadAssessments(); // Ricarica la lista tornando indietro
+          _loadAssessments();
         },
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -605,13 +601,17 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                     onTap: () async {
                       try {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Generating Editable Report..."), duration: Duration(seconds: 1)),
+                          const SnackBar(
+                              content: Text("Generating Editable Report..."),
+                              duration: Duration(seconds: 1)),
                         );
-                        // Chiama il servizio distaccato dalla UI
-                        await ReportExportService.exportAssessmentToEditableWord(context, facility);
+                        await ReportExportService
+                            .exportAssessmentToEditableWord(context, facility);
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Failed to generate report: $e"), backgroundColor: Colors.red),
+                          SnackBar(
+                              content: Text("Failed to generate report: $e"),
+                              backgroundColor: Colors.red),
                         );
                       }
                     },
