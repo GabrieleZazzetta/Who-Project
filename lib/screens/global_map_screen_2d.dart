@@ -9,14 +9,14 @@ import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
 
-class GlobalMapScreen extends StatefulWidget {
-  const GlobalMapScreen({super.key});
+class GlobalMapScreen2D extends StatefulWidget {
+  const GlobalMapScreen2D({super.key});
 
   @override
-  State<GlobalMapScreen> createState() => _GlobalMapScreenState();
+  State<GlobalMapScreen2D> createState() => _GlobalMapScreen2DState();
 }
 
-class _GlobalMapScreenState extends State<GlobalMapScreen> {
+class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
   final MapController _mapController = MapController();
   bool _isLoading = true;
 

@@ -5,7 +5,8 @@ import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
 import 'analytics_screen.dart';
 import '../services/report_export_service.dart';
-import 'global_map_screen.dart';
+import 'global_map_screen_2d.dart';
+import 'global_map_screen_3d.dart';
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
 
@@ -252,7 +253,9 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const GlobalMapScreen()),
+                                // TO DO: Cambia qui tra GlobalMapScreen2D() e GlobalMapScreen3D()// Cambia qui tra GlobalMapScreen2D() e GlobalMapScreen3D()
+                                builder: (context) =>
+                                    const GlobalMapScreen3D()),
                           );
                         },
                       ),
