@@ -1,17 +1,16 @@
 import '../../models/assessment_models.dart';
 
 class MpoxTreatmentCenterData {
-  /// Carica la struttura "Stand-alone Mpox Treatment Centre"
-  /// Basato sui criteri OMS (Sezione 2 e Sezione 4)
+  // LAYOUT TREATMENT CENTER
+  // Struttura stand-alone Mpox Treatment Centre (OMS Sez. 2/4)
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Mpox Treatment Center",
       emergencyType: EmergencyType.mpox,
       mapImagePath: 'assets/maps/facility_map_treatment_center.png',
       zones: [
-        // ==========================================
-        // 1. SCREENING
-        // ==========================================
+        // SCREENING
+        // Primo filtro all'ingresso: separazione flussi sospetti e non sospetti
         SpatialZone(
           id: 'z1_screening',
           name: 'Screening',
@@ -70,9 +69,8 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 2. WAITING AREA
-        // ==========================================
+        // ZONA DI ATTESA
+        // Area dedicata ai soli casi sospetti tra screening e triage
         SpatialZone(
           id: 'z2_waiting',
           name: 'Waiting Area',
@@ -179,9 +177,8 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 3. TRIAGE CONSULTING ROOM
-        // ==========================================
+        // TRIAGE
+        // Valutazione clinica e smistamento verso i reparti
         SpatialZone(
           id: 'z3_triage',
           name: 'Triage Room',
@@ -224,9 +221,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 3B. RESUSCITATION ROOM
-        // ==========================================
+        // Rianimazione
         SpatialZone(
           id: 'z3b_resuscitation',
           name: 'Resuscitation Room',
@@ -243,7 +238,7 @@ class MpoxTreatmentCenterData {
                     'Ensure uninterrupted backup power specifically for the resuscitation area.',
                 selectedCompliance: ComplianceLevel.pending),
             AssessmentQuestion(
-                id: 'tc_4_3_4_resus', // Adattata da triage
+                id: 'tc_4_3_4_resus',
                 category: AssessmentCategory.spatialLayout,
                 text:
                     'Does the room have sufficient space and is it fully equipped with necessary clinical supplies and a trolley for immediate resuscitation?',
@@ -261,14 +256,12 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 3C. DIAGNOSTIC AREA & LABORATORY
-        // ==========================================
+        // Diagnostica e laboratorio
         SpatialZone(
           id: 'z3c_diagnostic_lab',
           name: 'Diagnostic & Laboratory',
           coordinates:
-              const MapCoordinates(top: 475, left: 237), // Aggiusta pixel
+              const MapCoordinates(top: 475, left: 237),
           touchArea:
               const MapCoordinates(top: 475, left: 189, width: 64, height: 64),
           checklist: [
@@ -299,9 +292,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 4 & 5. TRIAGE DONNING & DOFFING
-        // ==========================================
+        // DPI Triage
         SpatialZone(
           id: 'z4_triage_donning',
           name: 'Triage Donning',
@@ -319,9 +310,7 @@ class MpoxTreatmentCenterData {
           checklist: _getTriagePPEChecklist(),
         ),
 
-        // ==========================================
-        // 6. STAFF AREA & ADMIN (Changing Room)
-        // ==========================================
+        // AREA STAFF E AMMINISTRAZIONE
         SpatialZone(
           id: 'z6_staff_admin',
           name: 'Staff & Admin Area',
@@ -388,9 +377,8 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 7. STORAGE
-        // ==========================================
+        // LOGISTICA E SERVIZI
+        // Stoccaggio
         SpatialZone(
           id: 'z7_storage',
           name: 'Storage & Pharmacy',
@@ -425,9 +413,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 7B. PHARMACY
-        // ==========================================
+        // Farmacia
         SpatialZone(
           id: 'z7b_pharmacy',
           name: 'Pharmacy',
@@ -436,7 +422,7 @@ class MpoxTreatmentCenterData {
               const MapCoordinates(top: 111, left: 107, width: 66, height: 66),
           checklist: [
             AssessmentQuestion(
-                id: 'tc_5_6_3', // Dalla tua foto "5.7 Other services"
+                id: 'tc_5_6_3',
                 category: AssessmentCategory.logistics,
                 text:
                     'Is there a pharmacy available, strategically located near the treatment area, and is the indoor temperature compliant with stored drug requirements?',
@@ -454,9 +440,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 8. WASTE AREA
-        // ==========================================
+        // Gestione rifiuti
         SpatialZone(
           id: 'z8_waste',
           name: 'Waste Area',
@@ -499,9 +483,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 9. REPROCESSING EQUIPMENT
-        // ==========================================
+        // RICONDIZIONAMENTO ATTREZZATURE
         SpatialZone(
           id: 'z9_reprocessing',
           name: 'Reprocessing',
@@ -552,9 +534,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 10. LAUNDRY
-        // ==========================================
+        // Lavanderia
         SpatialZone(
           id: 'z10_laundry',
           name: 'Laundry',
@@ -573,9 +553,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 11. MORGUE
-        // ==========================================
+        // Obitorio
         SpatialZone(
           id: 'z11_morgue',
           name: 'Morgue',
@@ -594,19 +572,17 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ==========================================
-        // 12. DISCHARGE AREA
-        // ==========================================
+        // Area dimissioni
         SpatialZone(
           id: 'z12_discharge',
           name: 'Discharge Area',
           coordinates:
-              const MapCoordinates(top: 720, left: 529), // Aggiusta pixel
+              const MapCoordinates(top: 720, left: 529),
           touchArea:
               const MapCoordinates(top: 727, left: 503, width: 38, height: 38),
           checklist: [
             AssessmentQuestion(
-                id: 'tc_5_4_1_discharge', // Derivata dalla 5.4.1 sulle pathways
+                id: 'tc_5_4_1_discharge',
                 category: AssessmentCategory.spatialLayout,
                 text:
                     'Is there a dedicated and clearly marked discharge pathway for patients (tested negative or referred) that avoids crossing suspect/confirmed patient paths?',
@@ -624,9 +600,11 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ******************************************
-        // CLUSTER 1: MPOX SUSPECT
-        // ******************************************
+        // CLUSTER REPARTI
+        // Ogni cluster (suspect, probable, confirmed) replica la stessa struttura:
+        // stanza, donning, doffing, nursing station, clean utility, soiled utility
+
+        // Cluster Suspect
         SpatialZone(
             id: 'c1_room',
             name: 'Suspect Room',
@@ -671,9 +649,7 @@ class MpoxTreatmentCenterData {
                 top: 673, left: 361, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
 
-        // ******************************************
-        // CLUSTER 2: MPOX PROBABLE
-        // ******************************************
+        // Cluster Probable
         SpatialZone(
             id: 'c2_room',
             name: 'Probable Room',
@@ -707,7 +683,7 @@ class MpoxTreatmentCenterData {
             id: 'c2_clean_utility',
             name: 'Clean Utility (Probable)',
             coordinates:
-                const MapCoordinates(top: 402, left: 468), // Aggiusta pixel
+                const MapCoordinates(top: 402, left: 468),
             touchArea: const MapCoordinates(
                 top: 411, left: 440, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
@@ -715,14 +691,12 @@ class MpoxTreatmentCenterData {
             id: 'c2_soiled_utility',
             name: 'Soiled Utility (Probable)',
             coordinates:
-                const MapCoordinates(top: 538, left: 472), // Aggiusta pixel
+                const MapCoordinates(top: 538, left: 472),
             touchArea: const MapCoordinates(
                 top: 520, left: 441, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
 
-        // ******************************************
-        // CLUSTER 3: MPOX CONFIRMED
-        // ******************************************
+        // Cluster Confirmed
         SpatialZone(
             id: 'c3_room',
             name: 'Confirmed Room',
@@ -756,7 +730,7 @@ class MpoxTreatmentCenterData {
             id: 'c3_clean_utility',
             name: 'Clean Utility (Confirmed)',
             coordinates:
-                const MapCoordinates(top: 247, left: 393), // Aggiusta pixel
+                const MapCoordinates(top: 247, left: 393),
             touchArea: const MapCoordinates(
                 top: 253, left: 362, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
@@ -764,7 +738,7 @@ class MpoxTreatmentCenterData {
             id: 'c3_soiled_utility',
             name: 'Soiled Utility (Confirmed)',
             coordinates:
-                const MapCoordinates(top: 379, left: 395), // Aggiusta pixel
+                const MapCoordinates(top: 379, left: 395),
             touchArea: const MapCoordinates(
                 top: 362, left: 363, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
@@ -772,10 +746,10 @@ class MpoxTreatmentCenterData {
     );
   }
 
-  // ==========================================
-  // METODI HELPER PER I CLUSTER
-  // ==========================================
+  // CHECKLIST CONDIVISE
+  // Blocchi di domande riutilizzati da zone con requisiti identici
 
+  // DPI triage: donning e doffing condividono gli stessi criteri
   static List<AssessmentQuestion> _getTriagePPEChecklist() {
     return [
       AssessmentQuestion(
@@ -797,6 +771,7 @@ class MpoxTreatmentCenterData {
     ];
   }
 
+  // Stanza reparto: criteri comuni a suspect, probable e confirmed
   static List<AssessmentQuestion> _getWardRoomChecklist() {
     return [
       AssessmentQuestion(
@@ -866,6 +841,7 @@ class MpoxTreatmentCenterData {
     ];
   }
 
+  // DPI reparto
   static List<AssessmentQuestion> _getWardPPEChecklist() {
     return [
       AssessmentQuestion(
@@ -887,6 +863,7 @@ class MpoxTreatmentCenterData {
     ];
   }
 
+  // Postazione infermieristica reparto
   static List<AssessmentQuestion> _getWardNursingChecklist() {
     return [
       AssessmentQuestion(
@@ -900,6 +877,7 @@ class MpoxTreatmentCenterData {
     ];
   }
 
+  // Utility room: clean o soiled in base al parametro
   static List<AssessmentQuestion> _getUtilityRoomChecklist(
       {required bool isCleanUtility}) {
     if (isCleanUtility) {
@@ -913,7 +891,7 @@ class MpoxTreatmentCenterData {
                 'Ensure clean supplies are stored in a designated "Green" zone.',
             selectedCompliance: ComplianceLevel.pending),
         AssessmentQuestion(
-            id: 'tc_4_5_6_clean', // Dalla sezione storage sterile
+            id: 'tc_4_5_6_clean',
             category: AssessmentCategory.logistics,
             text:
                 'Is the storage organized, with controlled temperature/humidity to protect clean/sterile supplies?',
@@ -922,11 +900,9 @@ class MpoxTreatmentCenterData {
             selectedCompliance: ComplianceLevel.pending),
       ];
     } else {
-      // Soiled Utility (Dirty)
       return [
         AssessmentQuestion(
-            id:
-                'tc_4_5_3_soiled', // Dalla sezione reprocessing (dirty receiving)
+            id: 'tc_4_5_3_soiled',
             category: AssessmentCategory.infectionPreventionControl,
             text:
                 'Is the Soiled Utility area clearly marked, well-ventilated, and equipped with containment measures for dirty devices/linen?',
