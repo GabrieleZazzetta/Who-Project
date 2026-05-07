@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 
-// Questa riga dirà a Flutter di generare il codice del database
 part 'assessment_models.g.dart';
 
-// ==========================================
-// 1. ENUMS GLOBALI
-// ==========================================
-
+// ENUMERAZIONI
 enum EmergencyType { mpox, ebola, sars }
 
 enum FacilityType {
@@ -32,9 +28,8 @@ enum AssessmentCategory {
   logistics
 }
 
-// ==========================================
-// 2. MODELLI DELLE DOMANDE E CHECKLIST
-// ==========================================
+// MODELLO DOMANDA
+// Singola domanda della checklist con livello di compliance e punteggio derivato
 
 @embedded
 class AssessmentQuestion {
@@ -49,7 +44,7 @@ class AssessmentQuestion {
   @enumerated
   ComplianceLevel selectedCompliance;
 
-  List<String>? mediaPaths; // <--- MODIFICATO: Ora è una lista di percorsi!
+  List<String>? mediaPaths;
   String? note;
 
   AssessmentQuestion({
@@ -58,7 +53,7 @@ class AssessmentQuestion {
     this.category = AssessmentCategory.infectionPreventionControl,
     this.recommendationText = '',
     this.selectedCompliance = ComplianceLevel.pending,
-    this.mediaPaths, // <--- MODIFICATO
+    this.mediaPaths,
     this.note,
   });
 
@@ -81,9 +76,8 @@ class AssessmentQuestion {
       selectedCompliance == ComplianceLevel.doesNotMeet;
 }
 
-// ==========================================
-// 3. MODELLI SPAZIALI (MAPPA)
-// ==========================================
+// MODELLI SPAZIALI
+// Coordinate di posizionamento e aree di tocco per le zone sulla mappa interattiva
 
 @embedded
 class MapCoordinates {
@@ -116,6 +110,7 @@ class SpatialZone {
     this.checklist = const [],
   });
 
+  // Punteggio di readiness calcolato sulle domande compilate, escludendo pending e N/A
   @ignore
   double get readinessScore {
     int totalPossibleScore = 0;
@@ -142,6 +137,8 @@ class SpatialZone {
     return (completed / checklist.length) * 100;
   }
 
+  // Colore derivato dalla criticità: rosso se fallimenti, arancione se incompleto,
+  // ambra se parziale, verde se tutto conforme
   @ignore
   Color get statusColor {
     if (completionPercentage == 0) return Colors.grey.shade400;
@@ -155,9 +152,8 @@ class SpatialZone {
   }
 }
 
-// ==========================================
-// 4. MODELLO GLOBALE DELLA STRUTTURA
-// ==========================================
+// ENTITÀ PRINCIPALE
+// Rappresenta una struttura sanitaria completa con le sue zone spaziali e i metadati
 
 @collection
 class FacilityLayout {
@@ -181,6 +177,7 @@ class FacilityLayout {
     this.zones = const [],
   });
 
+  // Media ponderata dei readiness score delle zone compilate
   @ignore
   double get globalReadinessScore {
     double totalScore = 0;
@@ -195,6 +192,9 @@ class FacilityLayout {
     return totalScore / validZonesCount;
   }
 }
+
+// INFORMAZIONI GENERALI STRUTTURA
+// Dati anagrafici, geografici e organizzativi raccolti in fase di profilazione
 
 @embedded
 class GeneralFacilityInfo {

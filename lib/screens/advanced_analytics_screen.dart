@@ -8,13 +8,15 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
 
   const AdvancedAnalyticsScreen({super.key, required this.data});
 
+  // CONFIGURAZIONE E TEMA
   final Color _primaryBlue = const Color(0xFF005DA8);
   final Color _slateDark = const Color(0xFF1E293B);
   final Color _slateLight = const Color(0xFF64748B);
 
+  // LOGICA DI COSTRUZIONE DELL'INTERFACCIA
   @override
   Widget build(BuildContext context) {
-    // Ordiniamo i dati cronologicamente per il grafico a linee
+    // Ordinamento cronologico per l'analisi temporale dei trend
     final sortedData = List<FacilityLayout>.from(data)
       ..sort((a, b) {
         if (a.dateCreated == null) return 1;
@@ -77,9 +79,9 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // --- 1. GRAFICO A LINEE (TREND) ---
+  // COMPONENTI DEI GRAFICI
+  // Grafico a linee per la visualizzazione del trend di readiness
   Widget _buildLineChartCard(List<FacilityLayout> sortedData) {
-    // Rimuoviamo i dati senza data
     final validData = sortedData.where((d) => d.dateCreated != null).toList();
 
     if (validData.length < 2) {
@@ -116,7 +118,6 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   int index = value.toInt();
                   if (index >= 0 && index < validData.length) {
-                    // Mostra il mese/giorno solo per alcuni punti per non accavallarli
                     if (index == 0 ||
                         index == validData.length - 1 ||
                         validData.length < 6) {
@@ -171,9 +172,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // --- 2. GRAFICO A RAGNATELA (RADAR) ---
+  // Grafico a ragnatela per il confronto tra le diverse categorie tecniche
   Widget _buildRadarChartCard(List<FacilityLayout> allData) {
-    // Calcoliamo la media per categoria
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -231,8 +231,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 radarBorderData: const BorderSide(color: Colors.transparent),
                 titlePositionPercentageOffset: 0.15,
                 tickCount: 5,
-                ticksTextStyle: const TextStyle(
-                    color: Colors.transparent), // Nasconde i numeri interni
+                ticksTextStyle: const TextStyle(color: Colors.transparent),
                 tickBorderData:
                     BorderSide(color: Colors.grey.shade300, width: 1),
                 gridBorderData:
@@ -272,6 +271,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
+  // STILI E WIDGET DI SUPPORTO
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
         color: Colors.white,
@@ -285,6 +285,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100));
   }
 
+  // Gestione dello stato vuoto o mancanza di dati storici
   Widget _buildEmptyStateCard(String message) {
     return Container(
       width: double.infinity,
@@ -303,3 +304,4 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 }
+

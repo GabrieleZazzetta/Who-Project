@@ -17,6 +17,7 @@ class GlobalMapScreen2D extends StatefulWidget {
 }
 
 class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
+  // STATO E CONFIGURAZIONE
   final MapController _mapController = MapController();
   bool _isLoading = true;
 
@@ -29,6 +30,8 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     _loadAssessmentsAndGeocode();
   }
 
+  // LOGICA DI CARICAMENTO E GEOCODIFICA
+  // Caricamento degli assessment e generazione dei marker geografici
   Future<void> _loadAssessmentsAndGeocode() async {
     setState(() => _isLoading = true);
 
@@ -59,43 +62,9 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
       _allCoordinates = coords;
       _isLoading = false;
     });
-
-    // Rimosso il blocco WidgetsBinding.instance.addPostFrameCallback
-    // Ora la mappa rimarrà sulla visuale globale iniziale del mondo intero.
   }
 
-  void _zoomToFacilities() {
-    if (_allCoordinates.isEmpty) return;
-    try {
-      LatLngBounds bounds;
-
-      if (_allCoordinates.length == 1) {
-        final point = _allCoordinates.first;
-        bounds = LatLngBounds(
-          LatLng(point.latitude - 0.05, point.longitude - 0.05),
-          LatLng(point.latitude + 0.05, point.longitude + 0.05),
-        );
-      } else {
-        bounds = LatLngBounds.fromPoints(_allCoordinates);
-        // SAFETY CHECK
-        if (bounds.northWest == bounds.southEast) {
-          final point = bounds.northWest;
-          bounds = LatLngBounds(
-            LatLng(point.latitude - 0.05, point.longitude - 0.05),
-            LatLng(point.latitude + 0.05, point.longitude + 0.05),
-          );
-        }
-      }
-
-      _mapController.fitCamera(CameraFit.bounds(
-        bounds: bounds,
-        padding: const EdgeInsets.all(80),
-      ));
-    } catch (e) {
-      debugPrint("Error fitting bounds: $e");
-    }
-  }
-
+  // Risoluzione della posizione geografica tramite indirizzo o geocoding inverso
   Future<LatLng?> _resolveFacilityLocation(FacilityLayout facility) async {
     String text = facility.generalInfo?.facilityAddressOrGps ?? '';
     LatLng? coords = await _getCoordinatesFromText(text);
@@ -116,6 +85,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     return null;
   }
 
+  // Parsing di coordinate o ricerca su Nominatim
   Future<LatLng?> _getCoordinatesFromText(String text) async {
     if (text.trim().isEmpty) return null;
 
@@ -151,12 +121,47 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     return null;
   }
 
+  // POSIZIONAMENTO TELECAMERA
+  // Adattamento della vista per includere tutti i marker presenti
+  void _zoomToFacilities() {
+    if (_allCoordinates.isEmpty) return;
+    try {
+      LatLngBounds bounds;
+
+      if (_allCoordinates.length == 1) {
+        final point = _allCoordinates.first;
+        bounds = LatLngBounds(
+          LatLng(point.latitude - 0.05, point.longitude - 0.05),
+          LatLng(point.latitude + 0.05, point.longitude + 0.05),
+        );
+      } else {
+        bounds = LatLngBounds.fromPoints(_allCoordinates);
+        if (bounds.northWest == bounds.southEast) {
+          final point = bounds.northWest;
+          bounds = LatLngBounds(
+            LatLng(point.latitude - 0.05, point.longitude - 0.05),
+            LatLng(point.latitude + 0.05, point.longitude + 0.05),
+          );
+        }
+      }
+
+      _mapController.fitCamera(CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.all(80),
+      ));
+    } catch (e) {
+      debugPrint("Error fitting bounds: $e");
+    }
+  }
+
+  // COMPONENTI UI E RENDERING
   Color _getScoreColor(double score) {
     if (score >= 80) return Colors.green.shade500;
     if (score >= 50) return Colors.amber.shade500;
     return Colors.red.shade500;
   }
 
+  // Pin personalizzato con indicatore di punteggio
   Widget _buildPin(double score) {
     Color pinColor = _getScoreColor(score);
     Color shadowColor = pinColor.withOpacity(0.6);
@@ -181,6 +186,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     );
   }
 
+  // Dettagli struttura visualizzati in un bottom sheet interattivo
   void _showFacilityDetails(FacilityLayout facility) {
     showModalBottomSheet(
       context: context,
@@ -351,11 +357,11 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     );
   }
 
+  // METODO DI RENDERING PRINCIPALE
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF0F172A), // Sfondo scuro per look analitico
+      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         title: const Text("Global Assessment Map",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -386,9 +392,8 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
           : FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                initialCenter:
-                    const LatLng(20.0, 0.0), // Centro del mondo iniziale
-                initialZoom: 2.0, // Zoom che inquadra tutto il mondo
+                initialCenter: const LatLng(20.0, 0.0),
+                initialZoom: 2.0,
                 maxZoom: 18.0,
                 minZoom: 2.0,
                 cameraConstraint: CameraConstraint.contain(
@@ -455,3 +460,4 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     );
   }
 }
+

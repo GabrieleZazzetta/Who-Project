@@ -5,7 +5,6 @@ import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
 import 'analytics_screen.dart';
 import '../services/report_export_service.dart';
-import 'global_map_screen_2d.dart';
 import 'global_map_screen_3d.dart';
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
@@ -18,6 +17,7 @@ class AssessmentsListScreen extends StatefulWidget {
 }
 
 class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
+  // STATO E CONFIGURAZIONE
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
   List<FacilityLayout> _filteredAssessments = [];
@@ -40,6 +40,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     super.dispose();
   }
 
+  // LOGICA DI CARICAMENTO E FILTRAGGIO DATI
   Future<void> _loadAssessments() async {
     setState(() => _isLoading = true);
     final data = await DatabaseService.instance.getAllAssessments();
@@ -51,6 +52,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     _applyFilters();
   }
 
+  // Calcolo dello stato dell'assessment in base alla completezza e alle criticità
   String _getAssessmentStatus(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -76,6 +78,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     return 'Completed';
   }
 
+  // Applicazione dei filtri di ricerca, categoria e data con ordinamento finale
   void _applyFilters() {
     List<FacilityLayout> temp = List.from(_allAssessments);
 
@@ -116,6 +119,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     });
   }
 
+  // GESTIONE DELLA CANCELLAZIONE
   Future<void> _confirmDelete(FacilityLayout facility) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -155,6 +159,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     }
   }
 
+  // METODO DI RENDERING PRINCIPALE
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -164,13 +169,10 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
         shadowColor: Colors.black.withOpacity(0.1),
-        // Il titolo ora ha molto più spazio e non verrà tagliato
         title: const Text("Saved Assessments",
             style: TextStyle(
                 color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
         actions: [
-          // Rimosso il bottone MAP da qui
-          // Lasciato solo il bottone Analytics per un look più pulito
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: TextButton.icon(
@@ -192,7 +194,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
       ),
       body: Column(
         children: [
-          // 1. ZONA SEARCH BAR E BOTTONE MAPPA
+          // Barra di ricerca e accesso alla visualizzazione mappa
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -201,7 +203,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
               children: [
                 Row(
                   children: [
-                    // Barra di Ricerca che prende lo spazio rimanente
                     Expanded(
                       child: TextField(
                         controller: _searchController,
@@ -230,7 +231,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Nuovo Bottone Mappa perfettamente integrato
                     Container(
                       height: 48,
                       width: 48,
@@ -253,7 +253,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                // TO DO: Cambia qui tra GlobalMapScreen2D() e GlobalMapScreen3D()// Cambia qui tra GlobalMapScreen2D() e GlobalMapScreen3D()
                                 builder: (context) =>
                                     const GlobalMapScreen3D()),
                           );
@@ -263,8 +262,6 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // Grafico Geografico
                 if (_allAssessments.isNotEmpty) ...[
                   _buildGeoStats(),
                 ]
@@ -274,7 +271,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
 
           Divider(height: 1, color: Colors.grey.shade200),
 
-          // 2. ZONA FILTRI E ORDINAMENTO
+          // Sezione filtri rapidi e ordinamento cronologico/punteggio
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
@@ -362,7 +359,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
             ),
           ),
 
-          // 3. LISTA DELLE CARD
+          // Lista dei risultati filtrati
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -400,6 +397,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
+  // COMPONENTI UI E METODI DI SUPPORTO
+  // Visualizzazione dei parametri geografici e media dei punteggi per regione
   Widget _buildGeoStats() {
     Map<String, List<double>> regionScores = {};
     for (var f in _allAssessments) {
@@ -493,6 +492,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
+  // Costruzione della card per il singolo assessment con indicatori di progresso e punteggio
   Widget _buildAssessmentCard(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -618,8 +618,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                         );
                       }
                     },
-                    child: Icon(Icons.download_rounded,
-                        color: const Color(0xFF005DA8), size: 26),
+                    child: const Icon(Icons.download_rounded,
+                        color: Color(0xFF005DA8), size: 26),
                   ),
                   const SizedBox(width: 8),
                   GestureDetector(
@@ -718,6 +718,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
+  // Chip interattivo per il filtraggio rapido degli stati
   Widget _buildFilterChip(String label) {
     bool isSelected = _currentFilter == label;
     return GestureDetector(

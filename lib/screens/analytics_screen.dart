@@ -11,26 +11,23 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  // STATO E CONFIGURAZIONE GRAFICA
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
 
-  // Variabili per i filtri
   String _selectedCountry = 'All Countries';
   String _selectedYear = 'All Years';
 
-  // Liste uniche per i dropdown
   final List<String> _availableCountries = ['All Countries'];
   final List<String> _availableYears = ['All Years'];
 
-  // Colori PRO del brand (WHO style)
   final Color _primaryBlue = const Color(0xFF005DA8);
   final Color _slateDark = const Color(0xFF1E293B);
   final Color _slateLight = const Color(0xFF64748B);
 
-  // Colori Semantici Rigorosi
-  final Color _colorMeets = const Color(0xFF10B981); // Verde Smeraldo
-  final Color _colorPartial = const Color(0xFFF59E0B); // Ambra/Giallo
-  final Color _colorFails = const Color(0xFFEF4444); // Rosso
+  final Color _colorMeets = const Color(0xFF10B981);
+  final Color _colorPartial = const Color(0xFFF59E0B);
+  final Color _colorFails = const Color(0xFFEF4444);
 
   @override
   void initState() {
@@ -38,6 +35,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     _loadData();
   }
 
+  // LOGICA DI RECUPERO DATI E POPOLAMENTO FILTRI
   Future<void> _loadData() async {
     final data = await DatabaseService.instance.getAllAssessments();
 
@@ -54,15 +52,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       }
     }
 
-    setState(() {
-      _allAssessments = data;
-      _availableCountries.addAll(countries.toList()..sort());
-      _availableYears.addAll(
-          years.toList()..sort((a, b) => b.compareTo(a))); // Più recenti prima
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _allAssessments = data;
+        _availableCountries.addAll(countries.toList()..sort());
+        _availableYears.addAll(years.toList()..sort((a, b) => b.compareTo(a)));
+        _isLoading = false;
+      });
+    }
   }
 
+  // Calcolo dinamico del set di dati filtrato
   List<FacilityLayout> get _filteredData {
     return _allAssessments.where((f) {
       bool matchCountry = _selectedCountry == 'All Countries' ||
@@ -86,6 +86,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
   }
 
+  // METODO DI RENDERING PRINCIPALE
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -96,7 +97,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     final data = _filteredData;
 
-    // --- CALCOLO DELLE STATISTICHE GLOBALI ---
     double totalReadiness = 0;
     int totalQuestionsAnswered = 0;
     int meetsTargetCount = 0;
@@ -104,7 +104,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     int doesNotMeetCount = 0;
     int criticalFailsCount = 0;
 
-    // Mappa per le performance di categoria: [ActualScore, MaxPossibleScore]
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -121,18 +120,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             totalQuestionsAnswered++;
             if (q.selectedCompliance == ComplianceLevel.meetsTarget) {
               meetsTargetCount++;
-            }
-            if (q.selectedCompliance == ComplianceLevel.partiallyMeets) {
+            } else if (q.selectedCompliance == ComplianceLevel.partiallyMeets) {
               partialCount++;
-            }
-            if (q.selectedCompliance == ComplianceLevel.doesNotMeet) {
+            } else if (q.selectedCompliance == ComplianceLevel.doesNotMeet) {
               doesNotMeetCount++;
             }
             if (q.isCriticalFailure) criticalFailsCount++;
 
-            // Aggiorna le statistiche per categoria
-            categoryScores[q.category]![1] += 3; // Max punteggio possibile
-            categoryScores[q.category]![0] += q.scoreValue; // Punteggio reale
+            categoryScores[q.category]![1] += 3;
+            categoryScores[q.category]![0] += q.scoreValue;
           }
         }
       }
@@ -170,7 +166,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // Passiamo i dati 'data' (che sono quelli già filtrati!)
                       builder: (context) => AdvancedAnalyticsScreen(data: data),
                     ),
                   );
@@ -181,7 +176,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
       body: CustomScrollView(
         slivers: [
-          // 1. ZONA FILTRI FISSA IN ALTO
+          // Selezione dei parametri di filtraggio
           SliverToBoxAdapter(
             child: Container(
               color: Colors.white,
@@ -231,7 +226,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               padding: const EdgeInsets.all(20),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // 2. I TRE KPI PRINCIPALI (Colori Neutri/Brand)
+                  // Indicatori sintetici di performance (KPI)
                   Row(
                     children: [
                       Expanded(
@@ -253,12 +248,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               "Critical Fails",
                               criticalFailsCount.toString(),
                               Icons.warning_amber_rounded,
-                              _slateDark)), // Neutro scuro, non rosso!
+                              _slateDark)),
                     ],
                   ),
                   const SizedBox(height: 32),
 
-                  // 3. COMPLIANCE BREAKDOWN (Unici colori semantici ammessi)
+                  // Distribuzione dei livelli di conformità
                   _buildSectionHeader("Compliance Breakdown",
                       "Distribution of $totalQuestionsAnswered evaluated criteria"),
                   Container(
@@ -266,11 +261,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     decoration: _cardDecoration(),
                     child: Column(
                       children: [
-                        // Barra a strati
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: SizedBox(
-                            height: 28, // Più spessa per un look PRO
+                            height: 28,
                             child: Row(
                               children: [
                                 if (meetsPct > 0)
@@ -290,7 +284,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        // Legenda Dettagliata
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -308,7 +301,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                   const SizedBox(height: 32),
 
-                  // 4. CATEGORY PERFORMANCE (Nuovo Modulo Analitico)
+                  // Analisi della performance per pilastro tecnico
                   _buildSectionHeader("Category Performance",
                       "Readiness score across main technical areas"),
                   Container(
@@ -344,8 +337,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               LinearProgressIndicator(
                                 value: percentage / 100,
                                 backgroundColor: Colors.grey.shade200,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    _primaryBlue), // Colore neutro/brand
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(_primaryBlue),
                                 minHeight: 8,
                                 borderRadius: BorderRadius.circular(4),
                               ),
@@ -358,12 +351,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                   const SizedBox(height: 32),
 
-                  // 5. CLASSIFICA GEOGRAFICA (Geo-Ranking Neutro)
+                  // Ranking geografico basato sul punteggio medio
                   _buildSectionHeader("Geographical Ranking",
                       "Average readiness score by country"),
                   _buildGeographicalRanking(),
 
-                  const SizedBox(height: 40), // Spazio finale
+                  const SizedBox(height: 40),
                 ]),
               ),
             ),
@@ -372,8 +365,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  // --- COMPONENTI UI PRIVATI E STILI ---
-
+  // COMPONENTI UI E STILI RIUTILIZZABILI
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
         color: Colors.white,
@@ -533,7 +525,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             Divider(height: 1, color: Colors.grey.shade100),
         itemBuilder: (context, index) {
           final entry = ranking[index];
-          // Niente più rosso/verde qui! Usiamo il blu con diversa opacità per eleganza
           Color barColor = _primaryBlue;
 
           return Padding(
