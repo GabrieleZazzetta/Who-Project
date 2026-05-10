@@ -1,17 +1,18 @@
 import '../models/assessment_models.dart';
 
+// ZONA VIRTUALE: VALUTAZIONE GENERALE STRUTTURA
+// Zona con coordinate fuori viewport, non renderizzata sulla mappa.
+// Raccoglie i requisiti trasversali applicabili all'intera struttura sanitaria.
+
 SpatialZone getGeneralFacilityZone() {
   return SpatialZone(
       id: 'general_facility_assessment',
       name: 'General Facility Assessment',
-// Coordinate negative: questa "bolla" non verrà mai disegnata sulla mappa
       coordinates: const MapCoordinates(top: -1000, left: -1000),
       touchArea:
           const MapCoordinates(top: -1000, left: -1000, width: 0, height: 0),
       checklist: [
-// ==========================================
-// FACILITY ACCESSES AND FLOWS (5 Domande)
-// ==========================================
+        // Accessi e flussi
         AssessmentQuestion(
           id: 'gen_2_1_1',
           category: AssessmentCategory.spatialLayout,
@@ -53,9 +54,7 @@ SpatialZone getGeneralFacilityZone() {
               'Install a continuous perimeter fence and control all access points to the facility.',
         ),
 
-// ==========================================
-// FACILITY SYSTEMS AND FINISHING (5 Domande)
-// ==========================================
+        // Impianti e finiture
         AssessmentQuestion(
           id: 'gen_2_2_1',
           category: AssessmentCategory.logistics,
@@ -97,9 +96,7 @@ SpatialZone getGeneralFacilityZone() {
               'Replace surfaces with smooth, non-porous materials that are easy to clean and resist microbial growth.',
         ),
 
-// ==========================================
-// WASTE MANAGEMENT (3 Domande)
-// ==========================================
+        // Gestione rifiuti
         AssessmentQuestion(
           id: 'gen_2_3_1',
           category: AssessmentCategory.wash,
@@ -125,9 +122,7 @@ SpatialZone getGeneralFacilityZone() {
               'Ensure hazardous waste is strictly separated and safely treated/disposed of on-site or regularly collected.',
         ),
 
-// ==========================================
-// WATER AND SANITATION (10 Domande)
-// ==========================================
+        // Acqua e servizi igienici
         AssessmentQuestion(
           id: 'gen_2_4_1',
           category: AssessmentCategory.wash,

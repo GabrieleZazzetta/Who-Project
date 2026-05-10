@@ -16,6 +16,7 @@ class PreAssessmentScreen extends StatefulWidget {
 }
 
 class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
+  // STATO E CONFIGURAZIONE DEI FORM
   int _currentStep = 0;
   final int _totalSteps = 4;
 
@@ -26,7 +27,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     GlobalKey<FormState>(),
   ];
 
-  // --- 1. Assessment Info ---
+  // Informazioni generali dell'assessment
   final TextEditingController _assessmentNameController =
       TextEditingController();
   DateTime? _assessmentDate = DateTime.now();
@@ -36,7 +37,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   final TextEditingController _assessorPhoneController =
       TextEditingController();
 
-  // --- 2. Location ---
+  // Dati di localizzazione geografica
   final TextEditingController _countryController = TextEditingController();
   final TextEditingController _regionController = TextEditingController();
   final TextEditingController _districtController = TextEditingController();
@@ -44,7 +45,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   final TextEditingController _addressController = TextEditingController();
   String? _locationRecord;
 
-  // --- 3. Identification ---
+  // Identificazione della struttura sanitaria
   final TextEditingController _facilityCodeController = TextEditingController();
   final TextEditingController _facilityNameController = TextEditingController();
   String? _managingAuthority;
@@ -60,7 +61,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   String? _structureType;
   String? _existingFacilityType;
 
-  // --- 4. Services ---
+  // Servizi e capacità della struttura
   String? _offersOutpatient;
   String? _offersInpatient;
   final TextEditingController _inpatientBedsController =
@@ -92,6 +93,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     super.dispose();
   }
 
+  // LOGICA DI NAVIGAZIONE E INVIO
   String _getFacilityTypeName(FacilityType type) {
     switch (type) {
       case FacilityType.screeningAndIsolation:
@@ -123,13 +125,13 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     }
   }
 
+  // Finalizzazione del pre-assessment e inizializzazione del layout in memoria
   void _submitForm() async {
     showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()));
 
-    // Creiamo il layout ma NON LO SALVIAMO nel database. Vive solo in RAM.
     final layoutData = FacilityDataFactory.getLayout(
         widget.emergencyType, widget.facilityType);
     layoutData.dateCreated = DateTime.now();
@@ -171,20 +173,20 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     if (mounted) Navigator.pop(context);
 
     if (mounted) {
-      // Passiamo l'oggetto `layoutData` non salvato invece dell'ID
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => InteractiveMapScreen(
             emergencyType: widget.emergencyType,
             facilityType: widget.facilityType,
-            preFilledData: layoutData, // <-- Nuovo campo!
+            preFilledData: layoutData,
           ),
         ),
       );
     }
   }
 
+  // METODO DI RENDERING PRINCIPALE
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +201,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       ),
       body: Column(
         children: [
+          // Barra di avanzamento degli step
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -231,6 +234,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
               ],
             ),
           ),
+          // Pulsanti di navigazione del form
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -291,6 +295,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
+  // COSTRUZIONE DEI SINGOLI STEP DEL FORM
   Widget _buildStep1() {
     return _buildPageWrapper(
       formKey: _formKeys[0],
@@ -477,6 +482,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
+  // COMPONENTI UI E METODI DI SUPPORTO
   Widget _buildPageWrapper(
       {required GlobalKey<FormState> formKey,
       required String title,
@@ -610,3 +616,4 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 }
+

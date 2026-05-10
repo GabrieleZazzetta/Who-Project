@@ -1,18 +1,16 @@
 import '../../models/assessment_models.dart';
 
 class MpoxCongregateSettingData {
-  /// Carica la struttura "Fig. 6 - Flow diagram in a screening and isolation area in congregate setting"
-  /// Basato sui criteri OMS (Sezione 2 e Sezione 6)
+  // LAYOUT CONGREGATE SETTING
+  // Struttura Fig. 6 OMS: flusso di screening e isolamento in contesto congregato
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Screening & Isolation in Congregate Setting",
       emergencyType: EmergencyType.mpox,
-      // Assicurati che il nome corrisponda all'immagine salvata in assets/maps/
       mapImagePath: 'assets/maps/facility_map_congregate.png',
       zones: [
-        // ==========================================
-        // 1. SCREENING RECEPTION
-        // ==========================================
+        // ZONE DI SCREENING
+        // Due punti di filtro: ingresso nuovi arrivi e accesso interni sintomatici
         SpatialZone(
           id: 'cs_z1_screening_reception',
           name: 'Screening Reception',
@@ -22,9 +20,6 @@ class MpoxCongregateSettingData {
           checklist: _getScreeningChecklist(),
         ),
 
-        // ==========================================
-        // 2. SCREENING SETTLEMENT
-        // ==========================================
         SpatialZone(
           id: 'cs_z2_screening_settlement',
           name: 'Screening',
@@ -34,9 +29,8 @@ class MpoxCongregateSettingData {
           checklist: _getScreeningChecklist(),
         ),
 
-        // ==========================================
-        // 3. WAITING ROOM
-        // ==========================================
+        // ZONA DI ATTESA
+        // Area cuscinetto tra screening e consultazione
         SpatialZone(
           id: 'cs_z3_waiting',
           name: 'Waiting Room',
@@ -87,9 +81,8 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ==========================================
-        // 4. CONSULTING ROOM
-        // ==========================================
+        // CONSULTAZIONE
+        // Visita clinica e triage dei casi sospetti
         SpatialZone(
           id: 'cs_z4_consulting',
           name: 'Consulting Room',
@@ -132,9 +125,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ------------------------------------------
-        // 4A. CONSULTING DONNING
-        // ------------------------------------------
+        // DPI Consultazione
         SpatialZone(
           id: 'cs_z4a_consulting_donning',
           name: 'Consulting Donning',
@@ -144,9 +135,6 @@ class MpoxCongregateSettingData {
           checklist: _getConsultingPPEChecklist(),
         ),
 
-        // ------------------------------------------
-        // 4B. CONSULTING DOFFING
-        // ------------------------------------------
         SpatialZone(
           id: 'cs_z4b_consulting_doffing',
           name: 'Consulting Doffing',
@@ -156,9 +144,8 @@ class MpoxCongregateSettingData {
           checklist: _getConsultingPPEChecklist(),
         ),
 
-        // ==========================================
-        // 5. TEMPORARY ISOLATION
-        // ==========================================
+        // ISOLAMENTO TEMPORANEO
+        // Contenimento casi sospetti in attesa di conferma o trasferimento
         SpatialZone(
           id: 'cs_z5_temp_isolation',
           name: 'Temporary Isolation',
@@ -209,9 +196,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ------------------------------------------
-        // 5A. TEMPORARY ISOLATION DONNING
-        // ------------------------------------------
+        // DPI Isolamento temporaneo
         SpatialZone(
           id: 'cs_z5a_temp_iso_donning',
           name: 'Temp Iso Donning',
@@ -221,9 +206,6 @@ class MpoxCongregateSettingData {
           checklist: _getTempIsolationPPEChecklist(),
         ),
 
-        // ------------------------------------------
-        // 5B. TEMPORARY ISOLATION DOFFING
-        // ------------------------------------------
         SpatialZone(
           id: 'cs_z5b_temp_iso_doffing',
           name: 'Temp Iso Doffing',
@@ -233,9 +215,8 @@ class MpoxCongregateSettingData {
           checklist: _getTempIsolationPPEChecklist(),
         ),
 
-        // ==========================================
-        // 6. TREATMENT AREA
-        // ==========================================
+        // AREA TRATTAMENTO
+        // Gestione e isolamento dei casi lievi confermati
         SpatialZone(
           id: 'cs_z6_treatment_area',
           name: 'Treatment Area',
@@ -310,9 +291,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ------------------------------------------
-        // 6A. TREATMENT AREA DONNING
-        // ------------------------------------------
+        // DPI Trattamento
         SpatialZone(
           id: 'cs_z6a_treatment_donning',
           name: 'Treatment Donning',
@@ -322,9 +301,6 @@ class MpoxCongregateSettingData {
           checklist: _getTreatmentPPEChecklist(),
         ),
 
-        // ------------------------------------------
-        // 6B. TREATMENT AREA DOFFING
-        // ------------------------------------------
         SpatialZone(
           id: 'cs_z6b_treatment_doffing',
           name: 'Treatment Doffing',
@@ -334,9 +310,8 @@ class MpoxCongregateSettingData {
           checklist: _getTreatmentPPEChecklist(),
         ),
 
-        // ==========================================
-        // 7. STAFF AREA
-        // ==========================================
+        // AREA STAFF
+        // Zone operative riservate al personale sanitario
         SpatialZone(
           id: 'cs_z7_staff_area',
           name: 'Staff Area',
@@ -363,14 +338,11 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ==========================================
-        // 7B. STAFF NURSING STATION
-        // ==========================================
+        // Postazione infermieristica
         SpatialZone(
           id: 'cs_z7b_nursing_station',
           name: 'Staff Nursing Station',
-          coordinates: const MapCoordinates(
-              top: 530, left: 318), // Aggiusta questi pixel sulla mappa
+          coordinates: const MapCoordinates(top: 530, left: 318),
           touchArea:
               const MapCoordinates(top: 525, left: 258, width: 81, height: 81),
           checklist: [
@@ -393,14 +365,11 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ==========================================
-        // 7C. STAFF CHANGING ROOM
-        // ==========================================
+        // Spogliatoio staff
         SpatialZone(
           id: 'cs_z7c_staff_changing',
           name: 'Staff Changing Room',
-          coordinates: const MapCoordinates(
-              top: 632, left: 539), // Aggiusta questi pixel sulla mappa
+          coordinates: const MapCoordinates(top: 632, left: 539),
           touchArea:
               const MapCoordinates(top: 630, left: 476, width: 81, height: 81),
           checklist: [
@@ -415,9 +384,8 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ==========================================
-        // 8. STORAGE
-        // ==========================================
+        // LOGISTICA E SERVIZI
+        // Stoccaggio
         SpatialZone(
           id: 'cs_z8_storage',
           name: 'Storage',
@@ -452,9 +420,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // ==========================================
-        // 9. WASTE AREA
-        // ==========================================
+        // Gestione rifiuti
         SpatialZone(
           id: 'cs_z9_waste',
           name: 'Waste Area',
@@ -500,10 +466,10 @@ class MpoxCongregateSettingData {
     );
   }
 
-  // ==========================================
-  // METODI HELPER PER I BLOCCHI RIPETUTI
-  // ==========================================
+  // CHECKLIST CONDIVISE
+  // Blocchi di domande riutilizzati da zone con requisiti identici
 
+  // Screening: requisiti comuni a reception e settlement
   static List<AssessmentQuestion> _getScreeningChecklist() {
     return [
       AssessmentQuestion(
@@ -565,6 +531,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
+  // DPI consultazione: donning e doffing condividono gli stessi criteri
   static List<AssessmentQuestion> _getConsultingPPEChecklist() {
     return [
       AssessmentQuestion(
@@ -586,6 +553,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
+  // DPI isolamento temporaneo
   static List<AssessmentQuestion> _getTempIsolationPPEChecklist() {
     return [
       AssessmentQuestion(
@@ -607,6 +575,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
+  // DPI trattamento
   static List<AssessmentQuestion> _getTreatmentPPEChecklist() {
     return [
       AssessmentQuestion(

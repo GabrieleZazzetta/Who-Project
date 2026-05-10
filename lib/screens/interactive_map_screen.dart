@@ -248,25 +248,16 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                   height: 1150,
                   child: Stack(
                     children: [
-                      // --- INIZIO TRUCCO COORDINATE PRO ---
-                      GestureDetector(
-                        onTapDown: (TapDownDetails details) {
-                          final int x = details.localPosition.dx.toInt();
-                          final int y = details.localPosition.dy.toInt();
-                          print("📍 PIXEL ESATTI -> top (Y): $y, left (X): $x");
-                        },
-                        child: Image.asset(
-                          layoutData.mapImagePath,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                                child: Text("Waiting for map asset...")),
-                          ),
+                      Image.asset(
+                        layoutData.mapImagePath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                          color: Colors.grey.shade200,
+                          child: const Center(
+                              child: Text("Waiting for map asset...")),
                         ),
                       ),
-                      // --- FINE TRUCCO COORDINATE PRO ---
 
                       // Filtriamo la zona "fantasma" per non disegnarla!
                       ...layoutData.zones
