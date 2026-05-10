@@ -1,7 +1,6 @@
 import '../../models/assessment_models.dart';
 
 class MpoxScreeningTriageData {
-  /// Carica la prima struttura: "Screening, Triage & Temporary Isolation"
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Screening, Triage & Temporary Isolation",
