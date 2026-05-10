@@ -1,8 +1,6 @@
 import '../../models/assessment_models.dart';
 
 class MpoxExistingWardData {
-  /// Carica la struttura "Fig 4 - Existing Facility with Dedicated FVD/Mpox Ward"
-  /// Basato sulle linee guida OMS (percorsi sporco/pulito e separazione flussi)
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Existing Health Facility (Mpox Ward)",
