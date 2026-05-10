@@ -107,6 +107,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       ),
     );
 
+    if (!mounted) return;
+
     if (result != null) {
       setState(() {
         question.note = result.trim().isEmpty ? null : result.trim();
@@ -154,6 +156,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     try {
       final XFile? photo =
           await _picker.pickImage(source: source, imageQuality: 80);
+      
+      if (!mounted) return;
+
       if (photo != null) {
         setState(() {
           question.mediaPaths ??= [];
@@ -161,6 +166,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         });
       }
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text("Error picking image: $e"),
@@ -303,7 +310,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                       color: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -589,7 +596,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: color.withOpacity(0.3),
+                        color: color.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 3))
                   ]

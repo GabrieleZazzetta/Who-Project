@@ -163,7 +163,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
               dotData: const FlDotData(show: true),
               belowBarData: BarAreaData(
                 show: true,
-                color: _primaryBlue.withOpacity(0.15),
+                color: _primaryBlue.withValues(alpha: 0.15),
               ),
             ),
           ],
@@ -214,7 +214,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
               RadarChartData(
                 dataSets: [
                   RadarDataSet(
-                    fillColor: _primaryBlue.withOpacity(0.2),
+                    fillColor: _primaryBlue.withValues(alpha: 0.2),
                     borderColor: _primaryBlue,
                     entryRadius: 4,
                     dataEntries: [
@@ -263,7 +263,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w800),
               ),
-              swapAnimationDuration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 400),
             ),
           ),
         ],
@@ -278,7 +278,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 16,
               offset: const Offset(0, 4))
         ],
@@ -304,4 +304,3 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 }
-

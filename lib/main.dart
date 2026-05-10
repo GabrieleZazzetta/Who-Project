@@ -121,7 +121,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.all(isActive ? 6 : 0),
             decoration: BoxDecoration(
-              color: isActive ? color.withOpacity(0.1) : Colors.transparent,
+              color: isActive ? color.withValues(alpha: 0.1) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: isActive ? 28 : 24),
@@ -164,11 +164,11 @@ class HomeContent extends StatelessWidget {
                   : MediaQuery.of(context).size.width * 0.85,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 30,
                       spreadRadius: 5)
                 ],
@@ -185,7 +185,7 @@ class HomeContent extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 4)),
                       ],
@@ -281,7 +281,7 @@ class HomeContent extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 30,
                           offset: const Offset(0, 10)),
                     ],
@@ -379,7 +379,7 @@ class HomeContent extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle),
                   child: const Icon(Icons.info_outline,
                       color: Colors.white, size: 24),
@@ -415,7 +415,7 @@ class HomeContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 1))
           ],
@@ -522,7 +522,7 @@ class FacilitySelectionScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.2),
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         iconTheme: const IconThemeData(color: Color(0xFF003D73)),
         title: Text("$_emergencyName Facilities",
             style: const TextStyle(
@@ -610,7 +610,7 @@ class FacilitySelectionScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2))
           ]),

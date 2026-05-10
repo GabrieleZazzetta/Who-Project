@@ -91,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
                           ],
                         ),
                         child: Padding(
@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               decoration: BoxDecoration(
                                 color: _isWhoStaff ? Colors.white : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
-                                boxShadow: _isWhoStaff ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
+                                boxShadow: _isWhoStaff ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)] : [],
                               ),
                               child: Center(child: Text("WHO Staff", style: TextStyle(fontWeight: _isWhoStaff ? FontWeight.bold : FontWeight.w500, color: _isWhoStaff ? Theme.of(context).colorScheme.primary : Colors.grey.shade600))),
                             ),
@@ -154,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               decoration: BoxDecoration(
                                 color: !_isWhoStaff ? Colors.white : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
-                                boxShadow: !_isWhoStaff ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
+                                boxShadow: !_isWhoStaff ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)] : [],
                               ),
                               child: Center(child: Text("External Partner", style: TextStyle(fontWeight: !_isWhoStaff ? FontWeight.bold : FontWeight.w500, color: !_isWhoStaff ? Theme.of(context).colorScheme.primary : Colors.grey.shade600))),
                             ),

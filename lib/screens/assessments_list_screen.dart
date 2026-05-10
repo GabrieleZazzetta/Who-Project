@@ -45,6 +45,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     setState(() => _isLoading = true);
     final data = await DatabaseService.instance.getAllAssessments();
 
+    if (!mounted) return;
+
     setState(() {
       _allAssessments = data;
       _isLoading = false;
@@ -148,6 +150,9 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
 
     if (confirm == true) {
       await DatabaseService.instance.deleteAssessment(facility.id);
+      
+      if (!mounted) return;
+      
       _loadAssessments();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -168,7 +173,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
         toolbarHeight: 70,
         backgroundColor: Colors.white,
         elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         title: const Text("Saved Assessments",
             style: TextStyle(
                 color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
@@ -239,7 +244,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF005DA8).withOpacity(0.3),
+                            color: const Color(0xFF005DA8).withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           )
@@ -303,6 +308,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
+                        if (!mounted) return;
                         if (picked != null) {
                           setState(() => _filterDate = picked);
                           _applyFilters();
@@ -443,8 +449,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: statColor.withOpacity(0.05),
-                    border: Border.all(color: statColor.withOpacity(0.3)),
+                    color: statColor.withValues(alpha: 0.05),
+                    border: Border.all(color: statColor.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -522,10 +528,10 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
 
     return Card(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: stateColor.withOpacity(0.5), width: 1.5),
+        side: BorderSide(color: stateColor.withValues(alpha: 0.5), width: 1.5),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -553,6 +559,9 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
               ),
             ),
           );
+          
+          if (!mounted) return;
+
           _loadAssessments();
         },
         child: Padding(
@@ -590,7 +599,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                        color: stateColor.withOpacity(0.15),
+                        color: stateColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20)),
                     child: Text(stateLabel.toUpperCase(),
                         style: TextStyle(

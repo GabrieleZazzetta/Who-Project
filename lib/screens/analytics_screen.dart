@@ -372,7 +372,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 16,
               offset: const Offset(0, 4))
         ],
@@ -451,7 +451,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8)),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -537,7 +537,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
-                          color: _slateLight.withOpacity(0.5))),
+                          color: _slateLight.withValues(alpha: 0.5))),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

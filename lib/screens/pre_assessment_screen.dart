@@ -241,7 +241,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -5))
               ],
@@ -315,6 +315,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                   initialDate: _assessmentDate ?? DateTime.now(),
                   firstDate: DateTime(2020),
                   lastDate: DateTime(2030));
+              
+              if (!mounted) return;
               if (date != null) setState(() => _assessmentDate = date);
             },
             child: InputDecorator(
@@ -450,7 +452,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             margin: const EdgeInsets.only(top: 8, bottom: 24),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-                color: Colors.blue.shade50.withOpacity(0.5),
+                color: Colors.blue.shade50.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.blue.shade100)),
             child: Column(

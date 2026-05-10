@@ -90,7 +90,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         await _createNewAssessment();
       }
     } catch (e) {
-      print("Errore caricamento database: $e");
+      debugPrint("Errore caricamento database: $e");
     }
 
     // Ferma il caricamento e mostra la mappa
@@ -143,7 +143,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.2),
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         iconTheme: const IconThemeData(color: Color(0xFF003D73)),
 
         // --- I 3 TRUCCHI PRO PER EVITARE IL TRONCAMENTO ---
@@ -163,7 +163,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           Container(
             margin: const EdgeInsets.only(right: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF005DA8).withOpacity(0.1),
+              color: const Color(0xFF005DA8).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -181,10 +181,15 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                           AssessmentScreen(zone: generalZone)),
                 );
 
+                if (!mounted) return;
+
                 // --- SALVATAGGIO BLINDATO ---
                 if (_hasRealAnswers()) {
                   final savedId =
                       await DatabaseService.instance.saveAssessment(layoutData);
+
+                  if (!mounted) return;
+
                   layoutData.id = savedId;
                 }
                 _refreshMap();
@@ -298,10 +303,15 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                       builder: (context) => AssessmentScreen(zone: zone)),
                 );
 
+                if (!mounted) return;
+
                 // --- SALVATAGGIO BLINDATO ---
                 if (_hasRealAnswers()) {
                   final savedId =
                       await DatabaseService.instance.saveAssessment(layoutData);
+                  
+                  if (!mounted) return;
+
                   layoutData.id = savedId;
                 }
 
@@ -309,7 +319,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.lightBlue.withOpacity(0.5),
+                  color: Colors.lightBlue.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -339,7 +349,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                           boxShadow: [
                             BoxShadow(
                               color: zone.statusColor
-                                  .withOpacity(isCritical ? 0.8 : 0.4),
+                                  .withValues(alpha: isCritical ? 0.8 : 0.4),
                               blurRadius: isCritical ? 15 : 8,
                               spreadRadius: isCritical ? 4 : 1,
                             )

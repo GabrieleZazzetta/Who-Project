@@ -1,0 +1,5 @@
+{
+    "tfa.dashboard.viewMode": "models",
+    "tfa.dashboard.refreshRate": 120,
+    "tfa.cache.autoClean": true
+}
