@@ -588,9 +588,11 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Generating Editable Report..."), duration: Duration(seconds: 1)),
                         );
-                        // Chiama il servizio distaccato dalla UI
+                        // File .doc generation
                         await ReportExportService.exportAssessmentToEditableWord(context, facility);
                       } catch (e) {
+                        if (!mounted) return;
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Failed to generate report: $e"), backgroundColor: Colors.red),
                         );

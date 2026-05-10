@@ -6,11 +6,11 @@ import '../models/assessment_models.dart';
 import 'package:intl/intl.dart';
 
 class ReportExportService {
-  /// Genera e condivide un file Word editabile (.doc) tramite HTML Formattato
+  // Generate an editable Word file (.doc) via formatted HTML
   static Future<void> exportAssessmentToEditableWord(BuildContext context, FacilityLayout facility) async {
     try {
-      // 1. Generiamo una stringa HTML con i meta-tag di Microsoft Office.
-      // Questo trucco permette a Word di interpretare l'HTML come un vero documento editabile!
+      final info = facility.generalInfo;
+
       String htmlContent = '''
       <html xmlns:o="urn:schemas-microsoft-com:office:office"
             xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -34,6 +34,34 @@ class ReportExportService {
         <p><strong>Emergency Context:</strong> ${facility.emergencyType.name.toUpperCase()}</p>
         <p><strong>Date of Assessment:</strong> ${DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())}</p>
         
+        <h2>General Information</h2>
+        <table>
+          <tr><td width="40%"><strong>Assessor Name:</strong></td><td>${info?.assessorName ?? ''}</td></tr>
+          <tr><td><strong>Assessor Email:</strong></td><td>${info?.assessorEmail ?? ''}</td></tr>
+          <tr><td><strong>Assessor Phone:</strong></td><td>${info?.assessorPhone ?? ''}</td></tr>
+          <tr><td><strong>Country:</strong></td><td>${info?.country ?? ''}</td></tr>
+          <tr><td><strong>Region:</strong></td><td>${info?.region ?? ''}</td></tr>
+          <tr><td><strong>District:</strong></td><td>${info?.district ?? ''}</td></tr>
+          <tr><td><strong>City:</strong></td><td>${info?.city ?? ''}</td></tr>
+          <tr><td><strong>Facility Address/GPS:</strong></td><td>${info?.facilityAddressOrGps ?? ''}</td></tr>
+          <tr><td><strong>Location Record:</strong></td><td>${info?.facilityLocationRecord ?? ''}</td></tr>
+          <tr><td><strong>Facility Code:</strong></td><td>${info?.facilityCode ?? ''}</td></tr>
+          <tr><td><strong>Managing Authority:</strong></td><td>${info?.managingAuthority ?? ''}</td></tr>
+          <tr><td><strong>Facility Director Name:</strong></td><td>${info?.facilityDirectorName ?? ''}</td></tr>
+          <tr><td><strong>Facility Director Phone:</strong></td><td>${info?.facilityDirectorPhone ?? ''}</td></tr>
+          <tr><td><strong>Facility Director Email:</strong></td><td>${info?.facilityDirectorEmail ?? ''}</td></tr>
+          <tr><td><strong>Respondent Name:</strong></td><td>${info?.respondentName ?? ''}</td></tr>
+          <tr><td><strong>Respondent Position:</strong></td><td>${info?.respondentPosition ?? ''}</td></tr>
+          <tr><td><strong>Structure Type:</strong></td><td>${info?.structureType ?? ''}</td></tr>
+          <tr><td><strong>Existing Healthcare Facility Type:</strong></td><td>${info?.existingHealthcareFacilityType ?? ''}</td></tr>
+          <tr><td><strong>Offers Outpatient:</strong></td><td>${info?.offersOutpatient ?? ''}</td></tr>
+          <tr><td><strong>Offers Inpatient:</strong></td><td>${info?.offersInpatient ?? ''}</td></tr>
+          <tr><td><strong>Inpatient Beds:</strong></td><td>${info?.inpatientBeds?.toString() ?? ''}</td></tr>
+          <tr><td><strong>ICU Beds:</strong></td><td>${info?.icuBeds?.toString() ?? ''}</td></tr>
+          <tr><td><strong>24h Emergency:</strong></td><td>${info?.has24hEmergency ?? ''}</td></tr>
+          <tr><td><strong>ICU or HDU:</strong></td><td>${info?.hasIcuOrHdu ?? ''}</td></tr>
+        </table>
+
         <h2>Overall Readiness</h2>
         <p class="score">Global Readiness Score: ${facility.globalReadinessScore.toStringAsFixed(0)}%</p>
         
@@ -45,7 +73,7 @@ class ReportExportService {
           </tr>
       ''';
 
-      // Aggiungiamo dinamicamente tutte le zone valutate
+      // Add dynamically all the zones evaluated
       for (var zone in facility.zones) {
         if(zone.completionPercentage > 0) {
           htmlContent += '''
@@ -65,19 +93,17 @@ class ReportExportService {
       </html>
       ''';
 
-      // 2. Salviamo il file nella directory temporanea usando l'estensione .doc
+      // Create a safe filename and save the HTML content as a .doc file in the device's temp directory.
       final directory = await getTemporaryDirectory();
       final fileName = "WHO_Report_${facility.facilityName.replaceAll(' ', '_')}.doc";
       final file = File('${directory.path}/$fileName');
       
       await file.writeAsString(htmlContent);
 
-      // --- TRUCCO PER SVILUPPATORI: Stampa il percorso del file ---
-      // Puoi copiare questo percorso e incollarlo in "Vai alla cartella" del Finder (Cmd+Shift+G)
+      // Finder (Cmd+Shift+G)
       debugPrint("✅ Report generato! Percorso su Mac: ${file.path}");
-      // -----------------------------------------------------------
 
-      // 3. Apriamo il foglio di condivisione nativo
+      // Trigger the native OS share sheet (Airdrop, Email, Files, etc.).
       final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path)],
@@ -87,7 +113,7 @@ class ReportExportService {
             : null,
       );
     } catch (e) {
-      print("Errore generazione Report Editabile: $e");
+      debugPrint("Errore generazione Report Editabile: $e");
       rethrow;
     }
   }
