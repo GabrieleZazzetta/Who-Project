@@ -6,7 +6,6 @@ class MpoxScreeningTriageData {
     return FacilityLayout(
       facilityName: "Screening, Triage & Temporary Isolation",
       emergencyType: EmergencyType.mpox,
-      // NOTA: Inserisci il percorso corretto dell'immagine della tua nuova mappa
       mapImagePath: 'assets/maps/facility_map_fig2.png', 
       zones: [
         
@@ -16,7 +15,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z1_screening_reception',
           name: 'Screening & Reception',
-          // Usa il trucco del GestureDetector sul simulatore con la nuova mappa per trovare le coordinate.
           coordinates: const MapCoordinates(top: 270, left: 236), 
           touchArea: const MapCoordinates(top: 265, left: 236, width: 156, height: 156),
           checklist: [
@@ -57,8 +55,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z2_staff_functions',
           name: 'Other Staff Functions',
-          // Usa il trucco del GestureDetector sul simulatore con la nuova mappa per trovare le coordinate esatte.
-          // Nel diagramma si trova subito dopo l'area di Screening/Reception, al centro del flusso.
           coordinates: const MapCoordinates(top: 182, left: 522), 
           touchArea: const MapCoordinates(top: 179, left: 519, width: 156, height: 156),
           checklist: [
@@ -92,7 +88,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z3_donning_triage',
           name: 'Donning (Triage)',
-          // Posizionata a sinistra della Consulting Room (Staff entrance)
           coordinates: const MapCoordinates(top: 423, left: 335), 
           touchArea: const MapCoordinates(top: 423, left: 335, width: 70, height: 70),
           checklist: [
@@ -119,7 +114,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z4_doffing_triage',
           name: 'Doffing (Triage)',
-          // Posizionata all'uscita della Consulting Room verso l'area staff
           coordinates: const MapCoordinates(top: 423, left: 416), 
           touchArea: const MapCoordinates(top: 423, left: 416, width: 70, height: 70),
           checklist: [
@@ -146,7 +140,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z5_donning_isolation',
           name: 'Donning (Isolation)',
-          // Posizionata all'ingresso dell'area di isolamento temporaneo
           coordinates: const MapCoordinates(top: 421, left: 526), 
           touchArea: const MapCoordinates(top: 421, left: 526, width: 70, height: 70),
           checklist: [
@@ -173,7 +166,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z6_doffing_isolation',
           name: 'Doffing (Isolation)',
-          // Posizionata all'uscita della stanza di isolamento
           coordinates: const MapCoordinates(top: 421, left: 608), 
           touchArea: const MapCoordinates(top: 421, left: 608, width: 70, height: 70),
           checklist: [
@@ -200,8 +192,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z7_temporary_isolation',
           name: 'Temporary Isolation Room',
-          // Usa il trucco del GestureDetector per calibrare la posizione.
-          // Nel diagramma si trova solitamente sul percorso d'uscita "rosso".
           coordinates: const MapCoordinates(top: 495, left: 525), 
           touchArea: const MapCoordinates(top: 490, left: 519, width: 154, height: 154),
           checklist: [
@@ -236,17 +226,13 @@ class MpoxScreeningTriageData {
           ],
         ),
 
-        
-
         // ==========================================
         // 8. TOILET (Temporary Isolation - Fig. 2)
         // ==========================================
         SpatialZone(
           id: 'z8_toilet_isolation',
           name: 'Toilet (Isolation)',
-          // Usa il trucco del GestureDetector nel simulatore per centrare la piccola bolla "toilet".
-          // Si trova nella parte in basso a destra della Temporary Isolation Room.
-          coordinates: const MapCoordinates(top: 578, left: 614), // Valori di esempio
+          coordinates: const MapCoordinates(top: 578, left: 614),
           touchArea: const MapCoordinates(top: 581, left: 618, width: 42, height: 42),
           checklist: [
             AssessmentQuestion(
@@ -279,8 +265,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z10_triage_consulting',
           name: 'Triage / Consulting Room',
-          // Usa il trucco del GestureDetector per calibrare la posizione.
-          // Nel diagramma è la grande bolla rossa centrale.
           coordinates: const MapCoordinates(top: 495, left: 338), 
           touchArea: const MapCoordinates(top: 490, left: 332, width: 154, height: 154),
           checklist: [
@@ -335,8 +319,6 @@ class MpoxScreeningTriageData {
         SpatialZone(
           id: 'z11_other_health_services',
           name: 'Any Other Health Services',
-          // Posizionata in alto a sinistra come da diagramma.
-          // Usa il GestureDetector per la calibrazione finale.
           coordinates: const MapCoordinates(top: 20, left: 43), 
           touchArea: const MapCoordinates(top: 18, left: 37, width: 154, height: 154),
           checklist: [

@@ -245,6 +245,25 @@ class MpoxExistingWardData {
           touchArea: const MapCoordinates(top: 357, left: 177, width: 97, height: 97),
           checklist: [
             AssessmentQuestion(
+              id: 'q8_office_separation',
+              category: AssessmentCategory.spatialLayout,
+              text: 'Are the administrative offices strictly separated from the clinical and patient areas?',
+              recommendationText: 'Ensure that administrative staff not involved in direct patient care operate in a designated green zone to minimize exposure risk.',
+              selectedCompliance: ComplianceLevel.pending,
+            ),
+          ],
+        ),
+
+        // ==========================================
+        // 9. CHANGING ROOM (Administrative and service area)
+        // ==========================================
+        SpatialZone(
+          id: 'z9',
+          name: 'Changing Room',
+          coordinates: const MapCoordinates(top: 360, left: 150), 
+          touchArea: const MapCoordinates(top: 299, left: 95, width: 97, height: 97),
+          checklist: [
+            AssessmentQuestion(
               id: 'q9_changing_location',
               category: AssessmentCategory.spatialLayout,
               text: 'Is the changing room located exclusively in the "green zone" (clean area) for staff?',
@@ -263,41 +282,6 @@ class MpoxExistingWardData {
               category: AssessmentCategory.wash,
               text: 'Is there a hand hygiene station or an alcohol-based hand rub dispenser inside the changing room?',
               recommendationText: 'Install alcohol-based hand rub dispensers to allow staff to sanitize their hands before putting on their uniform or after removing it.',
-              selectedCompliance: ComplianceLevel.pending,
-            ),
-          ],
-        ),
-
-        // ==========================================
-        // 9. CHANGING ROOM (Area Amministrativa e Servizi)
-        // ==========================================
-        SpatialZone(
-          id: 'z9',
-          name: 'Changing Room',
-          // NOTA: Usa il trucco del GestureDetector per trovare i valori esatti 
-          // di top e left cliccando sulla bolla sopra lo Staff Area.
-          coordinates: const MapCoordinates(top: 360, left: 150), 
-          touchArea: const MapCoordinates(top: 299, left: 95, width: 97, height: 97),
-          checklist: [
-            AssessmentQuestion(
-              id: 'q9_changing_location',
-              category: AssessmentCategory.spatialLayout,
-              text: 'Lo spogliatoio è situato esclusivamente nella "zona verde" (area pulita) per il personale?',
-              recommendationText: 'Assicurarsi che lo spogliatoio sia accessibile solo dall’area amministrativa o dall’ingresso dedicato allo staff, evitando qualsiasi contatto con i percorsi dei pazienti[cite: 434, 1069].',
-              selectedCompliance: ComplianceLevel.pending,
-            ),
-            AssessmentQuestion(
-              id: 'q9_changing_storage',
-              category: AssessmentCategory.logistics,
-              text: 'Sono disponibili armadietti o spazi separati per riporre gli abiti civili e le uniformi pulite?',
-              recommendationText: 'Fornire spazi di stoccaggio sicuri per prevenire la contaminazione incrociata tra abiti civili e indumenti da lavoro[cite: 435, 1178].',
-              selectedCompliance: ComplianceLevel.pending,
-            ),
-            AssessmentQuestion(
-              id: 'q9_changing_hygiene',
-              category: AssessmentCategory.wash,
-              text: 'È presente una stazione per l’igiene delle mani o un distributore di soluzione alcolica all’interno dello spogliatoio?',
-              recommendationText: 'Installare distributori di soluzione idroalcolica per consentire al personale di igienizzare le mani prima di indossare l’uniforme o dopo averla rimossa[cite: 289, 413].',
               selectedCompliance: ComplianceLevel.pending,
             ),
           ],
@@ -615,12 +599,9 @@ class MpoxExistingWardData {
         // 18. DONNING AREA (Mpox Ward)
         // ==========================================
         SpatialZone(
-          id: 'z18_donning_confirmed', // Cambia questo ID per i reparti Suspect e Probable
-          name: 'Donning (Confirmed)', // Cambia il nome di conseguenza
-          // Usa il trucco del GestureDetector nel simulatore per calibrare le coordinate esatte.
-          // Nel diagramma, l'area donning si trova all'ingresso del relativo reparto.
+          id: 'z18_donning_confirmed',
+          name: 'Donning (Confirmed)',
           coordinates: const MapCoordinates(top: 182, left: 425), 
-          // Area di tocco ridotta (40x40) per facilitare il tap senza sovrapporsi alle altre bolle
           touchArea: const MapCoordinates(top: 186, left: 431, width: 52, height: 52),
           checklist: [
             AssessmentQuestion(
@@ -651,12 +632,9 @@ class MpoxExistingWardData {
         // 19. DONNING AREA (Mpox Ward)
         // ==========================================
         SpatialZone(
-          id: 'z19_donning_probable', // Cambia questo ID per i reparti Suspect e Probable
-          name: 'Donning (Probable)', // Cambia il nome di conseguenza
-          // Usa il trucco del GestureDetector nel simulatore per calibrare le coordinate esatte.
-          // Nel diagramma, l'area donning si trova all'ingresso del relativo reparto.
+          id: 'z19_donning_probable',
+          name: 'Donning (Probable)',
           coordinates: const MapCoordinates(top: 362, left: 557), 
-          // Area di tocco ridotta (40x40) per facilitare il tap senza sovrapporsi alle altre bolle
           touchArea: const MapCoordinates(top: 366, left: 561, width: 52, height: 52),
           checklist: [
             AssessmentQuestion(
@@ -687,12 +665,9 @@ class MpoxExistingWardData {
         // 20. DONNING AREA (Mpox Ward)
         // ==========================================
         SpatialZone(
-          id: 'z20_donning_suspect', // Cambia questo ID per i reparti Suspect e Probable
-          name: 'Donning (Suspect)', // Cambia il nome di conseguenza
-          // Usa il trucco del GestureDetector nel simulatore per calibrare le coordinate esatte.
-          // Nel diagramma, l'area donning si trova all'ingresso del relativo reparto.
+          id: 'z20_donning_suspect',
+          name: 'Donning (Suspect)',
           coordinates: const MapCoordinates(top: 602, left: 425), 
-          // Area di tocco ridotta (40x40) per facilitare il tap senza sovrapporsi alle altre bolle
           touchArea: const MapCoordinates(top: 606, left: 429, width: 52, height: 52),
           checklist: [
             AssessmentQuestion(
