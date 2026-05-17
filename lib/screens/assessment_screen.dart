@@ -138,8 +138,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.photo_library, color: Color(0xFF005DA8), size: 24),
+              leading: const Icon(Icons.photo_library,
+                  color: Color(0xFF005DA8), size: 24),
               title: const Text('Choose from Gallery'),
               onTap: () {
                 context.pop();
@@ -223,7 +223,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 24),
+          icon:
+              const Icon(Icons.arrow_back, color: Color(0xFF0F172A), size: 24),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -244,10 +245,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 indicatorWeight: 4,
                 labelColor: const Color(0xFF005DA8),
                 unselectedLabelColor: Colors.grey.shade500,
-                labelStyle:
-                    TextStyle(fontWeight: FontWeight.w800, fontSize: isTablet ? 16 : 13),
-                unselectedLabelStyle:
-                    TextStyle(fontWeight: FontWeight.w600, fontSize: isTablet ? 16 : 13),
+                labelStyle: TextStyle(
+                    fontWeight: FontWeight.w800, fontSize: isTablet ? 16 : 13),
+                unselectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: isTablet ? 16 : 13),
                 tabs: _sectionNames.map((name) => Tab(text: name)).toList(),
               )
             : null,
@@ -402,7 +403,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       );
     }
 
-    final String titleText = isMobilePortrait ? "Area Checklist" : "Area Assessment Checklist";
+    final String titleText =
+        isMobilePortrait ? "Area Checklist" : "Area Assessment Checklist";
     final double titleFontSize = isMobilePortrait ? 18 : 20;
 
     return Container(
@@ -426,8 +428,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -465,7 +466,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         _buildComplianceSelector(
           question: question,
           level: ComplianceLevel.meetsTarget,
-          label: "Meets Target\n(3 pts)",
+          label: "Meets\n(3 pts)",
           color: Colors.green.shade600,
           icon: Icons.check_circle,
           isTablet: isTablet,
@@ -474,7 +475,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         _buildComplianceSelector(
           question: question,
           level: ComplianceLevel.partiallyMeets,
-          label: "Partially Meets Target\n(2 pts)",
+          label: "Partially Meets\n(2 pts)",
           color: Colors.orange.shade500,
           icon: Icons.warning_amber_rounded,
           isTablet: isTablet,
@@ -518,7 +519,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   flex: 5,
                   child: Padding(
                     padding: const EdgeInsets.only(right: 48.0, top: 4.0),
-                    child: _buildRichQuestionText(question.text, questionFontSize, isTablet),
+                    child: _buildRichQuestionText(
+                        question.text, questionFontSize, isTablet),
                   ),
                 ),
                 Expanded(
@@ -618,8 +620,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: isTablet ? 13 : 11,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.grey.shade700,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w600,
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -632,12 +636,15 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   top: 6,
                   right: 6,
                   child: GestureDetector(
-                    onTap: () => _showCriteriaDialog(label.split('\n')[0], criteriaText, color),
+                    onTap: () => _showCriteriaDialog(
+                        label.split('\n')[0], criteriaText, color),
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       child: Icon(Icons.info_outline,
                           size: isTablet ? 20 : 16,
-                          color: isSelected ? Colors.white70 : Colors.grey.shade400),
+                          color: isSelected
+                              ? Colors.white70
+                              : Colors.grey.shade400),
                     ),
                   ),
                 ),
@@ -691,7 +698,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               elevation: 0,
             ),
             onPressed: () => context.pop(),
-            child: const Text("Got it", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text("Got it",
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
