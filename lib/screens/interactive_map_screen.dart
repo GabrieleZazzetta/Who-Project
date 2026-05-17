@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/assessment_models.dart';
-import '../services/database_service.dart'; // <-- IMPORTANTE: Il nostro database!
-import 'assessment_screen.dart'; // Assicurati che questo file sia nella stessa cartella!
-import '../data/facility_data_factory.dart'; // <-- IMPORTANTE: La factory per i dati delle strutture
-import '../data/general_facility_data.dart'; // Assicurati che il file si chiami esattamente così!
+import '../services/database_service.dart';
+import '../data/facility_data_factory.dart';
+import '../data/general_facility_data.dart';
 
 class InteractiveMapScreen extends StatefulWidget {
   final EmergencyType emergencyType;
   final FacilityType facilityType;
-  final int?
-      assessmentId; // <-- Se nullo = nuova ispezione. Se ha un ID = carica l'esistente.
-  final FacilityLayout? preFilledData; // <-- NUOVO: Accetta i dati dal Form!
+  final int? assessmentId;
+  final FacilityLayout? preFilledData;
 
   const InteractiveMapScreen({
     super.key,
     required this.emergencyType,
     required this.facilityType,
     this.assessmentId,
-    this.preFilledData, // <-- Aggiunto al costruttore!
+    this.preFilledData,
   });
 
   @override
@@ -26,92 +25,23 @@ class InteractiveMapScreen extends StatefulWidget {
 
 class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     with SingleTickerProviderStateMixin {
-  late FacilityLayout layoutData;
-  bool _isLoading =
-      true; // Mostra un caricamento mentre Isar legge/scrive i dati
+  // LOGICA DI STATO
 
+  late FacilityLayout layoutData;
+  bool _isLoading = true;
+  static const bool _debugMode = false; // ATTIVA PER VEDERE LE AREE DI TOCCO (BLU)
   late AnimationController _pulseController;
   final TransformationController _mapController = TransformationController();
 
   @override
   void initState() {
     super.initState();
-    _initDatabase(); // <-- Avvia il flusso del database
-
+    _initializeData();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
   }
-
-  // --- NUOVA FUNZIONE DI CONTROLLO ANTI-FANTASMA ---
-  // Verifica se esiste almeno una risposta REALE (3, 2 o 1 punto)
-  bool _hasRealAnswers() {
-    for (var zone in layoutData.zones) {
-      for (var question in zone.checklist) {
-        if (question.selectedCompliance == ComplianceLevel.meetsTarget ||
-            question.selectedCompliance == ComplianceLevel.partiallyMeets ||
-            question.selectedCompliance == ComplianceLevel.doesNotMeet) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  // --- LOGICA DATABASE CORRETTA (CON RAM E FIX LISTA) ---
-  Future<void> _initDatabase() async {
-    try {
-      if (widget.assessmentId != null) {
-        // 1. CARICA ISPEZIONE ESISTENTE (Dal Database)
-        final existing = await DatabaseService.instance
-            .getAssessmentById(widget.assessmentId!);
-        if (existing != null) {
-          layoutData = existing;
-
-          // Se la vecchia ispezione non ha la valutazione generale, la aggiungiamo!
-          bool hasGeneralZone = layoutData.zones
-              .any((z) => z.id == 'general_facility_assessment');
-          if (!hasGeneralZone) {
-            layoutData.zones = List<SpatialZone>.from(layoutData.zones);
-            layoutData.zones.add(getGeneralFacilityZone());
-          }
-        } else {
-          await _createNewAssessment();
-        }
-      } else if (widget.preFilledData != null) {
-        // 2. CREA NUOVA ISPEZIONE USANDO I DATI DEL FORM (Dalla RAM)
-        layoutData = widget.preFilledData!;
-        // Sblocco lista e aggiunta bolla fantasma
-        layoutData.zones = List<SpatialZone>.from(layoutData.zones);
-        layoutData.zones.add(getGeneralFacilityZone());
-      } else {
-        // 3. FALLBACK DI SICUREZZA
-        await _createNewAssessment();
-      }
-    } catch (e) {
-      debugPrint("Errore caricamento database: $e");
-    }
-
-    // Ferma il caricamento e mostra la mappa
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _createNewAssessment() async {
-    // CHIEDIAMO ALLA FACTORY I DATI CORRETTI!
-    layoutData = FacilityDataFactory.getLayout(
-        widget.emergencyType, widget.facilityType);
-    layoutData.dateCreated = DateTime.now();
-
-    // SBLOCCHIAMO LA LISTA PRIMA DI AGGIUNGERE LA BOLLA FANTASMA
-    layoutData.zones = List<SpatialZone>.from(layoutData.zones);
-    layoutData.zones.add(getGeneralFacilityZone());
-  }
-  // -------------------------
 
   @override
   void dispose() {
@@ -120,16 +50,78 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     super.dispose();
   }
 
-  void _refreshMap() {
-    setState(() {});
+  // GESTIONE DATI E PERSISTENZA
+
+  Future<void> _initializeData() async {
+    try {
+      if (widget.assessmentId != null) {
+        final existing = await DatabaseService.instance
+            .getAssessmentById(widget.assessmentId!);
+        if (existing != null) {
+          layoutData = existing;
+          _ensureGeneralAssessmentZone();
+        } else {
+          await _createNewAssessment();
+        }
+      } else if (widget.preFilledData != null) {
+        layoutData = widget.preFilledData!;
+        _ensureGeneralAssessmentZone();
+      } else {
+        await _createNewAssessment();
+      }
+    } catch (e) {
+      debugPrint("Errore inizializzazione dati: $e");
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
+
+  void _ensureGeneralAssessmentZone() {
+    final hasGeneralZone =
+        layoutData.zones.any((z) => z.id == 'general_facility_assessment');
+    if (!hasGeneralZone) {
+      layoutData.zones = List<SpatialZone>.from(layoutData.zones);
+      layoutData.zones.add(getGeneralFacilityZone());
+    }
+  }
+
+  Future<void> _createNewAssessment() async {
+    layoutData = FacilityDataFactory.getLayout(
+        widget.emergencyType, widget.facilityType);
+    layoutData.dateCreated = DateTime.now();
+    layoutData.zones = List<SpatialZone>.from(layoutData.zones);
+    layoutData.zones.add(getGeneralFacilityZone());
+  }
+
+  bool _hasRealAnswers() {
+    for (var zone in layoutData.zones) {
+      for (var question in zone.checklist) {
+        if (question.selectedCompliance != ComplianceLevel.pending &&
+            question.selectedCompliance != ComplianceLevel.notApplicable) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Future<void> _saveState() async {
+    if (_hasRealAnswers()) {
+      final savedId = await DatabaseService.instance.saveAssessment(layoutData);
+      layoutData.id = savedId;
+    }
+  }
+
+  void _refresh() => setState(() {});
+
+  // COSTRUZIONE INTERFACCIA
 
   @override
   Widget build(BuildContext context) {
-    // Se stiamo leggendo/scrivendo sul db, mostra un loader
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Colors.white,
         body:
             Center(child: CircularProgressIndicator(color: Color(0xFF005DA8))),
       );
@@ -137,141 +129,152 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        toolbarHeight: 70,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.2),
-        iconTheme: const IconThemeData(color: Color(0xFF003D73)),
-
-        // --- I 3 TRUCCHI PRO PER EVITARE IL TRONCAMENTO ---
-        centerTitle: false, // Allinea a sinistra anziché centrare
-        titleSpacing: 0, // Avvicina il testo alla freccia indietro
-        title: const Text(
-          "Spatial Assessment",
-          style: TextStyle(
-            color: Color(0xFF003D73),
-            fontWeight: FontWeight.bold,
-            fontSize: 18, // Leggermente ridotto per schermi piccoli
-          ),
-        ),
-
-        actions: [
-          // --- IL NUOVO BOTTONE PRO (COMPATTO E MODERNO) ---
-          Container(
-            margin: const EdgeInsets.only(right: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF005DA8).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              tooltip: 'General Facility Assessment',
-              icon: const Icon(Icons.domain_verification,
-                  color: Color(0xFF005DA8), size: 24),
-              onPressed: () async {
-                final generalZone = layoutData.zones
-                    .firstWhere((z) => z.id == 'general_facility_assessment');
-
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AssessmentScreen(zone: generalZone)),
-                );
-
-                if (!mounted) return;
-
-                // --- SALVATAGGIO BLINDATO ---
-                if (_hasRealAnswers()) {
-                  final savedId =
-                      await DatabaseService.instance.saveAssessment(layoutData);
-
-                  if (!mounted) return;
-
-                  layoutData.id = savedId;
-                }
-                _refreshMap();
-              },
-            ),
-          ),
-
-          // --- LOGO WHO ---
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: Image.asset(
-              'assets/images/who_logo_info.png',
-              height: 45,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.public, color: Color(0xFF005DA8)),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade50, Colors.white],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.pinch_outlined,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    "Pinch to explore. Tap highlighted pins to evaluate.",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ClipRRect(
-              child: InteractiveViewer(
-                transformationController: _mapController,
-                panEnabled: true,
-                minScale: 0.1,
-                maxScale: 4.0,
-                constrained: false,
-                boundaryMargin: const EdgeInsets.all(double.infinity),
-                child: SizedBox(
-                  width: 800,
-                  height: 1150,
-                  child: Stack(
-                    children: [
-                      Image.asset(
-                        layoutData.mapImagePath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
-                          color: Colors.grey.shade200,
-                          child: const Center(
-                              child: Text("Waiting for map asset...")),
-                        ),
-                      ),
+          _buildInstructionBanner(),
+          Expanded(child: _buildInteractiveMap()),
+        ],
+      ),
+    );
+  }
 
-                      // Filtriamo la zona "fantasma" per non disegnarla!
-                      ...layoutData.zones
-                          .where((zone) =>
-                              zone.id != 'general_facility_assessment')
-                          .map((zone) => _buildTappableZone(zone)),
-                    ],
-                  ),
-                ),
+  PreferredSizeWidget _buildAppBar() {
+    final bool isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isMobilePortrait = isPortrait && !isTablet;
+    final bool isTabletPortrait = isPortrait && isTablet;
+
+    return AppBar(
+      toolbarHeight: isTabletPortrait ? 80 : (isMobilePortrait ? 60 : 70),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 1,
+      shadowColor: Colors.black.withOpacity(0.2),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_ios_new,
+            color: const Color(0xFF003D73),
+            size: isTabletPortrait ? 28 : (isMobilePortrait ? 20 : 24)),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/');
+          }
+        },
+      ),
+      title: Text(
+        "Spatial Assessment",
+        style: TextStyle(
+          color: const Color(0xFF003D73),
+          fontWeight: FontWeight.bold,
+          fontSize: isTabletPortrait ? 30 : (isMobilePortrait ? 19 : 22),
+        ),
+      ),
+      actions: [
+        _buildAssessmentsListButton(isMobilePortrait),
+        _buildGeneralAssessmentButton(isMobilePortrait),
+      ],
+    );
+  }
+
+  Widget _buildAssessmentsListButton(bool isMobilePortrait) {
+    return Container(
+      margin: EdgeInsets.only(right: isMobilePortrait ? 6 : 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.15), width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF005DA8).withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: Icon(Icons.assignment_outlined,
+              color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
+          tooltip: "View Saved Assessments",
+          onPressed: () => context.go('/', extra: 1),
+          padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
+          constraints: isMobilePortrait ? const BoxConstraints() : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeneralAssessmentButton(bool isMobilePortrait) {
+    return Container(
+      margin: EdgeInsets.only(right: isMobilePortrait ? 10 : 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.15), width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF005DA8).withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: Icon(Icons.domain_verification,
+              color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
+          tooltip: "General Assessment",
+          padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
+          constraints: isMobilePortrait ? const BoxConstraints() : null,
+          onPressed: () async {
+            final zone = layoutData.zones
+                .firstWhere((z) => z.id == 'general_facility_assessment');
+
+            // NAVIGAZIONE ALL'ASSESSMENT DELLA ZONA
+            await context.push('/assessment', extra: zone);
+
+            if (!mounted) return;
+            await _saveState();
+            _refresh();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstructionBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.white],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.pinch_outlined,
+              color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "Pinch to explore. Tap highlighted pins to evaluate.",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
               ),
             ),
           ),
@@ -280,92 +283,177 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     );
   }
 
-  Widget _buildTappableZone(SpatialZone zone) {
-    bool isCritical = zone.statusColor == Colors.red.shade600;
+  // LOGICA DELLA MAPPA INTERATTIVA CON MAPPATURA ADATTIVA
+
+  // Dimensioni di riferimento dinamiche
+  double get _refWidth {
+    switch (widget.facilityType) {
+      case FacilityType.existingFacilityWithWard:
+        return 800.0;
+      case FacilityType.standAloneCenter:
+        return 601.0;
+      case FacilityType.congregateSetting:
+        return 657.0;
+      case FacilityType.screeningAndIsolation:
+        return 794.0;
+    }
+  }
+
+  double get _refHeight {
+    switch (widget.facilityType) {
+      case FacilityType.existingFacilityWithWard:
+        return 1131.0;
+      case FacilityType.standAloneCenter:
+        return 804.0;
+      case FacilityType.congregateSetting:
+        return 935.0;
+      case FacilityType.screeningAndIsolation:
+        return 1035.0;
+    }
+  }
+
+  Widget _buildInteractiveMap() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calcolo del fattore di scala basato sulla larghezza disponibile (es. iPad vs iPhone)
+        // Questo permette di usare i pixel estratti su un dispositivo e scalarli proporzionalmente
+        final double availableWidth = constraints.maxWidth;
+        final double scale = availableWidth / _refWidth;
+        final double scaledHeight = _refHeight * scale;
+
+        return ClipRRect(
+          child: InteractiveViewer(
+            transformationController: _mapController,
+            minScale: 0.5, // Permette di vedere la mappa intera su iPad
+            maxScale: 4.0,
+            constrained: false,
+            boundaryMargin: const EdgeInsets.all(double.infinity),
+            child: SizedBox(
+              width: availableWidth,
+              height: scaledHeight,
+              child: Stack(
+                children: [
+                  _buildMapBaseImage(),
+                  ...layoutData.zones
+                      .where((z) => z.id != 'general_facility_assessment')
+                      .map((zone) => _buildZoneLayer(zone, scale)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMapBaseImage() {
+    return Image.asset(
+      layoutData.mapImagePath,
+      fit: BoxFit.contain,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => Container(
+        color: Colors.grey.shade200,
+        child: const Center(child: Text("Caricamento mappa...")),
+      ),
+    );
+  }
+
+  Widget _buildZoneLayer(SpatialZone zone, double scale) {
+    final bool isCritical = zone.statusColor == Colors.red.shade600;
 
     return Positioned.fill(
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 1. IL CERCHIO CLICCABILE
-          Positioned(
-            top: zone.touchArea.top,
-            left: zone.touchArea.left,
-            width: zone.touchArea.width,
-            height: zone.touchArea.height,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () async {
-                // Vai alla schermata delle domande
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AssessmentScreen(zone: zone)),
-                );
+          _buildTappableArea(zone, scale),
+          _buildStatusIndicator(zone, isCritical, scale),
+        ],
+      ),
+    );
+  }
 
-                if (!mounted) return;
+  Widget _buildTappableArea(SpatialZone zone, double scale) {
+    // Applicazione della scala alle coordinate e dimensioni dell'area di tocco
+    return Positioned(
+      top: zone.touchArea.top * scale,
+      left: zone.touchArea.left * scale,
+      width: zone.touchArea.width * scale,
+      height: zone.touchArea.height * scale,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () async {
+          await context.push('/assessment', extra: zone);
+          if (!mounted) return;
+          await _saveState();
+          _refresh();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: _debugMode
+                ? Colors.blue.withOpacity(0.3)
+                : Colors.transparent,
+            shape: BoxShape.circle,
+            border:
+                _debugMode ? Border.all(color: Colors.blue, width: 1) : null,
+          ),
+          child: _debugMode
+              ? Center(
+                  child: Text(zone.id.substring(0, 2),
+                      style: const TextStyle(fontSize: 8, color: Colors.white)))
+              : null,
+        ),
+      ),
+    );
+  }
 
-                // --- SALVATAGGIO BLINDATO ---
-                if (_hasRealAnswers()) {
-                  final savedId =
-                      await DatabaseService.instance.saveAssessment(layoutData);
-                  
-                  if (!mounted) return;
+  Widget _buildStatusIndicator(
+      SpatialZone zone, bool isCritical, double scale) {
+    // Calcolo di un moltiplicatore adattivo per la dimensione della bolla e dell'icona
+    // Evita che le bolle diventino troppo grandi su schermi enormi o troppo piccole su schermi ridotti
+    double multiplier = scale < 1.0 ? 1.0 : scale * 0.8;
+    multiplier = multiplier.clamp(0.8, 1.5);
 
-                  layoutData.id = savedId;
-                }
+    final double bubbleSize = 20.0 * multiplier;
+    final double iconSize = 16.0 * multiplier;
 
-                _refreshMap();
-              },
+    // Applicazione della scala al posizionamento dell'indicatore di stato
+    return Positioned(
+      top: zone.coordinates.top * scale,
+      left: zone.coordinates.left * scale,
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, _) {
+            final double pulseScale =
+                isCritical ? 1.0 + (_pulseController.value * 0.3) : 1.0;
+            return Transform.scale(
+              scale: pulseScale,
               child: Container(
+                width: bubbleSize,
+                height: bubbleSize,
                 decoration: BoxDecoration(
-                  color: Colors.lightBlue.withValues(alpha: 0.5),
+                  color: zone.statusColor,
                   shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          zone.statusColor.withOpacity(isCritical ? 0.8 : 0.4),
+                      blurRadius: isCritical ? 15 : 8,
+                      spreadRadius: isCritical ? 4 : 1,
+                    )
+                  ],
+                ),
+                child: Icon(
+                  isCritical ? Icons.priority_high : Icons.check,
+                  size: iconSize,
+                  color: Colors.white,
                 ),
               ),
-            ),
-          ),
-
-          // 2. IL TICK GRAFICO
-          Positioned(
-            top: zone.coordinates.top,
-            left: zone.coordinates.left,
-            child: IgnorePointer(
-              child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    double scale =
-                        isCritical ? 1.0 + (_pulseController.value * 0.3) : 1.0;
-
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: zone.statusColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: zone.statusColor
-                                  .withValues(alpha: isCritical ? 0.8 : 0.4),
-                              blurRadius: isCritical ? 15 : 8,
-                              spreadRadius: isCritical ? 4 : 1,
-                            )
-                          ],
-                        ),
-                        child: isCritical
-                            ? const Icon(Icons.priority_high,
-                                size: 16, color: Colors.white)
-                            : const Icon(Icons.check,
-                                size: 16, color: Colors.white),
-                      ),
-                    );
-                  }),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }

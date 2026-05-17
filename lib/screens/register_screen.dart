@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'login_screen.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import '../models/local_user_credential.dart';
+import '../services/database_service.dart';
+import '../services/auth_service.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+  bool _isLoading = false;
+
   bool _isWhoStaff = true;
 
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   DateTime? _selectedDate;
   bool _obscurePassword = true;
 
@@ -50,261 +57,478 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _submitRegistration() {
+  void _submitRegistration() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select your Date of Birth"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Please select your Date of Birth"),
+            backgroundColor: Colors.red));
         return;
       }
       if (!(_hasMinLength && _hasUpper && _hasNumber && _hasSpecial)) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please meet all password requirements"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Please meet all password requirements"),
+            backgroundColor: Colors.red));
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Registration Successful! Please Login."), backgroundColor: Colors.green));
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+
+      setState(() => _isLoading = true);
+      try {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text;
+        final displayName = "${_firstNameController.text} ${_lastNameController.text}";
+
+        await ref.read(authServiceProvider).register(
+          email,
+          password,
+          isWhoStaff: _isWhoStaff,
+          displayName: displayName,
+        );
+
+        // SALVATAGGIO CREDENZIALI LOCALI PER ACCESSO OFFLINE / RECUPERO PASSWORD
+        final bytes = utf8.encode(password);
+        final passwordHash = sha256.convert(bytes).toString();
+
+        await DatabaseService.instance.saveLocalCredential(
+          LocalUserCredential()
+            ..email = email
+            ..displayName = displayName
+            ..dateOfBirth = _selectedDate
+            ..passwordHash = passwordHash
+            ..isWhoStaff = _isWhoStaff
+            ..passwordNeedsSync = false,
+        );
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Registration Successful! Welcome."),
+              backgroundColor: Colors.green));
+          context.go('/');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Registration failed: ${e.toString()}"), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  
-                  // --- HEADER IDENTICO AL LOGIN PER L'EFFETTO HERO ---
-                  Hero(
-                    tag: 'who_logo',
-                    child: Center(
-                      child: Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Image.asset(
-                            'assets/images/who_logo.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => Icon(Icons.public, size: 60, color: Theme.of(context).colorScheme.primary),
+    final mediaQuery = MediaQuery.of(context);
+    final bool isTablet = mediaQuery.size.shortestSide >= 600;
+    final bool isLandscape = mediaQuery.orientation == Orientation.landscape;
+
+    // LAYOUT PREMIUM PER TABLET (Split View for Landscape, Stacked for Portrait)
+    if (isTablet) {
+      if (!isLandscape) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Top Header Branding per Tablet Portrait
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF005DA8), Color(0xFF003D73)],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(48),
+                      bottomRight: Radius.circular(48),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildLogo(isDark: true),
+                      const SizedBox(height: 32),
+                      const Text(
+                        "Join the Platform",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.1,
+                            letterSpacing: -0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Create your account to start managing health facility assessments globally.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 16),
+                      ),
+                      if (_isWhoStaff) ...[
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade400.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color:
+                                    Colors.red.shade200.withOpacity(0.3)),
                           ),
+                          child: const Text("AUTHORIZED PERSONNEL ONLY",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5)),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+                // Form di Registrazione Centrata
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 550),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 60),
+                      child: _buildForm(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // Layout Orizzontale (Landscape) per Tablet
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Row(
+          children: [
+            // PARTE SINISTRA: Branding & Background (Fisso)
+            Expanded(
+              flex: 1,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF005DA8),
+                      Color(0xFF003D73),
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -100,
+                      left: -100,
+                      child: Container(
+                        width: 400,
+                        height: 400,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.05),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    "Create Account",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF003D73), height: 1.1, letterSpacing: -0.5),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 40),
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(20)),
-                    child: Text(
-                      "HEALTH FACILITIES PLATFORM",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blue.shade800, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.0),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // --- TOGGLE (WHO vs EXTERNAL) ---
-                  Container(
-                    decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() { _isWhoStaff = true; _emailController.clear(); }),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _isWhoStaff ? Colors.white : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: _isWhoStaff ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)] : [],
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildLogo(isDark: true),
+                            const SizedBox(height: 40),
+                            const Text(
+                              "Join the Platform",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                height: 1.1,
+                                letterSpacing: -0.5,
                               ),
-                              child: Center(child: Text("WHO Staff", style: TextStyle(fontWeight: _isWhoStaff ? FontWeight.bold : FontWeight.w500, color: _isWhoStaff ? Theme.of(context).colorScheme.primary : Colors.grey.shade600))),
                             ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() { _isWhoStaff = false; _emailController.clear(); }),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: !_isWhoStaff ? Colors.white : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: !_isWhoStaff ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)] : [],
+                            const SizedBox(height: 16),
+                            Text(
+                              "Create your account to start managing health facility assessments globally.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
                               ),
-                              child: Center(child: Text("External Partner", style: TextStyle(fontWeight: !_isWhoStaff ? FontWeight.bold : FontWeight.w500, color: !_isWhoStaff ? Theme.of(context).colorScheme.primary : Colors.grey.shade600))),
                             ),
-                          ),
+                            const SizedBox(height: 24),
+                            // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Tablet)
+                            if (_isWhoStaff)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade400
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: Colors.red.shade200
+                                          .withOpacity(0.3)),
+                                ),
+                                child: const Text(
+                                  "AUTHORIZED PERSONNEL ONLY",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // --- FORM ---
-                  Form(
-                    key: _formKey,
+                  ],
+                ),
+              ),
+            ),
+            // PARTE DESTRA: Form di Registrazione (Scorrevole)
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildTextField(controller: _firstNameController, hint: "First Name", icon: Icons.person_outline)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildTextField(controller: _lastNameController, hint: "Last Name", icon: Icons.person_outline)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // DATA DI NASCITA
-                        GestureDetector(
-                          onTap: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime(2000),
-                              firstDate: DateTime(1930),
-                              lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-                            );
-                            if (date != null) setState(() => _selectedDate = date);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                            child: Row(
-                              children: [
-                                Icon(Icons.calendar_today_outlined, color: Colors.grey.shade500),
-                                const SizedBox(width: 12),
-                                Text(
-                                  _selectedDate == null ? "Date of Birth" : DateFormat('dd MMM yyyy').format(_selectedDate!),
-                                  style: TextStyle(color: _selectedDate == null ? Colors.grey.shade600 : Colors.black87, fontSize: 15),
-                                ),
-                              ],
-                            ),
+                        const Text(
+                          "Create Account",
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1E293B),
+                            letterSpacing: -1,
                           ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // EMAIL
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: _isWhoStaff ? "WHO Email Address" : "Email Address",
-                            prefixIcon: const Icon(Icons.email_outlined),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return "Required";
-                            if (_isWhoStaff && !value.toLowerCase().endsWith("@who.int")) return "WHO Staff must use a @who.int email";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // PASSWORD
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            hintText: "Create Password",
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Enter your details to register as an authorized user.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
                           ),
                         ),
-                        const SizedBox(height: 12),
-
-                        // REQUISITI PASSWORD VISIVI
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Password must contain:", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(child: _buildRequirement(_hasMinLength, "8+ Chars")),
-                                  Expanded(child: _buildRequirement(_hasUpper, "1 Uppercase")),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Expanded(child: _buildRequirement(_hasNumber, "1 Number")),
-                                  Expanded(child: _buildRequirement(_hasSpecial, "1 Special (!@#)")),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-
-                        // BUTTON REGISTRAZIONE
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 2,
-                            ),
-                            onPressed: _submitRegistration,
-                            child: const Text("Create Account", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // TORNA AL LOGIN
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Already have an account? ", style: TextStyle(color: Colors.grey.shade600)),
-                            TextButton(
-                              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
-                              child: Text("Sign In", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 40),
+                        _buildForm(),
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // LAYOUT PER SMARTPHONE LANDSCAPE (Premium Rotating View)
+    if (isLandscape) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Row(
+          children: [
+            // Pannello laterale con branding (coerente con tablet)
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF005DA8), Color(0xFF003D73)],
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildLogo(isDark: true),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Join the Platform",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900),
+                    ),
+                    if (_isWhoStaff)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          // INIZIO MODIFICA: TAG AUTHORIZED PERSONNEL (Mobile Landscape)
+                          child: const Text(
+                            "AUTHORIZED PERSONNEL ONLY",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          // FINE MODIFICA
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            // AREA FORM DI REGISTRAZIONE (Ridimensionata per Mobile Landscape)
+            Expanded(
+              flex: 3,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: _buildForm(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // LAYOUT PER SMARTPHONE PORTRAIT (Premium Mobile)
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header con Gradiente per Mobile
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 60, bottom: 40),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF005DA8), Color(0xFF003D73)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: Column(
+                children: [
+                  _buildLogo(isDark: true),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Join the Platform",
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.5),
+                  ),
+                  Text(
+                    "Create your account to get started.",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.8)),
+                  ),
+                  const SizedBox(height: 16),
+                  // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Mobile Header)
+                  if (_isWhoStaff)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      // TAG AUTHORIZED PERSONNEL ONLY (Ottimizzato per Mobile Portrait)
+                      child: const Text(
+                        "AUTHORIZED PERSONNEL ONLY",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                 ],
               ),
+            ),
+
+            // Area Form
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500.0),
+                child: Column(
+                  children: [
+                    _buildForm(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // COMPONENTE: LOGO (RIUTILIZZABILE)
+  Widget _buildLogo({bool isDark = false}) {
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final double size = isTablet ? 180 : 140;
+
+    return Hero(
+      tag: 'who_logo',
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withOpacity(0.2)
+                  : Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+          child: Image.asset(
+            'assets/images/who_logo.png',
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Icon(
+              Icons.public,
+              size: isTablet ? 80 : 60,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ),
@@ -312,15 +536,342 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String hint, required IconData icon}) {
+  // COMPONENTE: INTESTAZIONE (LOGO E TITOLI)
+  Widget _buildHeader({required CrossAxisAlignment alignment}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: alignment,
+      children: [
+        _buildLogo(),
+        const SizedBox(height: 24),
+        Text(
+          "Create Account",
+          textAlign: alignment == CrossAxisAlignment.center
+              ? TextAlign.center
+              : TextAlign.start,
+          style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF003D73),
+              height: 1.1,
+              letterSpacing: -0.5),
+        ),
+        const SizedBox(height: 12),
+        if (_isWhoStaff)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFE4E6), // Pinkish background
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: const Color(0xFFFDA4AF).withOpacity(0.5)),
+            ),
+            child: const Text(
+              "AUTHORIZED PERSONNEL ONLY",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Color(0xFFE11D48),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // COMPONENTE: FORM DI REGISTRAZIONE
+  Widget _buildForm() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // SELETTORE MODALITÀ UTENTE
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            children: [
+              Expanded(
+                  child: _buildModeToggle(
+                      "WHO Staff",
+                      _isWhoStaff,
+                      () => setState(() {
+                            _isWhoStaff = true;
+                            _emailController.clear();
+                          }))),
+              Expanded(
+                  child: _buildModeToggle(
+                      "External Partner",
+                      !_isWhoStaff,
+                      () => setState(() {
+                            _isWhoStaff = false;
+                            _emailController.clear();
+                          }))),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildTextField(
+                          controller: _firstNameController,
+                          hint: "First Name",
+                          icon: Icons.person_outline)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: _buildTextField(
+                          controller: _lastNameController,
+                          hint: "Last Name",
+                          icon: Icons.person_outline)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildDatePicker(),
+              const SizedBox(height: 16),
+              _buildEmailField(),
+              const SizedBox(height: 16),
+              _buildPasswordField(),
+              const SizedBox(height: 12),
+              _buildPasswordRequirements(),
+              const SizedBox(height: 32),
+              _buildSubmitButton(),
+              const SizedBox(height: 24),
+              _buildLoginNavigation(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // METODI HELPER UI
+  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4)
+                ]
+              : [],
+        ),
+        child: Center(
+            child: Text(title,
+                style: TextStyle(
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                    color: isActive
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey.shade600))),
+      ),
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return GestureDetector(
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: DateTime(2000),
+          firstDate: DateTime(1930),
+          lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+        );
+        if (date != null) setState(() => _selectedDate = date);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.calendar_today_outlined, color: const Color(0xFF64748B)),
+            const SizedBox(width: 12),
+            Text(
+              _selectedDate == null
+                  ? "Date of Birth"
+                  : DateFormat('dd MMM yyyy').format(_selectedDate!),
+              style: TextStyle(
+                  color: _selectedDate == null
+                      ? Colors.blueGrey.shade300
+                      : Colors.black87,
+                  fontSize: 15),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmailField() {
+    return TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        hintText: _isWhoStaff ? "WHO Email Address" : "Email Address",
+        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF64748B)),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) return "Required";
+        
+        // Regex per validazione formato email
+        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+        
+        if (_isWhoStaff) {
+          if (!value.toLowerCase().endsWith("@who.int")) return "WHO Staff must use a @who.int email";
+        } else {
+          if (!emailRegex.hasMatch(value)) return "Please enter a valid email address";
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: _passwordController,
+      obscureText: _obscurePassword,
+      decoration: InputDecoration(
+        hintText: "Create Password",
+        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF64748B)),
+        suffixIcon: IconButton(
+          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRequirements() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Password must contain:",
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade600)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildRequirement(_hasMinLength, "8+ Chars")),
+              Expanded(child: _buildRequirement(_hasUpper, "1 Uppercase")),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Expanded(child: _buildRequirement(_hasNumber, "1 Number")),
+              Expanded(
+                  child: _buildRequirement(_hasSpecial, "1 Special (!@#)")),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 2,
+        ),
+        onPressed: _isLoading ? null : _submitRegistration,
+        child: _isLoading
+            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            : const Text("Create Account",
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+      ),
+    );
+  }
+
+  Widget _buildLoginNavigation() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Already have an account? ",
+            style: TextStyle(color: Colors.grey.shade600)),
+        TextButton(
+          onPressed: () => context.go('/login'),
+          child: Text("Sign In",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(
+      {required TextEditingController controller,
+      required String hint,
+      required IconData icon}) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon),
+        prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
+        ),
       ),
       validator: (value) => value == null || value.isEmpty ? "Required" : null,
     );
@@ -329,9 +880,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildRequirement(bool isMet, String text) {
     return Row(
       children: [
-        Icon(isMet ? Icons.check_circle : Icons.radio_button_unchecked, color: isMet ? Colors.green : Colors.grey.shade400, size: 16),
+        Icon(isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: isMet ? Colors.green : Colors.grey.shade400, size: 16),
         const SizedBox(width: 6),
-        Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isMet ? Colors.green.shade700 : Colors.grey.shade600)),
+        Text(text,
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isMet ? Colors.green.shade700 : Colors.grey.shade600)),
       ],
     );
   }

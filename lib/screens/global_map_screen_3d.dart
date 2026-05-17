@@ -251,7 +251,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1),
+              color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1),
           boxShadow: const [
             BoxShadow(color: Colors.black54, blurRadius: 20, spreadRadius: 5)
           ],
@@ -278,9 +278,9 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
+            color: color.withOpacity(0.15),
             shape: BoxShape.circle,
-            border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
+            border: Border.all(color: color.withOpacity(0.5), width: 2),
           ),
           child: Icon(Icons.health_and_safety, color: color, size: 32),
         ),

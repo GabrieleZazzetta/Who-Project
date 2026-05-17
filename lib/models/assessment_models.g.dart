@@ -39,13 +39,33 @@ const FacilityLayoutSchema = CollectionSchema(
       type: IsarType.object,
       target: r'GeneralFacilityInfo',
     ),
-    r'mapImagePath': PropertySchema(
+    r'isDirty': PropertySchema(
       id: 4,
+      name: r'isDirty',
+      type: IsarType.bool,
+    ),
+    r'lastSyncedAt': PropertySchema(
+      id: 5,
+      name: r'lastSyncedAt',
+      type: IsarType.dateTime,
+    ),
+    r'mapImagePath': PropertySchema(
+      id: 6,
       name: r'mapImagePath',
       type: IsarType.string,
     ),
+    r'remoteId': PropertySchema(
+      id: 7,
+      name: r'remoteId',
+      type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 8,
+      name: r'updatedAt',
+      type: IsarType.dateTime,
+    ),
     r'zones': PropertySchema(
-      id: 5,
+      id: 9,
       name: r'zones',
       type: IsarType.objectList,
       target: r'SpatialZone',
@@ -86,6 +106,12 @@ int _facilityLayoutEstimateSize(
     }
   }
   bytesCount += 3 + object.mapImagePath.length * 3;
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.zones.length * 3;
   {
     final offsets = allOffsets[SpatialZone]!;
@@ -112,9 +138,13 @@ void _facilityLayoutSerialize(
     GeneralFacilityInfoSchema.serialize,
     object.generalInfo,
   );
-  writer.writeString(offsets[4], object.mapImagePath);
+  writer.writeBool(offsets[4], object.isDirty);
+  writer.writeDateTime(offsets[5], object.lastSyncedAt);
+  writer.writeString(offsets[6], object.mapImagePath);
+  writer.writeString(offsets[7], object.remoteId);
+  writer.writeDateTime(offsets[8], object.updatedAt);
   writer.writeObjectList<SpatialZone>(
-    offsets[5],
+    offsets[9],
     allOffsets,
     SpatialZoneSchema.serialize,
     object.zones,
@@ -133,9 +163,13 @@ FacilityLayout _facilityLayoutDeserialize(
             reader.readByteOrNull(offsets[1])] ??
         EmergencyType.mpox,
     facilityName: reader.readStringOrNull(offsets[2]) ?? '',
-    mapImagePath: reader.readStringOrNull(offsets[4]) ?? '',
+    isDirty: reader.readBoolOrNull(offsets[4]) ?? false,
+    lastSyncedAt: reader.readDateTimeOrNull(offsets[5]),
+    mapImagePath: reader.readStringOrNull(offsets[6]) ?? '',
+    remoteId: reader.readStringOrNull(offsets[7]),
+    updatedAt: reader.readDateTimeOrNull(offsets[8]),
     zones: reader.readObjectList<SpatialZone>(
-          offsets[5],
+          offsets[9],
           SpatialZoneSchema.deserialize,
           allOffsets,
           SpatialZone(),
@@ -173,8 +207,16 @@ P _facilityLayoutDeserializeProp<P>(
         allOffsets,
       )) as P;
     case 4:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 6:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 9:
       return (reader.readObjectList<SpatialZone>(
             offset,
             SpatialZoneSchema.deserialize,
@@ -634,6 +676,90 @@ extension FacilityLayoutQueryFilter
   }
 
   QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      isDirtyEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDirty',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastSyncedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastSyncedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastSyncedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastSyncedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastSyncedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      lastSyncedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastSyncedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
       mapImagePathEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -765,6 +891,234 @@ extension FacilityLayoutQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'mapImagePath',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      remoteIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterFilterCondition>
+      updatedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -923,6 +1277,33 @@ extension FacilityLayoutQuerySortBy
     });
   }
 
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> sortByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      sortByIsDirtyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      sortByLastSyncedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastSyncedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      sortByLastSyncedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastSyncedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
       sortByMapImagePath() {
     return QueryBuilder.apply(this, (query) {
@@ -934,6 +1315,32 @@ extension FacilityLayoutQuerySortBy
       sortByMapImagePathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mapImagePath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> sortByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      sortByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> sortByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      sortByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 }
@@ -994,6 +1401,33 @@ extension FacilityLayoutQuerySortThenBy
     });
   }
 
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> thenByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      thenByIsDirtyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      thenByLastSyncedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastSyncedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      thenByLastSyncedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastSyncedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
       thenByMapImagePath() {
     return QueryBuilder.apply(this, (query) {
@@ -1005,6 +1439,32 @@ extension FacilityLayoutQuerySortThenBy
       thenByMapImagePathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mapImagePath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> thenByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      thenByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy> thenByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QAfterSortBy>
+      thenByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 }
@@ -1032,10 +1492,37 @@ extension FacilityLayoutQueryWhereDistinct
     });
   }
 
+  QueryBuilder<FacilityLayout, FacilityLayout, QDistinct> distinctByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isDirty');
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QDistinct>
+      distinctByLastSyncedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastSyncedAt');
+    });
+  }
+
   QueryBuilder<FacilityLayout, FacilityLayout, QDistinct>
       distinctByMapImagePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'mapImagePath', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QDistinct> distinctByRemoteId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FacilityLayout, FacilityLayout, QDistinct>
+      distinctByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updatedAt');
     });
   }
 }
@@ -1076,10 +1563,36 @@ extension FacilityLayoutQueryProperty
     });
   }
 
+  QueryBuilder<FacilityLayout, bool, QQueryOperations> isDirtyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isDirty');
+    });
+  }
+
+  QueryBuilder<FacilityLayout, DateTime?, QQueryOperations>
+      lastSyncedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastSyncedAt');
+    });
+  }
+
   QueryBuilder<FacilityLayout, String, QQueryOperations>
       mapImagePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mapImagePath');
+    });
+  }
+
+  QueryBuilder<FacilityLayout, String?, QQueryOperations> remoteIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteId');
+    });
+  }
+
+  QueryBuilder<FacilityLayout, DateTime?, QQueryOperations>
+      updatedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updatedAt');
     });
   }
 

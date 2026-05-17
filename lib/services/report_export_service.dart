@@ -5,12 +5,18 @@ import 'package:share_plus/share_plus.dart';
 import '../models/assessment_models.dart';
 import 'package:intl/intl.dart';
 
+// SERVIZIO DI ESPORTAZIONE REPORT
+// Gestisce la trasformazione dei dati strutturati della valutazione in formati
+// testuali portabili, delegando al sistema operativo la loro distribuzione
 class ReportExportService {
-  // Generate an editable Word file (.doc) via formatted HTML
-  static Future<void> exportAssessmentToEditableWord(BuildContext context, FacilityLayout facility) async {
+  static Future<void> exportAssessmentToEditableWord(
+      BuildContext context, FacilityLayout facility) async {
     try {
       final info = facility.generalInfo;
 
+      // Generazione Struttura Documento
+      // Sfrutta il markup HTML con i namespace XML di Microsoft Office per forzare
+      // l'interpretazione del payload testuale come documento Word (.doc) editabile.
       String htmlContent = '''
       <html xmlns:o="urn:schemas-microsoft-com:office:office"
             xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -73,9 +79,10 @@ class ReportExportService {
           </tr>
       ''';
 
-      // Add dynamically all the zones evaluated
+      // Compilazione Dati Spaziali
+      // Aggiunge dinamicamente tutte le zone valutate
       for (var zone in facility.zones) {
-        if(zone.completionPercentage > 0) {
+        if (zone.completionPercentage > 0) {
           htmlContent += '''
             <tr>
               <td>${zone.name}</td>
@@ -93,24 +100,24 @@ class ReportExportService {
       </html>
       ''';
 
-      // Create a safe filename and save the HTML content as a .doc file in the device's temp directory.
+      //Crea un nome file sicuro e salva il contenuto HTML come file .doc nella directory temporanea del dispositivo.
       final directory = await getTemporaryDirectory();
-      final fileName = "WHO_Report_${facility.facilityName.replaceAll(' ', '_')}.doc";
+      final fileName =
+          "WHO_Report_${facility.facilityName.replaceAll(' ', '_')}.doc";
       final file = File('${directory.path}/$fileName');
-      
+
       await file.writeAsString(htmlContent);
 
       // Finder (Cmd+Shift+G)
-      debugPrint("✅ Report generato! Percorso su Mac: ${file.path}");
+      debugPrint("Report generato. Percorso su Mac: ${file.path}");
 
-      // Trigger the native OS share sheet (Airdrop, Email, Files, etc.).
+      // Attiva la finestra di condivisione nativa del sistema operativo (AirDrop, e-mail, file, ecc.).
       final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Editable Assessment Report for ${facility.facilityName}',
-        sharePositionOrigin: box != null 
-            ? box.localToGlobal(Offset.zero) & box.size 
-            : null,
+        sharePositionOrigin:
+            box != null ? box.localToGlobal(Offset.zero) & box.size : null,
       );
     } catch (e) {
       debugPrint("Errore generazione Report Editabile: $e");

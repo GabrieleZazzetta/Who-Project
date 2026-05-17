@@ -1,110 +1,454 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../services/sync_service.dart';
+import '../services/auth_service.dart';
+import '../services/database_service.dart';
+import '../models/user_model.dart';
+import '../models/assessment_models.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: const Text("Settings", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: [
-          // ACCOUNT & SYNC
-          _buildSectionHeader("ACCOUNT & SYNC"),
-          _buildSettingsTile(icon: Icons.person_outline, title: "User Profile", subtitle: "Logistics Officer"),
-          _buildSettingsTile(
-            icon: Icons.cloud_sync_outlined,
-            title: "Offline Sync",
-            subtitle: "Last synced: 2 hours ago",
-            trailing: const Icon(Icons.sync, color: Colors.blue),
-          ),
+  // LOGICA DI STATO E SINCRONIZZAZIONE
+  // FUNZIONALITÀ PROFILO UTENTE PREMIUM
+  void _showUserProfile(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(32), topRight: Radius.circular(32)),
+        ),
+        child: Column(
+          children: [
+            // Handle per il drag
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(height: 24),
+            Text("User Profile",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.blueGrey.shade900)),
+            const SizedBox(height: 32),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                children: [
+                  // Avatar Premium
+                  Center(
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFF005DA8).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.person,
+                          size: 50, color: Color(0xFF005DA8)),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  FutureBuilder<UserSession?>(
+                    future: DatabaseService.instance.getCurrentSession(),
+                    builder: (context, snapshot) {
+                      final session = snapshot.data;
+                      // Se la sessione è ancora in caricamento, mostriamo un indicatore minimo
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+                      }
 
-          const SizedBox(height: 24),
-
-          // PREFERENZE
-          _buildSectionHeader("PREFERENCES"),
-          _buildSettingsTile(icon: Icons.language, title: "Language", subtitle: "English (UK)"),
-
-          const SizedBox(height: 24),
-
-          // ABOUT
-          _buildSectionHeader("ABOUT"),
-          _buildSettingsTile(icon: Icons.menu_book, title: "WHO Guidelines"),
-          _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: "Privacy Policy"),
-          _buildSettingsTile(icon: Icons.info_outline, title: "App Version", subtitle: "1.0.0-beta", isLink: false),
-
-          const SizedBox(height: 40),
-
-          // Azione di logout, posizionata in fondo alla lista
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.logout, color: Colors.redAccent),
-              label: const Text("Log Out", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade50,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      return Column(
+                        children: [
+                          _buildProfileField("Full Name", session?.displayName ?? "Authorized User"),
+                          const SizedBox(height: 20),
+                          _buildProfileField("Email Address", session?.email ?? "Email not found"),
+                          const SizedBox(height: 20),
+                          _buildProfileField("Role / Position", session?.isWhoStaff == true ? "WHO Staff" : "External Partner"),
+                          const SizedBox(height: 20),
+                          _buildProfileField(
+                              "Organization", session?.isWhoStaff == true ? "WHO - World Health Organization" : "Partner Organization"),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 48),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF005DA8),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Profile updated successfully"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
+                    child: const Text("Save Changes",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("Cancel",
+                        style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 40),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // COMPONENTI UI
+  Widget _buildProfileField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(),
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: Colors.grey.shade500,
+                letterSpacing: 1.0)),
+        const SizedBox(height: 10),
+        TextFormField(
+          initialValue: value,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200)),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Color(0xFF005DA8), width: 2)),
+          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+      ],
+    );
+  }
 
-  // Intestazione di sezione con stile etichetta maiuscola
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final syncState = ref.watch(syncProvider);
+    final bool isTablet = MediaQuery.of(context).size.width >= 800;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: CustomScrollView(
+            slivers: [
+              // HEADER PREMIUM ADATTIVO
+              if (!isTablet)
+                Builder(builder: (context) {
+                  final bool isPortrait =
+                      MediaQuery.of(context).orientation == Orientation.portrait;
+                  final bool isMobilePortrait = isPortrait && !isTablet;
+
+                  return SliverAppBar(
+                    expandedHeight: isMobilePortrait ? 85 : 120,
+                    pinned: true,
+                    stretch: true,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    flexibleSpace: FlexibleSpaceBar(
+                      centerTitle: false,
+                      titlePadding: EdgeInsets.only(
+                          left: 20, bottom: isMobilePortrait ? 12 : 16),
+                      title: Text("Settings",
+                          style: TextStyle(
+                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w900,
+                              fontSize: isMobilePortrait ? 20 : 24)),
+                      background: Container(color: Colors.white),
+                    ),
+                  );
+                }),
+
+              // SEZIONE: ACCOUNT & SYNC
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      top: isTablet
+                          ? 40
+                          : 16), // Aumentato il padding su tablet per sopperire alla mancanza dell'header
+                  child: _buildSectionHeader("ACCOUNT & SYNC"),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _buildSettingsTile(
+                  icon: Icons.person_outline,
+                  title: "User Profile",
+                  subtitle: "Logistics Officer",
+                  onTap: () => _showUserProfile(context),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: FutureBuilder<List<FacilityLayout>>(
+                  future: DatabaseService.instance.getAllAssessments(),
+                  builder: (context, snapshot) {
+                    final assessments = snapshot.data ?? [];
+                    final bool hasData = assessments.isNotEmpty;
+                    
+                    return _buildSettingsTile(
+                      icon: syncState.value?.status == SyncStatus.syncing
+                          ? Icons.sync_rounded
+                          : Icons.cloud_sync_outlined,
+                      title: "Offline Sync",
+                      subtitle: hasData 
+                          ? _getSyncSubtitle(syncState.value, assessments) 
+                          : "No data to synchronize",
+                      trailing: hasData ? _buildSyncTrailing(syncState.value, assessments) : const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
+                      onTap: hasData ? () => ref.read(syncProvider.notifier).syncAll() : null,
+                    );
+                  },
+                ),
+              ),
+
+              // SEZIONE: PREFERENZE
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: _buildSectionHeader("PREFERENCES"),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _buildSettingsTile(
+                  icon: Icons.language,
+                  title: "Language",
+                  subtitle: "English (UK)",
+                ),
+              ),
+
+              // SEZIONE: ABOUT
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: _buildSectionHeader("ABOUT"),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _buildSettingsTile(
+                    icon: Icons.menu_book, title: "WHO Guidelines"),
+              ),
+              SliverToBoxAdapter(
+                child: _buildSettingsTile(
+                    icon: Icons.privacy_tip_outlined, title: "Privacy Policy"),
+              ),
+              SliverToBoxAdapter(
+                child: _buildSettingsTile(
+                  icon: Icons.info_outline,
+                  title: "App Version",
+                  subtitle: "1.0.0-beta",
+                  isLink: false,
+                ),
+              ),
+
+              // AZIONE DI LOGOUT (DESIGN PREMIUM)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
+                  child: InkWell(
+                    onTap: () async {
+                      // LOGICA DI LOGOUT IBRIDA (Firebase + Isar)
+                      await ref.read(authServiceProvider).logout();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.red.shade100),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout_rounded,
+                              color: Colors.redAccent, size: 20),
+                          SizedBox(width: 12),
+                          Text(
+                            "Log Out",
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // LOGICA DI PRESENTAZIONE SYNC
+  // Metodi per la gestione dinamica dei testi e degli indicatori di sincronizzazione
+  String _getSyncSubtitle(SyncState? state, List<FacilityLayout> assessments) {
+    final bool anyDirty = assessments.any((f) => f.isDirty);
+    
+    if (state?.status == SyncStatus.syncing) {
+      return "Synchronizing data...";
+    }
+
+    if (!anyDirty) {
+      if (state?.status == SyncStatus.success) return "Last synced: Just now";
+      return "All data synchronized";
+    }
+
+    switch (state?.status) {
+      case SyncStatus.error:
+        return "Sync failed. Tap to retry.";
+      case SyncStatus.success:
+        return "Last synced: Just now";
+      case SyncStatus.idle:
+      default:
+        if (state?.lastSyncedAt == null) return "Never synced";
+        return "Last synced: ${DateFormat('HH:mm').format(state!.lastSyncedAt!)}";
+    }
+  }
+
+  Widget _buildSyncTrailing(SyncState? state, List<FacilityLayout> assessments) {
+    final bool anyDirty = assessments.any((f) => f.isDirty);
+
+    if (state?.status == SyncStatus.syncing) {
+      return const SizedBox(
+        width: 18,
+        height: 18,
+        child:
+            CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF005DA8)),
+      );
+    }
+
+    if (anyDirty && state?.status == SyncStatus.error) {
+      return const Icon(Icons.error_outline, color: Colors.redAccent, size: 20);
+    }
+
+    if (!anyDirty) {
+      return const Icon(Icons.cloud_done_outlined, color: Colors.green, size: 20);
+    }
+
+    return const Icon(Icons.sync_rounded, color: Color(0xFF005DA8), size: 20);
+  }
+
+  // COMPONENTI UI: SEZIONI E TILE
+  // Definizione dei widget per le intestazioni e le voci di impostazione
+
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24, bottom: 8, top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600, letterSpacing: 1.2),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: Colors.blueGrey.shade500,
+          letterSpacing: 1.5,
+        ),
       ),
     );
   }
 
-  // Voce generica di impostazione: supporta subtitle, trailing widget e navigazione opzionale
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
     String? subtitle,
     Widget? trailing,
     bool isLink = true,
+    VoidCallback? onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ],
+        border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF005DA8).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xFF005DA8).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: const Color(0xFF005DA8), size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: Color(0xFF0F172A),
+          ),
+        ),
         subtitle: subtitle != null
-            ? Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade500))
+            ? Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  subtitle,
+                  style:
+                      TextStyle(fontSize: 14, color: Colors.blueGrey.shade500),
+                ),
+              )
             : null,
-        trailing: trailing ?? (isLink ? Icon(Icons.chevron_right, color: Colors.grey.shade400) : null),
-        onTap: isLink ? () {} : null,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        trailing: trailing ??
+            (isLink
+                ? Icon(Icons.chevron_right_rounded,
+                    color: Colors.blueGrey.shade400)
+                : null),
+        onTap: onTap ?? (isLink ? () {} : null),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

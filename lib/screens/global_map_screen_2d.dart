@@ -166,7 +166,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
   // Pin personalizzato con indicatore di punteggio
   Widget _buildPin(double score) {
     Color pinColor = _getScoreColor(score);
-    Color shadowColor = pinColor.withValues(alpha: 0.6);
+    Color shadowColor = pinColor.withOpacity(0.6);
 
     return Container(
       decoration: BoxDecoration(
@@ -224,7 +224,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                        color: scoreColor.withValues(alpha: 0.1),
+                        color: scoreColor.withOpacity(0.1),
                         shape: BoxShape.circle),
                     child: Icon(Icons.health_and_safety,
                         color: scoreColor, size: 28),
@@ -427,7 +427,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                                 color: const Color(0xFF38BDF8), width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF000000).withValues(alpha: 0.5),
+                                color: const Color(0xFF000000).withOpacity(0.5),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                                 offset: const Offset(0, 3),

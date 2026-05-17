@@ -225,7 +225,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z3b_resuscitation',
           name: 'Resuscitation Room',
-          coordinates: const MapCoordinates(top: 656, left: 226),
+          coordinates: const MapCoordinates(top: 650, left: 226),
           touchArea:
               const MapCoordinates(top: 655, left: 179, width: 64, height: 64),
           checklist: [
@@ -260,8 +260,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z3c_diagnostic_lab',
           name: 'Diagnostic & Laboratory',
-          coordinates:
-              const MapCoordinates(top: 475, left: 237),
+          coordinates: const MapCoordinates(top: 475, left: 237),
           touchArea:
               const MapCoordinates(top: 475, left: 189, width: 64, height: 64),
           checklist: [
@@ -296,7 +295,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z4_triage_donning',
           name: 'Triage Donning',
-          coordinates: const MapCoordinates(top: 543, left: 198),
+          coordinates: const MapCoordinates(top: 540, left: 192),
           touchArea:
               const MapCoordinates(top: 551, left: 172, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
@@ -304,7 +303,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z5_triage_doffing',
           name: 'Triage Doffing',
-          coordinates: const MapCoordinates(top: 543, left: 241),
+          coordinates: const MapCoordinates(top: 543, left: 239),
           touchArea:
               const MapCoordinates(top: 552, left: 215, width: 36, height: 36),
           checklist: _getTriagePPEChecklist(),
@@ -487,7 +486,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z9_reprocessing',
           name: 'Reprocessing',
-          coordinates: const MapCoordinates(top: 174, left: 236),
+          coordinates: const MapCoordinates(top: 167, left: 236),
           touchArea:
               const MapCoordinates(top: 171, left: 185, width: 66, height: 66),
           checklist: [
@@ -557,7 +556,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z11_morgue',
           name: 'Morgue',
-          coordinates: const MapCoordinates(top: 748, left: 334),
+          coordinates: const MapCoordinates(top: 710, left: 300),
           touchArea:
               const MapCoordinates(top: 725, left: 309, width: 38, height: 38),
           checklist: [
@@ -576,8 +575,7 @@ class MpoxTreatmentCenterData {
         SpatialZone(
           id: 'z12_discharge',
           name: 'Discharge Area',
-          coordinates:
-              const MapCoordinates(top: 720, left: 529),
+          coordinates: const MapCoordinates(top: 712, left: 529),
           touchArea:
               const MapCoordinates(top: 727, left: 503, width: 38, height: 38),
           checklist: [
@@ -615,21 +613,21 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c1_donning',
             name: 'Suspect Donning',
-            coordinates: const MapCoordinates(top: 585, left: 343),
+            coordinates: const MapCoordinates(top: 570, left: 340),
             touchArea: const MapCoordinates(
                 top: 592, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_doffing',
             name: 'Suspect Doffing',
-            coordinates: const MapCoordinates(top: 663, left: 343),
+            coordinates: const MapCoordinates(top: 663, left: 333),
             touchArea: const MapCoordinates(
                 top: 641, left: 339, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c1_nursing',
             name: 'Suspect Nursing St.',
-            coordinates: const MapCoordinates(top: 603, left: 309),
+            coordinates: const MapCoordinates(top: 593, left: 309),
             touchArea: const MapCoordinates(
                 top: 612, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
@@ -637,14 +635,14 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c1_clean_utility',
             name: 'Clean Utility (Suspect)',
-            coordinates: const MapCoordinates(top: 554, left: 393),
+            coordinates: const MapCoordinates(top: 554, left: 395),
             touchArea: const MapCoordinates(
                 top: 563, left: 366, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
         SpatialZone(
             id: 'c1_soiled_utility',
             name: 'Soiled Utility (Suspect)',
-            coordinates: const MapCoordinates(top: 693, left: 393),
+            coordinates: const MapCoordinates(top: 693, left: 389),
             touchArea: const MapCoordinates(
                 top: 673, left: 361, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
@@ -660,21 +658,21 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c2_donning',
             name: 'Probable Donning',
-            coordinates: const MapCoordinates(top: 434, left: 422),
+            coordinates: const MapCoordinates(top: 422, left: 414),
             touchArea: const MapCoordinates(
                 top: 442, left: 419, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_doffing',
             name: 'Probable Doffing',
-            coordinates: const MapCoordinates(top: 510, left: 421),
+            coordinates: const MapCoordinates(top: 510, left: 417),
             touchArea: const MapCoordinates(
                 top: 487, left: 418, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c2_nursing',
             name: 'Probable Nursing St.',
-            coordinates: const MapCoordinates(top: 449, left: 389),
+            coordinates: const MapCoordinates(top: 439, left: 384),
             touchArea: const MapCoordinates(
                 top: 459, left: 383, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
@@ -682,16 +680,14 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c2_clean_utility',
             name: 'Clean Utility (Probable)',
-            coordinates:
-                const MapCoordinates(top: 402, left: 468),
+            coordinates: const MapCoordinates(top: 402, left: 469),
             touchArea: const MapCoordinates(
                 top: 411, left: 440, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
         SpatialZone(
             id: 'c2_soiled_utility',
             name: 'Soiled Utility (Probable)',
-            coordinates:
-                const MapCoordinates(top: 538, left: 472),
+            coordinates: const MapCoordinates(top: 538, left: 470),
             touchArea: const MapCoordinates(
                 top: 520, left: 441, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),
@@ -700,28 +696,28 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c3_room',
             name: 'Confirmed Room',
-            coordinates: const MapCoordinates(top: 320, left: 451),
+            coordinates: const MapCoordinates(top: 320, left: 448),
             touchArea: const MapCoordinates(
                 top: 283, left: 372, width: 84, height: 84),
             checklist: _getWardRoomChecklist()),
         SpatialZone(
             id: 'c3_donning',
             name: 'Confirmed Donning',
-            coordinates: const MapCoordinates(top: 277, left: 347),
+            coordinates: const MapCoordinates(top: 265, left: 339),
             touchArea: const MapCoordinates(
                 top: 283, left: 341, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_doffing',
             name: 'Confirmed Doffing',
-            coordinates: const MapCoordinates(top: 356, left: 345),
+            coordinates: const MapCoordinates(top: 353, left: 336),
             touchArea: const MapCoordinates(
                 top: 329, left: 340, width: 36, height: 36),
             checklist: _getWardPPEChecklist()),
         SpatialZone(
             id: 'c3_nursing',
             name: 'Confirmed Nursing St.',
-            coordinates: const MapCoordinates(top: 292, left: 312),
+            coordinates: const MapCoordinates(top: 282, left: 306),
             touchArea: const MapCoordinates(
                 top: 301, left: 304, width: 44, height: 44),
             checklist: _getWardNursingChecklist()),
@@ -729,16 +725,14 @@ class MpoxTreatmentCenterData {
         SpatialZone(
             id: 'c3_clean_utility',
             name: 'Clean Utility (Confirmed)',
-            coordinates:
-                const MapCoordinates(top: 247, left: 393),
+            coordinates: const MapCoordinates(top: 247, left: 393),
             touchArea: const MapCoordinates(
                 top: 253, left: 362, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: true)),
         SpatialZone(
             id: 'c3_soiled_utility',
             name: 'Soiled Utility (Confirmed)',
-            coordinates:
-                const MapCoordinates(top: 379, left: 395),
+            coordinates: const MapCoordinates(top: 379, left: 393),
             touchArea: const MapCoordinates(
                 top: 362, left: 363, width: 38, height: 38),
             checklist: _getUtilityRoomChecklist(isCleanUtility: false)),

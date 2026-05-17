@@ -14,7 +14,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z1_screening_reception',
           name: 'Screening Reception',
-          coordinates: const MapCoordinates(top: 430, left: 588),
+          coordinates: const MapCoordinates(top: 423, left: 575),
           touchArea:
               const MapCoordinates(top: 426, left: 524, width: 81, height: 81),
           checklist: _getScreeningChecklist(),
@@ -23,7 +23,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z2_screening_settlement',
           name: 'Screening',
-          coordinates: const MapCoordinates(top: 436, left: 376),
+          coordinates: const MapCoordinates(top: 432, left: 362),
           touchArea:
               const MapCoordinates(top: 430, left: 311, width: 81, height: 81),
           checklist: _getScreeningChecklist(),
@@ -34,7 +34,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z3_waiting',
           name: 'Waiting Room',
-          coordinates: const MapCoordinates(top: 431, left: 287),
+          coordinates: const MapCoordinates(top: 432, left: 276),
           touchArea:
               const MapCoordinates(top: 430, left: 225, width: 81, height: 81),
           checklist: [
@@ -86,7 +86,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4_consulting',
           name: 'Consulting Room',
-          coordinates: const MapCoordinates(top: 444, left: 102),
+          coordinates: const MapCoordinates(top: 441, left: 89),
           touchArea:
               const MapCoordinates(top: 446, left: 89, width: 81, height: 81),
           checklist: [
@@ -129,7 +129,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4a_consulting_donning',
           name: 'Consulting Donning',
-          coordinates: const MapCoordinates(top: 468, left: 201),
+          coordinates: const MapCoordinates(top: 455, left: 180),
           touchArea:
               const MapCoordinates(top: 472, left: 172, width: 37, height: 37),
           checklist: _getConsultingPPEChecklist(),
@@ -138,7 +138,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z4b_consulting_doffing',
           name: 'Consulting Doffing',
-          coordinates: const MapCoordinates(top: 528, left: 189),
+          coordinates: const MapCoordinates(top: 532, left: 152),
           touchArea:
               const MapCoordinates(top: 508, left: 157, width: 37, height: 37),
           checklist: _getConsultingPPEChecklist(),
@@ -149,7 +149,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5_temp_isolation',
           name: 'Temporary Isolation',
-          coordinates: const MapCoordinates(top: 552, left: 98),
+          coordinates: const MapCoordinates(top: 546, left: 89),
           touchArea:
               const MapCoordinates(top: 554, left: 87, width: 81, height: 81),
           checklist: [
@@ -200,7 +200,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5a_temp_iso_donning',
           name: 'Temp Iso Donning',
-          coordinates: const MapCoordinates(top: 565, left: 203),
+          coordinates: const MapCoordinates(top: 550, left: 203),
           touchArea:
               const MapCoordinates(top: 554, left: 168, width: 37, height: 37),
           checklist: _getTempIsolationPPEChecklist(),
@@ -209,7 +209,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z5b_temp_iso_doffing',
           name: 'Temp Iso Doffing',
-          coordinates: const MapCoordinates(top: 618, left: 171),
+          coordinates: const MapCoordinates(top: 614, left: 168),
           touchArea:
               const MapCoordinates(top: 592, left: 168, width: 37, height: 37),
           checklist: _getTempIsolationPPEChecklist(),
@@ -220,7 +220,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6_treatment_area',
           name: 'Treatment Area',
-          coordinates: const MapCoordinates(top: 658, left: 139),
+          coordinates: const MapCoordinates(top: 647, left: 130),
           touchArea:
               const MapCoordinates(top: 649, left: 141, width: 81, height: 81),
           checklist: [
@@ -295,7 +295,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6a_treatment_donning',
           name: 'Treatment Donning',
-          coordinates: const MapCoordinates(top: 620, left: 235),
+          coordinates: const MapCoordinates(top: 608, left: 213),
           touchArea:
               const MapCoordinates(top: 623, left: 205, width: 37, height: 37),
           checklist: _getTreatmentPPEChecklist(),
@@ -304,7 +304,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z6b_treatment_doffing',
           name: 'Treatment Doffing',
-          coordinates: const MapCoordinates(top: 678, left: 240),
+          coordinates: const MapCoordinates(top: 680, left: 230),
           touchArea:
               const MapCoordinates(top: 655, left: 222, width: 37, height: 37),
           checklist: _getTreatmentPPEChecklist(),
@@ -315,7 +315,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z7_staff_area',
           name: 'Staff Area',
-          coordinates: const MapCoordinates(top: 528, left: 494),
+          coordinates: const MapCoordinates(top: 528, left: 477),
           touchArea:
               const MapCoordinates(top: 526, left: 426, width: 81, height: 81),
           checklist: [
@@ -342,7 +342,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z7b_nursing_station',
           name: 'Staff Nursing Station',
-          coordinates: const MapCoordinates(top: 530, left: 318),
+          coordinates: const MapCoordinates(top: 521, left: 309),
           touchArea:
               const MapCoordinates(top: 525, left: 258, width: 81, height: 81),
           checklist: [
@@ -369,7 +369,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z7c_staff_changing',
           name: 'Staff Changing Room',
-          coordinates: const MapCoordinates(top: 632, left: 539),
+          coordinates: const MapCoordinates(top: 628, left: 527),
           touchArea:
               const MapCoordinates(top: 630, left: 476, width: 81, height: 81),
           checklist: [
@@ -389,7 +389,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z8_storage',
           name: 'Storage',
-          coordinates: const MapCoordinates(top: 632, left: 452),
+          coordinates: const MapCoordinates(top: 633, left: 437),
           touchArea:
               const MapCoordinates(top: 631, left: 386, width: 81, height: 81),
           checklist: [
@@ -424,7 +424,7 @@ class MpoxCongregateSettingData {
         SpatialZone(
           id: 'cs_z9_waste',
           name: 'Waste Area',
-          coordinates: const MapCoordinates(top: 651, left: 353),
+          coordinates: const MapCoordinates(top: 648, left: 338),
           touchArea:
               const MapCoordinates(top: 651, left: 287, width: 81, height: 81),
           checklist: [

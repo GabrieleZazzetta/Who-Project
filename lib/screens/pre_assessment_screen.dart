@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/assessment_models.dart';
 import '../data/facility_data_factory.dart';
-import 'interactive_map_screen.dart';
 
 class PreAssessmentScreen extends StatefulWidget {
   final EmergencyType emergencyType;
@@ -19,6 +19,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   // STATO E CONFIGURAZIONE DEI FORM
   int _currentStep = 0;
   final int _totalSteps = 4;
+  bool _isSidebarExpanded = true;
 
   final List<GlobalKey<FormState>> _formKeys = [
     GlobalKey<FormState>(),
@@ -170,127 +171,359 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       ..has24hEmergency = _has24hEmergency
       ..hasIcuOrHdu = _hasIcuOrHdu;
 
-    if (mounted) Navigator.pop(context);
+    // CHIUSURA DIALOG DI CARICAMENTO
+    if (mounted) context.pop();
 
     if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => InteractiveMapScreen(
-            emergencyType: widget.emergencyType,
-            facilityType: widget.facilityType,
-            preFilledData: layoutData,
-          ),
-        ),
-      );
+      // NAVIGAZIONE ALLA MAPPA INTERATTIVA
+      // Utilizzo di context.go per sostituire la schermata attuale
+      context.go('/map', extra: {
+        'emergencyType': widget.emergencyType,
+        'facilityType': widget.facilityType,
+        'preFilledData': layoutData,
+      });
     }
   }
 
-  // METODO DI RENDERING PRINCIPALE
+  // METODO DI RENDERING PRINCIPALE E GESTIONE RESPONSIVE
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLandscape =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        final screenWidth = constraints.maxWidth;
+        // Allineato alla logica di facility_selection: split layout per schermi larghi in landscape
+        final useSplitLayout = isLandscape && screenWidth >= 900;
+
+        if (useSplitLayout) {
+          return _buildTabletLayout();
+        }
+        return _buildMobileLayout();
+      },
+    );
+  }
+
+  // LAYOUT TABLET (SPLIT VIEW PREMIUM)
+  // Gestisce la visualizzazione affiancata: branding e progresso a sinistra, form a destra all'interno di una Card.
+  Widget _buildTabletLayout() {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: const Text("Facility Configuration",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF003D73))),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF003D73)),
-      ),
-      body: Column(
+      backgroundColor: Colors.white,
+      body: Row(
         children: [
-          // Barra di avanzamento degli step
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Step ${_currentStep + 1} of $_totalSteps",
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: (_currentStep + 1) / _totalSteps,
-                  backgroundColor: Colors.grey.shade200,
-                  color: Theme.of(context).colorScheme.primary,
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ],
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            width: _isSidebarExpanded ? 350 : 90,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF003D73), Color(0xFF005DA8)],
+              ),
             ),
-          ),
-          Expanded(
-            child: IndexedStack(
-              index: _currentStep,
+            child: Stack(
               children: [
-                _buildStep1(),
-                _buildStep2(),
-                _buildStep3(),
-                _buildStep4(),
-              ],
-            ),
-          ),
-          // Pulsanti di navigazione del form
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5))
-              ],
-            ),
-            child: Row(
-              children: [
-                if (_currentStep > 0)
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: BorderSide(
-                            color: Theme.of(context).colorScheme.primary),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                // CONTENUTO SIDEBAR
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 100), // Spazio per i tasti dinamici
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: _isSidebarExpanded ? 40.0 : 0),
+                        child: SingleChildScrollView(
+                          child: SizedBox(
+                            width: _isSidebarExpanded ? 270 : 90,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (_isSidebarExpanded) ...[
+                                  Container(
+                                    width: MediaQuery.of(context)
+                                                .size
+                                                .shortestSide >=
+                                            600
+                                        ? 190
+                                        : 130,
+                                    height: MediaQuery.of(context)
+                                                .size
+                                                .shortestSide >=
+                                            600
+                                        ? 190
+                                        : 130,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipOval(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                            _isSidebarExpanded
+                                                ? (MediaQuery.of(context)
+                                                            .size
+                                                            .shortestSide >=
+                                                        600
+                                                    ? 24
+                                                    : 12)
+                                                : 12),
+                                        child: Image.asset(
+                                          'assets/images/who_logo.png',
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error,
+                                                  stackTrace) =>
+                                              Icon(Icons.public,
+                                                  size: _isSidebarExpanded
+                                                      ? 60
+                                                      : 30,
+                                                  color:
+                                                      const Color(0xFF005DA8)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height <
+                                                  500
+                                              ? 16
+                                              : 32),
+                                  Text(
+                                    "Facility Configuration",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize:
+                                          MediaQuery.of(context).size.height <
+                                                  500
+                                              ? 22
+                                              : 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    "Complete the pre-assessment steps to set up the environment for ${widget.emergencyType.name}.",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize:
+                                          MediaQuery.of(context).size.height <
+                                                  500
+                                              ? 14
+                                              : 18,
+                                      color: Colors.white.withOpacity(0.8),
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+                                  // INDICATORE DI PROGRESSO LATERALE
+                                  Text(
+                                      "Step ${_currentStep + 1} of $_totalSteps",
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14)),
+                                  const SizedBox(height: 12),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: LinearProgressIndicator(
+                                      value: (_currentStep + 1) / _totalSteps,
+                                      backgroundColor:
+                                          Colors.white.withOpacity(0.2),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                              Colors.white),
+                                      minHeight: 8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      onPressed: _prevStep,
-                      child: const Text("Back",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
-                  )
-                else
-                  const Spacer(),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
+                  ],
+                ),
+
+                // TASTO MENU (Dinamico) - POSIZIONATO IN ALTO A DESTRA DELLA SIDEBAR
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  top: 12,
+                  left: _isSidebarExpanded ? null : 0,
+                  right: _isSidebarExpanded ? 12 : 0,
+                  child: _isSidebarExpanded
+                      ? IconButton(
+                          icon: Icon(
+                              _isSidebarExpanded
+                                  ? Icons.menu_open_rounded
+                                  : Icons.menu_rounded,
+                              color: Colors.white),
+                          onPressed: () => setState(
+                              () => _isSidebarExpanded = !_isSidebarExpanded),
+                          tooltip: _isSidebarExpanded
+                              ? "Collapse Menu"
+                              : "Expand Menu",
+                        )
+                      : Center(
+                          child: IconButton(
+                            icon: Icon(
+                                _isSidebarExpanded
+                                    ? Icons.menu_open_rounded
+                                    : Icons.menu_rounded,
+                                color: Colors.white),
+                            onPressed: () => setState(
+                                () => _isSidebarExpanded = !_isSidebarExpanded),
+                            tooltip: _isSidebarExpanded
+                                ? "Collapse Menu"
+                                : "Expand Menu",
+                          ),
+                        ),
+                ),
+
+                // TASTO BACK (Dinamico)
+                // Espanso: Top-Left | Contratto: Below Menu Center
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  top: _isSidebarExpanded ? 12 : 55,
+                  left: _isSidebarExpanded ? 12 : 0,
+                  right: _isSidebarExpanded ? null : 0,
+                  child: Center(
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 22),
+                      onPressed: () => context.pop(),
+                      tooltip: "Back",
                     ),
-                    onPressed: _nextStep,
-                    child: Text(
-                        _currentStep == _totalSteps - 1
-                            ? "Start Assessment"
-                            : "Next",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
           ),
+
+          // AREA FORM (Destra)
+          // Il form espanso liberamente, senza Card, per un look arioso e nativo
+          Expanded(
+            child: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: IndexedStack(
+                    index: _currentStep,
+                    children: [
+                      _buildStep1(),
+                      _buildStep2(),
+                      _buildStep3(),
+                      _buildStep4(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  // LAYOUT MOBILE E PORTRAIT
+  // Struttura standard verticale con app bar e indicatore di progresso superiore.
+  Widget _buildMobileLayout() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        toolbarHeight: isTablet ? 80 : 56,
+        title: Text("Facility Configuration",
+            style: TextStyle(
+                fontSize: isTablet ? 32 : 22,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF003D73))),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(
+            color: const Color(0xFF003D73), size: isTablet ? 28 : 24),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Indicatore di avanzamento step
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: isLandscape ? 8 : 16,
+              ),
+              child: isLandscape
+                  ? Row(
+                      children: [
+                        Text("Step ${_currentStep + 1} of $_totalSteps",
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              value: (_currentStep + 1) / _totalSteps,
+                              backgroundColor: Colors.grey.shade200,
+                              color: Theme.of(context).colorScheme.primary,
+                              minHeight: 4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Step ${_currentStep + 1} of $_totalSteps",
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16)),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: (_currentStep + 1) / _totalSteps,
+                          backgroundColor: Colors.grey.shade200,
+                          color: Theme.of(context).colorScheme.primary,
+                          minHeight: 6,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
+                    ),
+            ),
+            // Contenuto scrollabile con form
+            Expanded(
+              child: IndexedStack(
+                index: _currentStep,
+                children: [
+                  _buildStep1(),
+                  _buildStep2(),
+                  _buildStep3(),
+                  _buildStep4(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -308,26 +541,30 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             _buildTextInput(_assessmentNameController, Icons.title)),
         _buildQuestionField(
           "Date of assessment",
-          InkWell(
-            onTap: () async {
-              final date = await showDatePicker(
-                  context: context,
-                  initialDate: _assessmentDate ?? DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2030));
-              
-              if (!mounted) return;
-              if (date != null) setState(() => _assessmentDate = date);
-            },
-            child: InputDecorator(
-              decoration: _inputDecoration(Icons.calendar_today),
-              child: Text(
-                  _assessmentDate != null
-                      ? DateFormat('dd/MM/yyyy').format(_assessmentDate!)
-                      : "Select Date",
-                  style: const TextStyle(fontSize: 15)),
-            ),
-          ),
+          Builder(builder: (context) {
+            final isWideScreen = MediaQuery.of(context).size.width >= 800;
+            return InkWell(
+              onTap: () async {
+                final date = await showDatePicker(
+                    context: context,
+                    initialDate: _assessmentDate ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030));
+
+                if (!mounted) return;
+                if (date != null) setState(() => _assessmentDate = date);
+              },
+              child: InputDecorator(
+                decoration:
+                    _inputDecoration(Icons.calendar_today, isWideScreen),
+                child: Text(
+                    _assessmentDate != null
+                        ? DateFormat('dd/MM/yyyy').format(_assessmentDate!)
+                        : "Select Date",
+                    style: TextStyle(fontSize: isWideScreen ? 16 : 15)),
+              ),
+            );
+          }),
         ),
         _buildQuestionField("Name of the person conducting the assessment",
             _buildTextInput(_assessorNameController, Icons.person)),
@@ -452,7 +689,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             margin: const EdgeInsets.only(top: 8, bottom: 24),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-                color: Colors.blue.shade50.withValues(alpha: 0.5),
+                color: Colors.blue.shade50.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.blue.shade100)),
             child: Column(
@@ -463,12 +700,16 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                     _buildNumberInput(_inpatientBedsController)),
                 _buildQuestionField(
                     "Of the total number of inpatient beds, how many are intensive care unit (ICU) beds?",
-                    TextFormField(
-                      controller: _icuBedsController,
-                      keyboardType: TextInputType.number,
-                      decoration: _inputDecoration(Icons.bed),
-                      validator: (value) => null,
-                    )),
+                    Builder(builder: (context) {
+                  final isWideScreen = MediaQuery.of(context).size.width >= 800;
+                  return TextFormField(
+                    controller: _icuBedsController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(fontSize: isWideScreen ? 16 : 15),
+                    decoration: _inputDecoration(Icons.bed, isWideScreen),
+                    validator: (value) => null,
+                  );
+                })),
                 _buildQuestionField(
                     "The facility has dedicated 24-hour staffed emergency unit",
                     _buildDropdown(
@@ -485,37 +726,130 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   }
 
   // COMPONENTI UI E METODI DI SUPPORTO
+  // Wrapper scrollabile unico: campi + bottoni in un solo flusso verticale
   Widget _buildPageWrapper(
       {required GlobalKey<FormState> formKey,
       required String title,
       required IconData icon,
       required List<Widget> children}) {
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final double pad = isLandscape ? 16.0 : 24.0;
+    final double titleSize = isLandscape ? 18.0 : 24.0;
+    final double titleSpacing = isLandscape ? 16.0 : 32.0;
+
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isTabletLandscape = isTablet && isLandscape;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: EdgeInsets.all(pad),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon,
-                        size: 32, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                        child: Text(title,
-                            style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Theme.of(context).colorScheme.primary))),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                ...children,
-              ],
+          // Allargato a 800 per permettere al form di respirare nella nuova visualizzazione Premium
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(icon,
+                          size: isLandscape ? 24 : 32,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Text(title,
+                              style: TextStyle(
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w900,
+                                  color:
+                                      Theme.of(context).colorScheme.primary))),
+                    ],
+                  ),
+                  SizedBox(height: titleSpacing),
+                  ...children,
+                  // SEZIONE BOTTONI DI NAVIGAZIONE
+                  // Integrati nel flusso scrollabile per massimizzare lo spazio verticale
+                  SizedBox(height: isLandscape ? 16 : 32),
+                  Builder(builder: (context) {
+                    final bool isPortrait =
+                        MediaQuery.of(context).orientation ==
+                            Orientation.portrait;
+                    final bool isTablet =
+                        MediaQuery.of(context).size.shortestSide >= 600;
+                    final bool isMobilePortrait = isPortrait && !isTablet;
+                    final bool isMobileLandscape = !isPortrait && !isTablet;
+
+                    // Dimensioni adattive per i bottoni
+                    // Ancora più compatti in landscape per risparmiare spazio verticale
+                    final double btnPadding =
+                        isMobilePortrait ? 14 : (isMobileLandscape ? 12 : 20);
+                    final double btnFontSize =
+                        isMobilePortrait ? 15 : (isMobileLandscape ? 14 : 18);
+
+                    return Row(
+                      children: [
+                        if (_currentStep > 0)
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    EdgeInsets.symmetric(vertical: btnPadding),
+                                side: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 1.2, // Bordo più nitido
+                                ),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              clipBehavior: Clip.antiAlias, // Evita sbavature
+                              onPressed: _prevStep,
+                              child: Text("Back",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary, // Colore solido
+                                      fontSize: btnFontSize,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          )
+                        else
+                          const Spacer(),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding:
+                                  EdgeInsets.symmetric(vertical: btnPadding),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
+                            onPressed: _nextStep,
+                            child: Text(
+                                _currentStep == _totalSteps - 1
+                                    ? "Start Assessment"
+                                    : "Next",
+                                style: TextStyle(
+                                    fontSize: btnFontSize,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  SizedBox(height: isLandscape ? 8 : 24),
+                ],
+              ),
             ),
           ),
         ),
@@ -523,27 +857,46 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
+  // Spaziatura e dimensioni tipografiche adattive per tablet vs mobile
   Widget _buildQuestionField(String question, Widget inputField) {
+    final bool isWideScreen = MediaQuery.of(context).size.width >= 800;
+    final bool isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Se siamo su tablet (wide) in portrait, usiamo font molto più grandi. Altrimenti torniamo al design originale.
+    final double fontSize = (isWideScreen && isPortrait)
+        ? 19.0
+        : (isWideScreen ? 16.0 : (isLandscape ? 13.0 : 15.0));
+    final double paddingBottom = (isWideScreen && isPortrait)
+        ? 32.0
+        : (isWideScreen ? 28.0 : (isLandscape ? 14.0 : 24.0));
+    final double spacing = (isWideScreen && isPortrait)
+        ? 14.0
+        : (isWideScreen ? 12.0 : (isLandscape ? 6.0 : 10.0));
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
+      padding: EdgeInsets.only(bottom: paddingBottom),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(question,
-              style: const TextStyle(
-                  fontSize: 15,
+              style: TextStyle(
+                  fontSize: fontSize,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B))),
-          const SizedBox(height: 10),
+                  color: const Color(0xFF1E293B))),
+          SizedBox(height: spacing),
           inputField,
         ],
       ),
     );
   }
 
-  InputDecoration _inputDecoration(IconData icon) {
+  InputDecoration _inputDecoration(IconData icon, bool isWideScreen) {
     return InputDecoration(
-      prefixIcon: Icon(icon, size: 20, color: Colors.grey.shade400),
+      prefixIcon:
+          Icon(icon, size: isWideScreen ? 24 : 20, color: Colors.grey.shade400),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -556,15 +909,17 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
               color: Theme.of(context).colorScheme.primary, width: 2)),
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: EdgeInsets.symmetric(
+          horizontal: isWideScreen ? 20 : 16, vertical: isWideScreen ? 20 : 16),
       errorStyle: const TextStyle(fontWeight: FontWeight.bold),
     );
   }
 
   Widget _buildInfoBanner(String text) {
+    final isWideScreen = MediaQuery.of(context).size.width >= 800;
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isWideScreen ? 20 : 16),
       decoration: BoxDecoration(
           color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(12),
@@ -572,12 +927,14 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info, size: 20, color: Colors.blue),
+          Icon(Icons.info, size: isWideScreen ? 24 : 20, color: Colors.blue),
           const SizedBox(width: 12),
           Expanded(
               child: Text(text,
-                  style: const TextStyle(
-                      fontSize: 13, color: Colors.blue, height: 1.4))),
+                  style: TextStyle(
+                      fontSize: isWideScreen ? 15 : 13,
+                      color: Colors.blue,
+                      height: 1.4))),
         ],
       ),
     );
@@ -585,32 +942,38 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
 
   Widget _buildTextInput(TextEditingController controller, IconData icon,
       {TextInputType keyboardType = TextInputType.text}) {
+    final isWideScreen = MediaQuery.of(context).size.width >= 800;
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      decoration: _inputDecoration(icon),
+      style: TextStyle(fontSize: isWideScreen ? 16 : 15),
+      decoration: _inputDecoration(icon, isWideScreen),
       validator: (value) => null,
     );
   }
 
   Widget _buildNumberInput(TextEditingController controller) {
+    final isWideScreen = MediaQuery.of(context).size.width >= 800;
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
-      decoration: _inputDecoration(Icons.numbers),
+      style: TextStyle(fontSize: isWideScreen ? 16 : 15),
+      decoration: _inputDecoration(Icons.numbers, isWideScreen),
       validator: (value) => null,
     );
   }
 
   Widget _buildDropdown(List<String> items, Function(String?) onChanged) {
+    final isWideScreen = MediaQuery.of(context).size.width >= 800;
     return DropdownButtonFormField<String>(
       isExpanded: true,
-      decoration: _inputDecoration(Icons.arrow_drop_down_circle_outlined),
+      decoration:
+          _inputDecoration(Icons.arrow_drop_down_circle_outlined, isWideScreen),
       items: items
           .map((e) => DropdownMenuItem(
               value: e,
               child: Text(e,
-                  style: const TextStyle(fontSize: 15),
+                  style: TextStyle(fontSize: isWideScreen ? 16 : 15),
                   overflow: TextOverflow.ellipsis)))
           .toList(),
       validator: (value) => null,
@@ -618,4 +981,3 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 }
-

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
-import 'advanced_analytics_screen.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -11,7 +12,7 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  // STATO E CONFIGURAZIONE GRAFICA
+  // LOGICA DI STATO E CONFIGURAZIONE GRAFICA
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
 
@@ -35,7 +36,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     _loadData();
   }
 
-  // LOGICA DI RECUPERO DATI E POPOLAMENTO FILTRI
+  // LOGICA DI CARICAMENTO DATI
   Future<void> _loadData() async {
     final data = await DatabaseService.instance.getAllAssessments();
 
@@ -86,7 +87,78 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
   }
 
-  // METODO DI RENDERING PRINCIPALE
+  // METODO DI RENDERING PRINCIPALE ADATTIVO
+  // MODAL INFORMATIVO PREMIUM
+  void _showMetricInfo(String title, String description) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(32), topRight: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _primaryBlue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.info_outline_rounded, color: _primaryBlue),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: _slateDark),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              description,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: _slateLight,
+                  height: 1.6,
+                  fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Got it",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -97,6 +169,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     final data = _filteredData;
 
+    // ELABORAZIONE STATISTICHE AGGREGATE PER L'ANALISI
     double totalReadiness = 0;
     int totalQuestionsAnswered = 0;
     int meetsTargetCount = 0;
@@ -163,205 +236,251 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 tooltip: "Advanced Charts",
                 icon: Icon(Icons.insights_rounded, color: _primaryBlue),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AdvancedAnalyticsScreen(data: data),
-                    ),
-                  );
+                  context.push('/advanced-analytics', extra: data);
                 },
               ),
             ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Selezione dei parametri di filtraggio
-          SliverToBoxAdapter(
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+      body: getValueForScreenType<Widget>(
+        context: context,
+        mobile: _buildVerticalLayout(data, avgReadiness, criticalFailsCount, totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct, categoryScores),
+        tablet: _buildAdaptiveLayout(data, avgReadiness, criticalFailsCount, totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct, categoryScores),
+        desktop: _buildAdaptiveLayout(data, avgReadiness, criticalFailsCount, totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct, categoryScores),
+      ),
+    );
+  }
+
+  // LAYOUT VERTICALE OTTIMIZZATO PER MOBILE E LANDSCAPE
+  Widget _buildVerticalLayout(List<FacilityLayout> data, double avgReadiness, int criticalFailsCount, int totalQuestionsAnswered, int meetsTargetCount, double meetsPct, int partialCount, double partialPct, int doesNotMeetCount, double failsPct, Map<AssessmentCategory, List<int>> categoryScores) {
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    return CustomScrollView(
+      slivers: [
+        _buildFiltersSliver(),
+        if (data.isEmpty) _buildEmptyStateSliver()
+        else SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              _buildKpiRow(data.length, avgReadiness, criticalFailsCount),
+              const SizedBox(height: 32),
+              
+              // In landscape mostriamo le sezioni affiancate per ottimizzare lo spazio
+              if (isLandscape)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct)),
+                    const SizedBox(width: 24),
+                    Expanded(child: _buildCategorySection(categoryScores)),
+                  ],
+                )
+              else ...[
+                _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct),
+                const SizedBox(height: 32),
+                _buildCategorySection(categoryScores),
+              ],
+              
+              const SizedBox(height: 32),
+              _buildRankingSection(),
+              const SizedBox(height: 40),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // LAYOUT ADATTIVO PER TABLET E DESKTOP
+  Widget _buildAdaptiveLayout(List<FacilityLayout> data, double avgReadiness, int criticalFailsCount, int totalQuestionsAnswered, int meetsTargetCount, double meetsPct, int partialCount, double partialPct, int doesNotMeetCount, double failsPct, Map<AssessmentCategory, List<int>> categoryScores) {
+    return CustomScrollView(
+      slivers: [
+        _buildFiltersSliver(),
+        if (data.isEmpty) _buildEmptyStateSliver()
+        else SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              _buildKpiRow(data.length, avgReadiness, criticalFailsCount),
+              const SizedBox(height: 32),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _buildDropdown(
-                        "Country / Region",
-                        _selectedCountry,
-                        _availableCountries,
-                        (val) => setState(() => _selectedCountry = val!)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildDropdown(
-                        "Reporting Year",
-                        _selectedYear,
-                        _availableYears,
-                        (val) => setState(() => _selectedYear = val!)),
-                  ),
+                  Expanded(child: _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct)),
+                  const SizedBox(width: 32),
+                  Expanded(child: _buildCategorySection(categoryScores)),
                 ],
               ),
-            ),
+              const SizedBox(height: 32),
+              _buildRankingSection(),
+              const SizedBox(height: 40),
+            ]),
           ),
+        ),
+      ],
+    );
+  }
 
-          if (data.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.analytics_outlined,
-                        size: 64, color: Colors.grey.shade300),
-                    const SizedBox(height: 16),
-                    Text("No reports available for this selection.",
-                        style: TextStyle(
-                            color: _slateLight,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Indicatori sintetici di performance (KPI)
-                  Row(
+  // COMPONENTI SLIVER E BLOCCHI LOGICI
+  
+  SliverToBoxAdapter _buildFiltersSliver() {
+    return SliverToBoxAdapter(
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildDropdown(
+                  "Country / Region",
+                  _selectedCountry,
+                  _availableCountries,
+                  (val) => setState(() => _selectedCountry = val!)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildDropdown(
+                  "Reporting Year",
+                  _selectedYear,
+                  _availableYears,
+                  (val) => setState(() => _selectedYear = val!)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverFillRemaining _buildEmptyStateSliver() {
+    return SliverFillRemaining(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.analytics_outlined, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text("No reports available for this selection.",
+                style: TextStyle(color: _slateLight, fontSize: 16, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // COMPONENTI UI: KPI E INDICATORI
+  Widget _buildKpiRow(int count, double avgReadiness, int criticalFails) {
+    return Row(
+      children: [
+        Expanded(
+            child: _buildKpiCard("Assessments", count.toString(),
+                Icons.fact_check_outlined, _primaryBlue,
+                info: "Total number of completed facility assessments.")),
+        const SizedBox(width: 12),
+        Expanded(
+            child: _buildKpiCard("Avg Readiness",
+                "${avgReadiness.toStringAsFixed(1)}%",
+                Icons.health_and_safety_outlined, _primaryBlue,
+                info: "Overall average readiness level across all evaluated criteria.")),
+        const SizedBox(width: 12),
+        Expanded(
+            child: _buildKpiCard("Critical Fails", criticalFails.toString(),
+                Icons.warning_amber_rounded, _slateDark,
+                info: "Number of high-priority criteria that did not meet the minimum requirements.")),
+      ],
+    );
+  }
+
+  Widget _buildComplianceSection(int total, int meetsCount, double meetsPct, int partialCount, double partialPct, int doesNotMeetCount, double failsPct) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Compliance Breakdown", "Distribution of $total evaluated criteria", 
+          info: "Visualizes the percentage of criteria that fully meet (Meets), partially meet (Partial), or fail (Fails) the standards."),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: _cardDecoration(),
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 28,
+                  child: Row(
                     children: [
-                      Expanded(
-                          child: _buildKpiCard(
-                              "Assessments",
-                              data.length.toString(),
-                              Icons.fact_check_outlined,
-                              _primaryBlue)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: _buildKpiCard(
-                              "Avg Readiness",
-                              "${avgReadiness.toStringAsFixed(1)}%",
-                              Icons.health_and_safety_outlined,
-                              _primaryBlue)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: _buildKpiCard(
-                              "Critical Fails",
-                              criticalFailsCount.toString(),
-                              Icons.warning_amber_rounded,
-                              _slateDark)),
+                      if (meetsPct > 0) Expanded(flex: (meetsPct * 1000).toInt(), child: Container(color: _colorMeets)),
+                      if (partialPct > 0) Expanded(flex: (partialPct * 1000).toInt(), child: Container(color: _colorPartial)),
+                      if (failsPct > 0) Expanded(flex: (failsPct * 1000).toInt(), child: Container(color: _colorFails)),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildLegendItem("Meets", meetsCount, meetsPct, _colorMeets),
+                  _buildLegendItem("Partial", partialCount, partialPct, _colorPartial),
+                  _buildLegendItem("Fails", doesNotMeetCount, failsPct, _colorFails),
+                ],
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-                  // Distribuzione dei livelli di conformità
-                  _buildSectionHeader("Compliance Breakdown",
-                      "Distribution of $totalQuestionsAnswered evaluated criteria"),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: _cardDecoration(),
-                    child: Column(
+  Widget _buildCategorySection(Map<AssessmentCategory, List<int>> scores) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Category Performance", "Readiness score across technical areas", 
+          info: "Average compliance scores grouped by technical categories like IPC, WASH, and Logistics."),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: _cardDecoration(),
+          child: Column(
+            children: scores.entries.map((entry) {
+              double percentage = entry.value[1] == 0 ? 0 : (entry.value[0] / entry.value[1]) * 100;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
-                            height: 28,
-                            child: Row(
-                              children: [
-                                if (meetsPct > 0)
-                                  Expanded(
-                                      flex: (meetsPct * 1000).toInt(),
-                                      child: Container(color: _colorMeets)),
-                                if (partialPct > 0)
-                                  Expanded(
-                                      flex: (partialPct * 1000).toInt(),
-                                      child: Container(color: _colorPartial)),
-                                if (failsPct > 0)
-                                  Expanded(
-                                      flex: (failsPct * 1000).toInt(),
-                                      child: Container(color: _colorFails)),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildLegendItem("Meets Target", meetsTargetCount,
-                                meetsPct, _colorMeets),
-                            _buildLegendItem("Partial", partialCount,
-                                partialPct, _colorPartial),
-                            _buildLegendItem("Does Not Meet", doesNotMeetCount,
-                                failsPct, _colorFails),
-                          ],
-                        )
+                        Text(_getCategoryAcronym(entry.key), style: TextStyle(fontWeight: FontWeight.w700, color: _slateDark, fontSize: 13)),
+                        Text("${percentage.toStringAsFixed(1)}%", style: TextStyle(fontWeight: FontWeight.w900, color: _primaryBlue, fontSize: 14)),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Analisi della performance per pilastro tecnico
-                  _buildSectionHeader("Category Performance",
-                      "Readiness score across main technical areas"),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: _cardDecoration(),
-                    child: Column(
-                      children: categoryScores.entries.map((entry) {
-                        double percentage = entry.value[1] == 0
-                            ? 0
-                            : (entry.value[0] / entry.value[1]) * 100;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(_getCategoryAcronym(entry.key),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          color: _slateDark,
-                                          fontSize: 13)),
-                                  Text("${percentage.toStringAsFixed(1)}%",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          color: _primaryBlue,
-                                          fontSize: 14)),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              LinearProgressIndicator(
-                                value: percentage / 100,
-                                backgroundColor: Colors.grey.shade200,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(_primaryBlue),
-                                minHeight: 8,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: percentage / 100,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(_primaryBlue),
+                      minHeight: 8,
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                  ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
 
-                  const SizedBox(height: 32),
-
-                  // Ranking geografico basato sul punteggio medio
-                  _buildSectionHeader("Geographical Ranking",
-                      "Average readiness score by country"),
-                  _buildGeographicalRanking(),
-
-                  const SizedBox(height: 40),
-                ]),
-              ),
-            ),
-        ],
-      ),
+  Widget _buildRankingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Geographical Ranking", "Average readiness score by country",
+          info: "Compares the readiness performance between different countries or regions."),
+        _buildGeographicalRanking(),
+      ],
     );
   }
 
@@ -372,30 +491,43 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withOpacity(0.03),
               blurRadius: 16,
               offset: const Offset(0, 4))
         ],
         border: Border.all(color: Colors.grey.shade100));
   }
 
-  Widget _buildSectionHeader(String title, String subtitle) {
+  Widget _buildSectionHeader(String title, String subtitle, {String? info}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: _slateDark)),
-          const SizedBox(height: 4),
-          Text(subtitle,
-              style: TextStyle(
-                  fontSize: 13,
-                  color: _slateLight,
-                  fontWeight: FontWeight.w500)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _slateDark)),
+                const SizedBox(height: 4),
+                Text(subtitle,
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: _slateLight,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
+          if (info != null)
+            IconButton(
+              icon: Icon(Icons.info_outline_rounded,
+                  size: 20, color: _slateLight.withOpacity(0.6)),
+              onPressed: () => _showMetricInfo(title, info),
+            ),
         ],
       ),
     );
@@ -441,33 +573,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 16),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: _slateDark)),
-          const SizedBox(height: 4),
-          Text(title,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: _slateLight)),
-        ],
+  Widget _buildKpiCard(String title, String value, IconData icon, Color color,
+      {String? info}) {
+    return InkWell(
+      onTap: info != null ? () => _showMetricInfo(title, info) : null,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                if (info != null)
+                  Icon(Icons.info_outline_rounded,
+                      size: 16, color: _slateLight.withOpacity(0.4)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: _slateDark)),
+            const SizedBox(height: 4),
+            Text(title,
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _slateLight)),
+          ],
+        ),
       ),
     );
   }
@@ -537,7 +682,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
-                          color: _slateLight.withValues(alpha: 0.5))),
+                          color: _slateLight.withOpacity(0.5))),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

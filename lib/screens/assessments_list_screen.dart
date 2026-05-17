@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
-import 'interactive_map_screen.dart';
-import 'analytics_screen.dart';
 import '../services/report_export_service.dart';
-import 'global_map_screen_3d.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum SortOption { newest, scoreHighToLow, scoreLowToHigh }
 
-class AssessmentsListScreen extends StatefulWidget {
+class AssessmentsListScreen extends ConsumerStatefulWidget {
   const AssessmentsListScreen({super.key});
 
   @override
-  State<AssessmentsListScreen> createState() => _AssessmentsListScreenState();
+  ConsumerState<AssessmentsListScreen> createState() =>
+      _AssessmentsListScreenState();
 }
 
-class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
-  // STATO E CONFIGURAZIONE
+class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
+  // LOGICA DI STATO E GESTIONE DATI
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
   List<FacilityLayout> _filteredAssessments = [];
+  FacilityLayout?
+      _selectedAssessment; // Tracciamento dell'elemento selezionato per Master-Detail
+  double?
+      _userMasterWidth; // Memorizza la larghezza personalizzata decisa dall'utente
 
   final TextEditingController _searchController = TextEditingController();
   String _currentFilter = 'All';
@@ -34,6 +39,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     _loadAssessments();
   }
 
+  // LOGICA DI STATO E DISPOSIZIONE RISORSE
   @override
   void dispose() {
     _searchController.dispose();
@@ -41,6 +47,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
   }
 
   // LOGICA DI CARICAMENTO E FILTRAGGIO DATI
+  // Gestisce il recupero asincrono dal database e l'applicazione dei filtri di ricerca
   Future<void> _loadAssessments() async {
     setState(() => _isLoading = true);
     final data = await DatabaseService.instance.getAllAssessments();
@@ -50,11 +57,14 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     setState(() {
       _allAssessments = data;
       _isLoading = false;
+      if (_allAssessments.isNotEmpty && _selectedAssessment == null) {
+        _selectedAssessment = _allAssessments.first;
+      }
     });
     _applyFilters();
   }
 
-  // Calcolo dello stato dell'assessment in base alla completezza e alle criticità
+  // Determinazione dello stato dell'assessment basata su completezza e criticità
   String _getAssessmentStatus(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -80,7 +90,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     return 'Completed';
   }
 
-  // Applicazione dei filtri di ricerca, categoria e data con ordinamento finale
+  // Motore di filtraggio per query testuale, stato e data con logica di ordinamento
   void _applyFilters() {
     List<FacilityLayout> temp = List.from(_allAssessments);
 
@@ -118,10 +128,14 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
 
     setState(() {
       _filteredAssessments = temp;
+      if (_selectedAssessment != null && !temp.contains(_selectedAssessment)) {
+        _selectedAssessment = temp.isNotEmpty ? temp.first : null;
+      }
     });
   }
 
-  // GESTIONE DELLA CANCELLAZIONE
+  // GESTIONE DELLA CANCELLAZIONE DATI
+  // Presenta un dialogo di conferma prima di rimuovere permanentemente un record
   Future<void> _confirmDelete(FacilityLayout facility) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -150,9 +164,7 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
 
     if (confirm == true) {
       await DatabaseService.instance.deleteAssessment(facility.id);
-      
       if (!mounted) return;
-      
       _loadAssessments();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,247 +176,729 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     }
   }
 
-  // METODO DI RENDERING PRINCIPALE
+  // METODO DI RENDERING PRINCIPALE ADATTIVO
+  // GESTIONE LAYOUT RESPONSIVE E NAVIGAZIONE
   @override
   Widget build(BuildContext context) {
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isSmallHeight = MediaQuery.of(context).size.height < 500;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        toolbarHeight: 70,
-        backgroundColor: Colors.white,
-        elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.1),
-        title: const Text("Saved Assessments",
-            style: TextStyle(
-                color: Color(0xFF003D73), fontWeight: FontWeight.bold)),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AnalyticsScreen()),
-                );
-              },
-              icon: const Icon(Icons.analytics, color: Color(0xFF005DA8)),
-              label: const Text("Analytics",
-                  style: TextStyle(
-                      color: Color(0xFF005DA8), fontWeight: FontWeight.bold)),
-              style: TextButton.styleFrom(backgroundColor: Colors.blue.shade50),
-            ),
-          )
-        ],
+      // Il corpo della pagina è ottimizzato per lo scorrimento e la reattività verticale
+      body: getValueForScreenType<Widget>(
+        context: context,
+        mobile: _buildMainContent(
+            columns: isLandscape ? 2 : 1,
+            isLandscape: isLandscape,
+            isSmallHeight: isSmallHeight,
+            isMasterView: false),
+        tablet: _buildMasterDetailLayout(),
+        desktop: _buildMasterDetailLayout(),
       ),
-      body: Column(
-        children: [
-          // Barra di ricerca e accesso alla visualizzazione mappa
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: "Search assessment by name...",
-                          prefixIcon: const Icon(Icons.search,
-                              color: Color(0xFF005DA8)),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear,
-                                      color: Colors.grey),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    FocusScope.of(context).unfocus();
-                                  },
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 0),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide.none),
-                        ),
-                      ),
+    );
+  }
+
+  // COMPONENTI UI: LISTA E GRIGLIA
+  // Utilizza CustomScrollView per permettere all'header di scorrere e massimizzare lo spazio verticale
+  Widget _buildMainContent(
+      {required int columns,
+      required bool isLandscape,
+      required bool isSmallHeight,
+      bool isMasterView = false}) {
+    return RefreshIndicator(
+      onRefresh: _loadAssessments,
+      child: CustomScrollView(
+        slivers: [
+          // AppBar minimale con titolo e pulsante Analytics premium
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: false,
+            title: const Text("Saved Assessments",
+                style: TextStyle(
+                    color: Color(0xFF003D73),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20)),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _buildPremiumAnalyticsButton(
+                    isCompact: MediaQuery.of(context).size.width < 500),
+              )
+            ],
+          ),
+
+          // Sezione di ricerca e filtri (Sliver che scompare allo scorrimento)
+          SliverToBoxAdapter(
+            child: _buildSearchAndFilters(isSmallHeight),
+          ),
+
+          // Elenco degli assessment in formato griglia o lista (Sliver)
+          if (_isLoading)
+            const SliverFillRemaining(
+                child: Center(
+                    child: CircularProgressIndicator(color: Color(0xFF005DA8))))
+          else if (_filteredAssessments.isEmpty)
+            SliverFillRemaining(child: _buildEmptyState())
+          else
+            SliverPadding(
+              padding: EdgeInsets.all(isSmallHeight ? 12 : 16),
+              sliver: SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  // Design Smartphone Orizzontale e Tablet Master-Detail:
+                  // Per la visualizzazione Master-Detail di iPad Landscape, se la colonna di sinistra (master)
+                  // viene ristretta dall'utente, adattiamo dinamicamente l'aspect ratio per evitare overflow.
+                  int dynamicColumns = columns;
+                  bool isMobileLandscape = isLandscape &&
+                      !getValueForScreenType<bool>(
+                          context: context, mobile: false, tablet: true);
+
+                  double ratio;
+                  if (isMasterView) {
+                    // Adattamento dinamico basato sulla larghezza reale della colonna master per evitare qualsiasi overflow
+                    ratio =
+                        (constraints.crossAxisExtent / 170.0).clamp(1.5, 2.1);
+                  } else {
+                    ratio = dynamicColumns == 1
+                        ? (isSmallHeight ? 1.75 : 2.1)
+                        : (isMobileLandscape ? 1.95 : 2.2);
+                  }
+
+                  return SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: dynamicColumns,
+                      childAspectRatio: ratio,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                     ),
-                    const SizedBox(width: 12),
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF005DA8),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF005DA8).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: IconButton(
-                        icon:
-                            const Icon(Icons.map_outlined, color: Colors.white),
-                        tooltip: "View on Map",
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const GlobalMapScreen3D()),
-                          );
-                        },
-                      ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildAssessmentCard(
+                          _filteredAssessments[index],
+                          isMasterView: isMasterView,
+                          isSmallHeight: isSmallHeight),
+                      childCount: _filteredAssessments.length,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (_allAssessments.isNotEmpty) ...[
-                  _buildGeoStats(),
-                ]
-              ],
+                  );
+                },
+              ),
             ),
-          ),
-
-          Divider(height: 1, color: Colors.grey.shade200),
-
-          // Sezione filtri rapidi e ordinamento cronologico/punteggio
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterChip('All'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('In Progress'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Completed'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Critical Fails'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () async {
-                        DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: _filterDate ?? DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                        );
-                        if (!mounted) return;
-                        if (picked != null) {
-                          setState(() => _filterDate = picked);
-                          _applyFilters();
-                        }
-                      },
-                      icon: const Icon(Icons.date_range, size: 20),
-                      label: Text(_filterDate == null
-                          ? "Filter by Date"
-                          : DateFormat('dd MMM yyyy').format(_filterDate!)),
-                      style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF005DA8)),
-                    ),
-                    if (_filterDate != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear,
-                            color: Colors.grey, size: 20),
-                        onPressed: () {
-                          setState(() => _filterDate = null);
-                          _applyFilters();
-                        },
-                      ),
-                    const Spacer(),
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<SortOption>(
-                        value: _currentSort,
-                        icon: const Icon(Icons.sort,
-                            color: Color(0xFF005DA8), size: 20),
-                        style: const TextStyle(
-                            color: Color(0xFF005DA8),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
-                        items: const [
-                          DropdownMenuItem(
-                              value: SortOption.newest,
-                              child: Text("Newest First")),
-                          DropdownMenuItem(
-                              value: SortOption.scoreHighToLow,
-                              child: Text("Highest Score")),
-                          DropdownMenuItem(
-                              value: SortOption.scoreLowToHigh,
-                              child: Text("Lowest Score")),
-                        ],
-                        onChanged: (SortOption? newValue) {
-                          if (newValue != null) {
-                            setState(() => _currentSort = newValue);
-                            _applyFilters();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Lista dei risultati filtrati
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF005DA8)))
-                : _filteredAssessments.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.search_off,
-                                size: 64, color: Colors.grey.shade300),
-                            const SizedBox(height: 16),
-                            Text("No assessments match your filters.",
-                                style: TextStyle(
-                                    color: Colors.grey.shade500, fontSize: 16)),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadAssessments,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _filteredAssessments.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 16),
-                          itemBuilder: (context, index) {
-                            return _buildAssessmentCard(
-                                _filteredAssessments[index]);
-                          },
-                        ),
-                      ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
     );
   }
 
-  // COMPONENTI UI E METODI DI SUPPORTO
-  // Visualizzazione dei parametri geografici e media dei punteggi per regione
+  // COMPONENTI UI: MASTER-DETAIL
+  // Implementa un layout a doppia colonna con DIVISORE DRAGGABILE PREMIUM.
+  // Permette all'utente di decidere quanto spazio assegnare alla lista (sinistra) e al dettaglio (destra).
+  Widget _buildMasterDetailLayout() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+
+        // Protezione Anti-Squish per Portrait:
+        // Se lo spazio è troppo ristretto (es. tablet in verticale con sidebar aperta),
+        // abbandoniamo il master-detail e mostriamo solo la lista a tutto schermo.
+        if (totalWidth < 600) {
+          return Container(
+            color: Colors.white,
+            child: _buildMainContent(
+                columns: 1,
+                isLandscape: false,
+                isSmallHeight: false,
+                isMasterView: false),
+          );
+        }
+
+        // 1. Calcolo della larghezza "ideale" di base per Master-Detail equilibrato
+        // Per evitare che la parte di destra (dettagli) venga schiacciata e mostri testi accapo orrendi
+        // (specialmente con la barra laterale espansa su iPad), la lista di sinistra (master)
+        // occupa circa il 45% dello spazio utile, bilanciata fra 330px e 450px.
+        double defaultMasterWidth = (totalWidth * 0.45).clamp(330.0, 450.0);
+
+        // 2. Applicazione della scelta dell'utente con limiti di sicurezza (min 300px, max 70% dello schermo)
+        double currentMasterWidth = _userMasterWidth ?? defaultMasterWidth;
+        currentMasterWidth = currentMasterWidth.clamp(300.0, totalWidth * 0.7);
+
+        return Row(
+          children: [
+            // PANNELLO DI SINISTRA (Lista e Filtri)
+            SizedBox(
+              width: currentMasterWidth,
+              child: Container(
+                color: Colors.white,
+                child: _buildMainContent(
+                    columns: 1,
+                    isLandscape: false,
+                    isSmallHeight: false,
+                    isMasterView: true),
+              ),
+            ),
+
+            // DIVISORE DRAGGABILE PREMIUM
+            MouseRegion(
+              cursor: SystemMouseCursors.resizeColumn,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onHorizontalDragUpdate: (details) {
+                  setState(() {
+                    _userMasterWidth = currentMasterWidth + details.delta.dx;
+                  });
+                },
+                onDoubleTap: () {
+                  // Reset alla dimensione di default con un doppio tocco
+                  setState(() {
+                    _userMasterWidth = null;
+                  });
+                },
+                child: Container(
+                  width: 12, // Area di presa confortevole (touch target)
+                  decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      border: Border.symmetric(
+                        vertical:
+                            BorderSide(color: Colors.grey.shade200, width: 1),
+                      )),
+                  child: Center(
+                    child: Container(
+                      width: 4,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // PANNELLO DI DESTRA (Dettaglio)
+            Expanded(
+              child: Container(
+                color: const Color(0xFFF8FAFC),
+                child: _selectedAssessment == null
+                    ? _buildEmptyDetailView()
+                    : _buildDetailView(_selectedAssessment!),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // COMPONENTI UI: HEADER E FILTRI
+  // Gestisce la barra di ricerca unificata e i controlli consolidati in un'unica area elegante
+  Widget _buildSearchAndFilters(bool isSmallHeight) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            children: [
+              // BARRA DI RICERCA UNIFICATA CON ICONA MAPPA INTEGRATA
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search assessment by name...",
+                    prefixIcon: const Icon(Icons.search,
+                        color: Color(0xFF005DA8), size: 20),
+                    suffixIcon: IntrinsicHeight(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_searchController.text.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.clear,
+                                  color: Colors.grey, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                FocusScope.of(context).unfocus();
+                              },
+                            ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: VerticalDivider(width: 1, thickness: 1),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.map_outlined,
+                                color: Color(0xFF005DA8), size: 20),
+                            tooltip: "View on Map",
+                            onPressed: () => context.push('/global-map'),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF1F5F9),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
+              // CONTROLLI CONSOLIDATI (FILTRI E ORDINAMENTO IN RIGA SCORREVOLE)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: Row(
+                  children: [
+                    // Bottone Opzioni Unificato (Data e Ordinamento)
+                    _buildUnifiedOptionsButton(),
+                    const SizedBox(width: 12),
+                    const SizedBox(
+                        height: 24, child: VerticalDivider(width: 1)),
+                    const SizedBox(width: 12),
+                    // Chip di stato filtraggio
+                    _buildFilterChip('All'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('In Progress'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Completed'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Critical Fails'),
+                  ],
+                ),
+              ),
+
+              if (_allAssessments.isNotEmpty && !isSmallHeight) ...[
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: _buildGeoStats(),
+                ),
+              ]
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Bottone Analytics con design premium pill-shaped
+  // Si condensa (isCompact) automaticamente in visualizzazioni strette (es. colonna Master)
+  Widget _buildPremiumAnalyticsButton({bool isCompact = false}) {
+    return InkWell(
+      onTap: () => context.push('/analytics'),
+      borderRadius: BorderRadius.circular(30),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            EdgeInsets.symmetric(horizontal: isCompact ? 12 : 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE0F2FE), // Azzurro tenue WHO Premium
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.analytics_rounded,
+                color: const Color(0xFF005DA8), size: isCompact ? 22 : 20),
+            if (!isCompact) ...[
+              const SizedBox(width: 8),
+              const Text(
+                "Analytics",
+                style: TextStyle(
+                  color: Color(0xFF005DA8),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Bottone unificato per l'ordinamento e il filtraggio per data
+  Widget _buildUnifiedOptionsButton() {
+    return PopupMenuButton<dynamic>(
+      offset: const Offset(0, 45),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF005DA8).withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child:
+            const Icon(Icons.tune_rounded, color: Color(0xFF005DA8), size: 20),
+      ),
+      onSelected: (value) async {
+        if (value == 'date') {
+          DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: _filterDate ?? DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime.now(),
+          );
+          if (picked != null) {
+            setState(() => _filterDate = picked);
+            _applyFilters();
+          }
+        } else if (value is SortOption) {
+          setState(() => _currentSort = value);
+          _applyFilters();
+        } else if (value == 'clear_date') {
+          setState(() => _filterDate = null);
+          _applyFilters();
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          enabled: false,
+          child: Text("SORT BY",
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey)),
+        ),
+        CheckedPopupMenuItem(
+          checked: _currentSort == SortOption.newest,
+          value: SortOption.newest,
+          child: const Text("Newest First"),
+        ),
+        CheckedPopupMenuItem(
+          checked: _currentSort == SortOption.scoreHighToLow,
+          value: SortOption.scoreHighToLow,
+          child: const Text("Highest Score"),
+        ),
+        CheckedPopupMenuItem(
+          checked: _currentSort == SortOption.scoreLowToHigh,
+          value: SortOption.scoreLowToHigh,
+          child: const Text("Lowest Score"),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          enabled: false,
+          child: Text("DATE FILTER",
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey)),
+        ),
+        PopupMenuItem(
+          value: 'date',
+          child: Row(
+            children: [
+              const Icon(Icons.date_range_rounded, size: 18),
+              const SizedBox(width: 12),
+              Text(_filterDate == null
+                  ? "Select Date"
+                  : DateFormat('dd MMM yyyy').format(_filterDate!)),
+            ],
+          ),
+        ),
+        if (_filterDate != null)
+          const PopupMenuItem(
+            value: 'clear_date',
+            child:
+                Text("Clear Date Filter", style: TextStyle(color: Colors.red)),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text("No assessments match your filters.",
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDetailView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.assignment_outlined,
+              size: 80, color: Colors.grey.shade200),
+          const SizedBox(height: 16),
+          Text("Select an assessment to view details",
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  // COMPONENTI UI: DETTAGLIO ASSESSMENT
+  // Rendering del pannello laterale con statistiche avanzate e breakdown per zona
+  Widget _buildDetailView(FacilityLayout facility) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final detailWidth = constraints.maxWidth;
+        final bool isNarrow = detailWidth < 500;
+        final double horizontalPadding = isNarrow ? 20.0 : 32.0;
+
+        return SingleChildScrollView(
+          padding:
+              EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isNarrow)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(facility.facilityName,
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0F172A))),
+                    const SizedBox(height: 8),
+                    Text(
+                        "${facility.emergencyType.name.toUpperCase()} ASSESSMENT",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF005DA8),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => _openAssessmentMap(facility),
+                        icon: const Icon(Icons.map),
+                        label: const Text("Open Interactive Map",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(facility.facilityName,
+                              style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF0F172A))),
+                          const SizedBox(height: 8),
+                          Text(
+                              "${facility.emergencyType.name.toUpperCase()} ASSESSMENT",
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2)),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF005DA8),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () => _openAssessmentMap(facility),
+                      icon: const Icon(Icons.map),
+                      label: const Text("Open Interactive Map",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 32),
+
+              // GRIGLIA KPI DETTAGLIATA
+              Row(
+                children: [
+                  _buildLargeStatCard("Critical Fails",
+                      _countCriticalFails(facility).toString(), Colors.red,
+                      isNarrow: isNarrow),
+                  const SizedBox(width: 16),
+                  _buildLargeStatCard("Zones Evaluated",
+                      _countEvaluatedZones(facility).toString(), Colors.green,
+                      isNarrow: isNarrow),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              const Text("Zone Breakdown",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A))),
+              const SizedBox(height: 16),
+
+              // ELENCO DELLE ZONE VALUTATE
+              ...facility.zones.map((zone) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: isNarrow ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(top: isNarrow ? 4.0 : 0.0),
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                              color: zone.statusColor, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: isNarrow
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(zone.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                        "${zone.checklist.where((q) => q.selectedCompliance != ComplianceLevel.pending).length} / ${zone.checklist.length} answered",
+                                        style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 12)),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(zone.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                        "${zone.checklist.where((q) => q.selectedCompliance != ComplianceLevel.pending).length} / ${zone.checklist.length} answered",
+                                        style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 13)),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLargeStatCard(String label, String value, Color color,
+      {bool isNarrow = false}) {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(isNarrow ? 16 : 24),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: isNarrow ? 11 : 13)),
+            const SizedBox(height: 8),
+            Text(value,
+                style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: isNarrow ? 24 : 32)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // LOGICA DI NAVIGAZIONE E SUPPORTO
+  // Calcolo delle zone effettivamente valutate (con almeno una risposta data)
+  int _countEvaluatedZones(FacilityLayout facility) {
+    int count = 0;
+    for (var zone in facility.zones) {
+      final bool hasAnswers = zone.checklist
+          .any((q) => q.selectedCompliance != ComplianceLevel.pending);
+      if (hasAnswers) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // Calcolo rapido dei fallimenti critici per indicatori sintetici
+  int _countCriticalFails(FacilityLayout facility) {
+    int count = 0;
+    for (var zone in facility.zones) {
+      count += zone.checklist.where((q) => q.isCriticalFailure).length;
+    }
+    return count;
+  }
+
+  // Reindirizzamento alla mappa interattiva con pre-popolamento dei dati
+  void _openAssessmentMap(FacilityLayout facility) async {
+    FacilityType typeToOpen = FacilityType.existingFacilityWithWard;
+    final savedTypeStr = facility.generalInfo?.assessedFacilityType;
+
+    if (savedTypeStr == "Mpox stand-alone treatment centre") {
+      typeToOpen = FacilityType.standAloneCenter;
+    } else if (savedTypeStr ==
+        "Screening for Internally Displaced People (IDP) and refugee camps") {
+      typeToOpen = FacilityType.congregateSetting;
+    } else if (savedTypeStr == "Screening and temporary isolation for mpox") {
+      typeToOpen = FacilityType.screeningAndIsolation;
+    }
+
+    await context.push('/map', extra: {
+      'emergencyType': facility.emergencyType,
+      'facilityType': typeToOpen,
+      'assessmentId': facility.id,
+    });
+
+    if (!mounted) return;
+    _loadAssessments();
+  }
+
+  // COMPONENTI UI: SUPPORTO E STATISTICHE
+  // Visualizzazione sintetica delle performance regionali aggregando i dati degli assessment
   Widget _buildGeoStats() {
     Map<String, List<double>> regionScores = {};
     for (var f in _allAssessments) {
@@ -449,8 +943,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: statColor.withValues(alpha: 0.05),
-                    border: Border.all(color: statColor.withValues(alpha: 0.3)),
+                    color: statColor.withOpacity(0.05),
+                    border: Border.all(color: statColor.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -499,7 +993,8 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
   }
 
   // Costruzione della card per il singolo assessment con indicatori di progresso e punteggio
-  Widget _buildAssessmentCard(FacilityLayout facility) {
+  Widget _buildAssessmentCard(FacilityLayout facility,
+      {bool isMasterView = false, bool isSmallHeight = false}) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
     int criticalFailsCount = 0;
@@ -526,46 +1021,42 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
       stateColor = Colors.orange.shade500;
     }
 
+    final isSelected = _selectedAssessment?.id == facility.id;
+
     return Card(
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      elevation: isSelected ? 0 : 2, // Selezionato è piatto con bordo
+      color: isSelected
+          ? const Color(0xFFF0F7FF)
+          : Colors.white, // Sfondo premium blu chiaro se selezionato
+      shadowColor: Colors.black.withOpacity(0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: stateColor.withValues(alpha: 0.5), width: 1.5),
+        side: BorderSide(
+            color: isSelected ? const Color(0xFF005DA8) : Colors.grey.shade200,
+            width: isSelected ? 2 : 1),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () async {
-          FacilityType typeToOpen = FacilityType.existingFacilityWithWard;
-          final savedTypeStr = facility.generalInfo?.assessedFacilityType;
-
-          if (savedTypeStr == "Mpox stand-alone treatment centre") {
-            typeToOpen = FacilityType.standAloneCenter;
-          } else if (savedTypeStr ==
-              "Screening for Internally Displaced People (IDP) and refugee camps") {
-            typeToOpen = FacilityType.congregateSetting;
-          } else if (savedTypeStr ==
-              "Screening and temporary isolation for mpox") {
-            typeToOpen = FacilityType.screeningAndIsolation;
+        onTap: () {
+          if (isMasterView) {
+            if (_selectedAssessment?.id == facility.id) {
+              // Se la card è già selezionata su Tablet, un altro click apre direttamente la mappa per coerenza!
+              _openAssessmentMap(facility);
+            } else {
+              setState(() => _selectedAssessment = facility);
+            }
+          } else {
+            setState(() => _selectedAssessment = facility);
+            _openAssessmentMap(facility);
           }
-
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => InteractiveMapScreen(
-                emergencyType: facility.emergencyType,
-                facilityType: typeToOpen,
-                assessmentId: facility.id,
-              ),
-            ),
-          );
-          
-          if (!mounted) return;
-
-          _loadAssessments();
+        },
+        onDoubleTap: () {
+          setState(() => _selectedAssessment = facility);
+          _openAssessmentMap(facility);
         },
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding:
+              EdgeInsets.all(isMasterView ? 14 : (isSmallHeight ? 12 : 20)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -576,20 +1067,46 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          facility.facilityName.isEmpty
-                              ? "Unnamed Assessment"
-                              : facility.facilityName,
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                facility.facilityName.isEmpty
+                                    ? "Unnamed Assessment"
+                                    : facility.facilityName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: isSmallHeight
+                                        ? 17
+                                        : 16, // Leggermente più grande in landscape
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // INDICATORE DI SINCRONIZZAZIONE (UX)
+                            Tooltip(
+                              message: facility.isDirty
+                                  ? "Pending Sync"
+                                  : "Synced with Remote API",
+                              child: Icon(
+                                facility.isDirty
+                                    ? Icons.cloud_upload_outlined
+                                    : Icons.cloud_done_outlined,
+                                size: 18,
+                                color: facility.isDirty
+                                    ? Colors.orange.shade400
+                                    : Colors.blue.shade400,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Text(
                           "${facility.emergencyType.name.toUpperCase()} • ${DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())}",
                           style: TextStyle(
-                              color: Colors.grey.shade600, fontSize: 13),
+                              color: Colors.grey.shade600, fontSize: 12),
                         ),
                       ],
                     ),
@@ -597,127 +1114,53 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
                   const SizedBox(width: 8),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                        color: stateColor.withValues(alpha: 0.15),
+                        color: stateColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20)),
                     child: Text(stateLabel.toUpperCase(),
                         style: TextStyle(
                             color: stateColor,
                             fontWeight: FontWeight.w900,
-                            fontSize: 10,
+                            fontSize: 9,
                             letterSpacing: 0.5)),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      try {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Generating Editable Report..."),
-                              duration: Duration(seconds: 1)),
-                        );
-                        await ReportExportService
-                            .exportAssessmentToEditableWord(context, facility);
-                      } catch (e) {
-                        if (!mounted) return;
-                        
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text("Failed to generate report: $e"),
-                              backgroundColor: Colors.red),
-                        );
-                      }
-                    },
-                    child: const Icon(Icons.download_rounded,
-                        color: Color(0xFF005DA8), size: 26),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => _confirmDelete(facility),
-                    child: Icon(Icons.delete_outline,
-                        color: Colors.red.shade300, size: 26),
                   ),
                 ],
               ),
-              Divider(color: Colors.grey.shade200, height: 32),
+              const Spacer(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
+                  _buildMiniStat(
+                      "Progress", "${completionPct.toInt()}%", stateColor,
+                      isSmallHeight: isSmallHeight),
+                  const SizedBox(width: 40),
+                  _buildMiniStat("Fails", criticalFailsCount.toString(),
+                      criticalFailsCount > 0 ? Colors.red : Colors.green,
+                      isSmallHeight: isSmallHeight),
+                  const Spacer(),
+
+                  // GRUPPO AZIONI
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text("Progress",
-                          style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            CircularProgressIndicator(
-                              value: completionPct / 100,
-                              strokeWidth: 4,
-                              backgroundColor: Colors.grey.shade200,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(stateColor),
-                            ),
-                            Center(
-                              child: Text(
-                                "${completionPct.toInt()}%",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: stateColor),
-                              ),
-                            ),
-                          ],
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.download_rounded,
+                            color: Color(0xFF005DA8), size: 22),
+                        onPressed: () =>
+                            ReportExportService.exportAssessmentToEditableWord(
+                                context, facility),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text("Readiness",
-                          style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text(
-                          "${facility.globalReadinessScore.toStringAsFixed(0)}%",
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: Theme.of(context).colorScheme.primary)),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text("Critical Fails",
-                          style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text(criticalFailsCount.toString(),
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: criticalFailsCount > 0
-                                  ? Colors.red.shade600
-                                  : Colors.green.shade600)),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 16),
-                      Icon(Icons.arrow_forward_ios,
-                          color: Colors.grey.shade300, size: 24),
+                      const SizedBox(
+                          width: 12), // Leggermente più spazio tra le icone
+                      IconButton(
+                        icon: Icon(Icons.delete_outline,
+                            color: Colors.red.shade300, size: 22),
+                        onPressed: () => _confirmDelete(facility),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
                     ],
                   ),
                 ],
@@ -729,7 +1172,27 @@ class _AssessmentsListScreenState extends State<AssessmentsListScreen> {
     );
   }
 
-  // Chip interattivo per il filtraggio rapido degli stati
+  // Widget di supporto per la visualizzazione di metriche compatte nelle card
+  Widget _buildMiniStat(String label, String value, Color color,
+      {bool isSmallHeight = false}) {
+    return Column(
+      children: [
+        Text(label,
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: isSmallHeight ? 11 : 10,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(value,
+            style: TextStyle(
+                fontSize: isSmallHeight ? 18 : 16,
+                fontWeight: FontWeight.w900,
+                color: color)),
+      ],
+    );
+  }
+
+  // Componente interattivo per la selezione dei filtri di stato
   Widget _buildFilterChip(String label) {
     bool isSelected = _currentFilter == label;
     return GestureDetector(
