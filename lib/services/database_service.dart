@@ -26,18 +26,24 @@ class DatabaseService {
     _isInitialized = true;
   }
 
+  // Consente di iniettare un'istanza Isar di test (in-memory)
+  void setTestIsar(Isar testIsar) {
+    _isar = testIsar;
+    _isInitialized = true;
+  }
+
   // OPERAZIONI CRUD
 
   // Isar sovrascrive automaticamente se l'ID esiste, clone della lista zones
   // necessario per forzare la rilevazione delle modifiche agli oggetti embedded
   Future<Id> saveAssessment(FacilityLayout facility) async {
-    facility.dateCreated ??= DateTime.now();
+    facility.dateCreated ??= DateTime.now().toUtc();
     facility.zones = List.from(facility.zones);
     
     // LOGICA DI DIRTY FLAG
     // Ogni salvataggio locale marca il record come da sincronizzare
     facility.isDirty = true;
-    facility.updatedAt = DateTime.now();
+    facility.updatedAt = DateTime.now().toUtc();
 
     return await _isar.writeTxn(() async {
       final newId = await _isar.facilityLayouts.put(facility);

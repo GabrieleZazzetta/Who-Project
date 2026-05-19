@@ -135,7 +135,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
 
     final layoutData = FacilityDataFactory.getLayout(
         widget.emergencyType, widget.facilityType);
-    layoutData.dateCreated = DateTime.now();
+    layoutData.dateCreated = DateTime.now().toUtc();
 
     layoutData.facilityName = _assessmentNameController.text.isNotEmpty
         ? _assessmentNameController.text

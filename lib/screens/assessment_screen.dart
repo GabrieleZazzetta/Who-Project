@@ -133,7 +133,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               leading: const Icon(Icons.camera_alt, color: Color(0xFF005DA8)),
               title: const Text('Take a Photo'),
               onTap: () {
-                context.pop();
+                Navigator.of(context).pop();
                 _captureMedia(question, ImageSource.camera);
               },
             ),
@@ -142,7 +142,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   color: Color(0xFF005DA8), size: 24),
               title: const Text('Choose from Gallery'),
               onTap: () {
-                context.pop();
+                Navigator.of(context).pop();
                 _captureMedia(question, ImageSource.gallery);
               },
             ),
@@ -166,12 +166,80 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text("Error picking image: $e"),
-            backgroundColor: Colors.red),
-      );
+
+      final errorStr = e.toString().toLowerCase();
+      final isPermissionError = errorStr.contains('permission') ||
+          errorStr.contains('denied') ||
+          errorStr.contains('photo_access_denied') ||
+          errorStr.contains('camera_access_denied');
+
+      if (isPermissionError) {
+        _showPermissionDeniedDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Error picking image: $e"),
+              backgroundColor: Colors.red),
+        );
+      }
     }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 8,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.linked_camera_outlined, size: 40, color: Colors.amber.shade800),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Camera Access Required",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "To capture facility evidence, this app requires camera permissions. Please enable camera access in your device's System Settings.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  key: const Key('btn_close_permission_dialog'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF005DA8),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("Understood", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _openFullScreenViewer(String path) {

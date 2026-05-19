@@ -90,8 +90,8 @@ class SyncRepository {
     return {
       'facilityName': facility.facilityName,
       'emergencyType': facility.emergencyType.name,
-      'updatedAt': Timestamp.fromDate(facility.updatedAt ?? DateTime.now()),
-      'dateCreated': Timestamp.fromDate(facility.dateCreated ?? DateTime.now()),
+      'updatedAt': Timestamp.fromDate(facility.updatedAt ?? DateTime.now().toUtc()),
+      'dateCreated': Timestamp.fromDate(facility.dateCreated ?? DateTime.now().toUtc()),
       // Nota: Per una sync completa qui andrebbero mappate tutte le zone e domande
       'zonesCount': facility.zones.length,
       'readinessScore': facility.globalReadinessScore,

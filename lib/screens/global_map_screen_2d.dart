@@ -50,7 +50,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
             height: 40,
             child: GestureDetector(
               onTap: () => _showFacilityDetails(facility),
-              child: _buildPin(facility.globalReadinessScore),
+              child: _buildPin(facility),
             ),
           ),
         );
@@ -99,6 +99,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
         final lat = double.parse(match.group(1)!);
         final lng = double.parse(match.group(2)!);
         if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          if (lat == 0.0 && lng == 0.0) return null; // Prevenzione Null Island
           return LatLng(lat, lng);
         }
       } catch (_) {}
@@ -114,6 +115,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
         if (data is List && data.isNotEmpty) {
           final lat = double.parse(data[0]['lat']);
           final lon = double.parse(data[0]['lon']);
+          if (lat == 0.0 && lon == 0.0) return null; // Prevenzione Null Island
           return LatLng(lat, lon);
         }
       }
@@ -163,9 +165,10 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     return Colors.red.shade500;
   }
 
-  // Pin personalizzato con indicatore di punteggio
-  Widget _buildPin(double score) {
-    Color pinColor = _getScoreColor(score);
+  // Pin personalizzato con indicatore di punteggio ed allarme critico
+  Widget _buildPin(FacilityLayout facility) {
+    bool hasCritical = facility.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
+    Color pinColor = hasCritical ? Colors.red.shade500 : _getScoreColor(facility.globalReadinessScore);
     Color shadowColor = pinColor.withOpacity(0.6);
 
     return Container(

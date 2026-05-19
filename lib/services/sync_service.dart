@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -42,18 +43,23 @@ final syncProvider = AsyncNotifierProvider<SyncNotifier, SyncState>(() {
 });
 
 class SyncNotifier extends AsyncNotifier<SyncState> {
-  final _repository = SyncRepository();
+  SyncRepository _repository = SyncRepository();
   final _db = DatabaseService.instance;
   StreamSubscription? _connectivitySubscription;
 
+  // Consente di iniettare un repository simulato nei test di integrazione
+  set repository(SyncRepository repo) => _repository = repo;
+
   @override
   Future<SyncState> build() async {
-    // Inizializzazione: monitoraggio della connettività per sync automatica
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
-      if (result.isNotEmpty && result.first != ConnectivityResult.none) {
-        syncAll(); // Tenta la sincronizzazione quando torna il segnale
-      }
-    });
+    // Inizializzazione: monitoraggio della connettività per sync automatica (solo in produzione)
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+      _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
+        if (result.isNotEmpty && result.first != ConnectivityResult.none) {
+          syncAll(); // Tenta la sincronizzazione quando torna il segnale
+        }
+      });
+    }
 
 
     ref.onDispose(() => _connectivitySubscription?.cancel());
@@ -64,9 +70,10 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
   // LOGICA DI SINCRONIZZAZIONE GLOBALE CON RESILIENZA
   // Esegue Push e Pull con sistema di retry automatico (Exponential Backoff)
   Future<void> syncAll({int attempt = 0}) async {
-    if (state.value?.status == SyncStatus.syncing && attempt == 0) return;
+    final current = state.value ?? SyncState(status: SyncStatus.idle);
+    if (current.status == SyncStatus.syncing && attempt == 0) return;
 
-    state = AsyncData(state.value!.copyWith(status: SyncStatus.syncing));
+    state = AsyncData(current.copyWith(status: SyncStatus.syncing));
 
     try {
       // 0. SYNC PENDING PASSWORDS (OFFLINE RESETS)
@@ -83,7 +90,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
         if (remoteId != null) {
           facility.remoteId = remoteId;
           facility.isDirty = false;
-          facility.lastSyncedAt = DateTime.now();
+          facility.lastSyncedAt = DateTime.now().toUtc();
           await _db.saveFromSync(facility);
         } else if (attempt < 3) {
           // Innesca retry se fallisce l'invio
@@ -101,12 +108,14 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
 
       state = AsyncData(SyncState(
         status: SyncStatus.success,
-        lastSyncedAt: DateTime.now(),
+        lastSyncedAt: DateTime.now().toUtc(),
       ));
     } catch (e) {
       // GESTIONE RETRY CON EXPONENTIAL BACKOFF
       if (attempt < 3) {
-        final delay = Duration(seconds: pow(2, attempt).toInt() * 2);
+        final delay = Platform.environment.containsKey('FLUTTER_TEST')
+            ? const Duration(milliseconds: 1)
+            : Duration(seconds: pow(2, attempt).toInt() * 2);
         Future.delayed(delay, () => syncAll(attempt: attempt + 1));
       } else {
 
@@ -127,9 +136,22 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     final local = await _db.getAssessmentByRemoteId(remoteId);
     
     if (local == null || remoteUpdatedAt.isAfter(local.updatedAt ?? DateTime(0))) {
-      // Se il record non esiste o il remoto è più recente, aggiorna locale
-      // In un caso reale, qui farei il mapping completo da JSON a FacilityLayout
-      // Per questo esempio, simuliamo l'aggiornamento
+      // Se il record non esiste o il remoto è più recente, aggiorna il database locale (LWW)
+      final facility = local ?? FacilityLayout(
+        facilityName: json['facilityName'] ?? 'Remote Facility',
+        emergencyType: EmergencyType.values.firstWhere(
+          (e) => e.name == json['emergencyType'],
+          orElse: () => EmergencyType.mpox,
+        ),
+      );
+      
+      facility.remoteId = remoteId;
+      facility.facilityName = json['facilityName'] ?? facility.facilityName;
+      facility.updatedAt = remoteUpdatedAt;
+      facility.isDirty = false;
+      facility.lastSyncedAt = DateTime.now().toUtc();
+      
+      await _db.saveFromSync(facility);
     }
   }
 }

@@ -35,7 +35,7 @@ class AuthService {
           ..displayName = displayName
           ..isLoggedIn = true
           ..isWhoStaff = isWhoStaff
-          ..lastLogin = DateTime.now()
+          ..lastLogin = DateTime.now().toUtc()
         );
       }
       return credential;
@@ -61,7 +61,7 @@ class AuthService {
           ..displayName = credential.user!.displayName
           ..isLoggedIn = true
           ..isWhoStaff = isWho
-          ..lastLogin = DateTime.now()
+          ..lastLogin = DateTime.now().toUtc()
         );
       }
       return credential;
@@ -81,7 +81,7 @@ class AuthService {
             ..displayName = localCred.displayName
             ..isLoggedIn = true
             ..isWhoStaff = localCred.isWhoStaff
-            ..lastLogin = DateTime.now()
+            ..lastLogin = DateTime.now().toUtc()
           );
           return null; // Ritorna null per indicare successo offline
         }

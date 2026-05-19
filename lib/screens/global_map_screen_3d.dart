@@ -97,6 +97,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
         final double lat = double.parse(match.group(1)!);
         final double lng = double.parse(match.group(2)!);
         if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          if (lat == 0.0 && lng == 0.0) return null; // Prevenzione Null Island
           return Point(coordinates: Position(lng, lat));
         }
       } catch (_) {}
@@ -109,10 +110,10 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
         if (data is List && data.isNotEmpty) {
-          return Point(coordinates: Position(
-            double.parse(data[0]['lon'].toString()),
-            double.parse(data[0]['lat'].toString()),
-          ));
+          final double lat = double.parse(data[0]['lat'].toString());
+          final double lon = double.parse(data[0]['lon'].toString());
+          if (lat == 0.0 && lon == 0.0) return null; // Prevenzione Null Island
+          return Point(coordinates: Position(lon, lat));
         }
       }
     } catch (e) {
@@ -200,15 +201,18 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
     _pointAnnotationManager =
         await mapboxMap.annotations.createPointAnnotationManager();
 
-    final pins = List.generate(_loadedFacilities.length, (i) =>
-      PointAnnotationOptions(
+    final pins = List.generate(_loadedFacilities.length, (i) {
+      final f = _loadedFacilities[i];
+      bool hasCritical = f.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
+      final image = hasCritical ? _pinRed! : _pinForScore(f.globalReadinessScore);
+      return PointAnnotationOptions(
         geometry: _allCoordinates[i],
-        image: _pinForScore(_loadedFacilities[i].globalReadinessScore),
+        image: image,
         iconSize: 0.55,
         iconAnchor: IconAnchor.BOTTOM,
         customData: {"index": i},
-      ),
-    );
+      );
+    });
     await _pointAnnotationManager?.createMulti(pins);
 
     _pointAnnotationManager?.tapEvents(

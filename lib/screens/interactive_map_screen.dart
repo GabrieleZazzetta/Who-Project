@@ -32,6 +32,8 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   static const bool _debugMode = false; // ATTIVA PER VEDERE LE AREE DI TOCCO (BLU)
   late AnimationController _pulseController;
   final TransformationController _mapController = TransformationController();
+  bool _isSaving = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -90,7 +92,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   Future<void> _createNewAssessment() async {
     layoutData = FacilityDataFactory.getLayout(
         widget.emergencyType, widget.facilityType);
-    layoutData.dateCreated = DateTime.now();
+    layoutData.dateCreated = DateTime.now().toUtc();
     layoutData.zones = List<SpatialZone>.from(layoutData.zones);
     layoutData.zones.add(getGeneralFacilityZone());
   }
@@ -108,9 +110,17 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   }
 
   Future<void> _saveState() async {
+    if (_isSaving) return;
     if (_hasRealAnswers()) {
-      final savedId = await DatabaseService.instance.saveAssessment(layoutData);
-      layoutData.id = savedId;
+      _isSaving = true;
+      try {
+        final savedId = await DatabaseService.instance.saveAssessment(layoutData);
+        layoutData.id = savedId;
+      } catch (e) {
+        debugPrint("Errore durante il salvataggio dello stato: $e");
+      } finally {
+        _isSaving = false;
+      }
     }
   }
 
@@ -238,11 +248,17 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
           constraints: isMobilePortrait ? const BoxConstraints() : null,
           onPressed: () async {
-            final zone = layoutData.zones
-                .firstWhere((z) => z.id == 'general_facility_assessment');
+            if (_isNavigating) return;
+            _isNavigating = true;
+            try {
+              final zone = layoutData.zones
+                  .firstWhere((z) => z.id == 'general_facility_assessment');
 
-            // NAVIGAZIONE ALL'ASSESSMENT DELLA ZONA
-            await context.push('/assessment', extra: zone);
+              // NAVIGAZIONE ALL'ASSESSMENT DELLA ZONA
+              await context.push('/assessment', extra: zone);
+            } finally {
+              _isNavigating = false;
+            }
 
             if (!mounted) return;
             await _saveState();
@@ -383,7 +399,13 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () async {
-          await context.push('/assessment', extra: zone);
+          if (_isNavigating) return;
+          _isNavigating = true;
+          try {
+            await context.push('/assessment', extra: zone);
+          } finally {
+            _isNavigating = false;
+          }
           if (!mounted) return;
           await _saveState();
           _refresh();

@@ -370,7 +370,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // COMPONENTI UI: KPI E INDICATORI
   Widget _buildKpiRow(int count, double avgReadiness, int criticalFails) {
-    return Row(
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isSmartphonePortrait = !isTablet && !isLandscape;
+
+    final Widget rowWidget = Row(
+      crossAxisAlignment: isSmartphonePortrait
+          ? CrossAxisAlignment.stretch
+          : CrossAxisAlignment.center,
       children: [
         Expanded(
             child: _buildKpiCard("Assessments", count.toString(),
@@ -381,7 +389,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             child: _buildKpiCard("Avg Readiness",
                 "${avgReadiness.toStringAsFixed(1)}%",
                 Icons.health_and_safety_outlined, _primaryBlue,
-                info: "Overall average readiness level across all evaluated criteria.")),
+                info: "The average percentage score indicating how well the assessed facilities meet the required standards.")),
         const SizedBox(width: 12),
         Expanded(
             child: _buildKpiCard("Critical Fails", criticalFails.toString(),
@@ -389,6 +397,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 info: "Number of high-priority criteria that did not meet the minimum requirements.")),
       ],
     );
+
+    if (isSmartphonePortrait) {
+      return IntrinsicHeight(child: rowWidget);
+    }
+    return rowWidget;
   }
 
   Widget _buildComplianceSection(int total, int meetsCount, double meetsPct, int partialCount, double partialPct, int doesNotMeetCount, double failsPct) {
@@ -575,11 +588,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color,
       {String? info}) {
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isSmartphonePortrait = !isTablet && !isLandscape;
+
     return InkWell(
       onTap: info != null ? () => _showMetricInfo(title, info) : null,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        constraints: isSmartphonePortrait
+            ? const BoxConstraints(minHeight: 140)
+            : null,
+        padding: isSmartphonePortrait
+            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 14)
+            : const EdgeInsets.all(16),
         decoration: _cardDecoration(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,18 +622,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       size: 16, color: _slateLight.withOpacity(0.4)),
               ],
             ),
-            const SizedBox(height: 16),
+            if (isSmartphonePortrait)
+              const Spacer()
+            else
+              const SizedBox(height: 16),
             Text(value,
                 style: TextStyle(
-                    fontSize: 24,
+                    fontSize: isSmartphonePortrait ? 21 : 24,
                     fontWeight: FontWeight.w900,
                     color: _slateDark)),
             const SizedBox(height: 4),
             Text(title,
                 style: TextStyle(
-                    fontSize: 12,
+                    fontSize: isSmartphonePortrait ? 10.5 : 12,
                     fontWeight: FontWeight.w600,
-                    color: _slateLight)),
+                    color: _slateLight,
+                    height: 1.25)),
           ],
         ),
       ),

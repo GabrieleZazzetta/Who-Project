@@ -482,8 +482,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.all(4),
           child: Row(
             children: [
-              Expanded(child: _buildModeToggle("WHO Staff", _isWhoStaff, () => setState(() { _isWhoStaff = true; _emailController.clear(); }))),
-              Expanded(child: _buildModeToggle("External Partner", !_isWhoStaff, () => setState(() { _isWhoStaff = false; _emailController.clear(); }))),
+              Expanded(child: _buildModeToggle("WHO Staff", _isWhoStaff, () => setState(() { _isWhoStaff = true; _emailController.clear(); }), key: const Key('toggle_who_staff'))),
+              Expanded(child: _buildModeToggle("External Partner", !_isWhoStaff, () => setState(() { _isWhoStaff = false; _emailController.clear(); }), key: const Key('toggle_external_partner'))),
             ],
           ),
         ),
@@ -498,6 +498,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               _buildFieldLabel(_isWhoStaff ? "WHO ID / Email" : "Partner Email"),
               const SizedBox(height: 8),
               TextFormField(
+                key: const Key('input_email'),
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: _buildInputDecoration(
@@ -522,6 +523,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               _buildFieldLabel("WIMS Password"),
               const SizedBox(height: 8),
               TextFormField(
+                key: const Key('input_password'),
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: _buildInputDecoration(
@@ -546,8 +548,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   // METODI HELPER UI (Semplificano il codice principale)
-  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap) {
+  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap, {Key? key}) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -671,6 +674,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
+        key: const Key('btn_authenticate'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
@@ -687,8 +691,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildRegisterNavigation() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text("Don't have an account? ", style: TextStyle(color: Colors.grey.shade600)),
         TextButton(
@@ -838,7 +843,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
         ..displayName = _foundCredential!.displayName
         ..isLoggedIn = true
         ..isWhoStaff = _foundCredential!.isWhoStaff
-        ..lastLogin = DateTime.now()
+        ..lastLogin = DateTime.now().toUtc()
       );
 
       if (mounted) {

@@ -476,7 +476,10 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                 ),
               ),
 
-              if (_allAssessments.isNotEmpty && !isSmallHeight) ...[
+              if (_allAssessments.isNotEmpty &&
+                  !isSmallHeight &&
+                  !(MediaQuery.of(context).size.shortestSide < 600 &&
+                      MediaQuery.of(context).orientation == Orientation.portrait)) ...[
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

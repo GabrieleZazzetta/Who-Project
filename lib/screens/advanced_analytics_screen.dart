@@ -83,7 +83,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 _buildLineChartCard(sortedData),
                 const SizedBox(height: 32),
                 _buildSectionHeader("Multidimensional Performance", "Balance across technical pillars"),
-                _buildRadarChartCard(data),
+                _buildRadarChartCard(data, isSmartphonePortrait: true),
                 const SizedBox(height: 40),
               ],
             ),
@@ -154,6 +154,38 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   Widget _buildLineChartCard(List<FacilityLayout> sortedData, {bool isLandscape = false}) {
     final validData = sortedData.where((d) => d.dateCreated != null).toList();
 
+    // Caso con un solo assessment: mostriamo un riepilogo testuale invece di un grafico vuoto
+    if (validData.length == 1) {
+      final single = validData.first;
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: _cardDecoration(),
+        child: Column(
+          children: [
+            Icon(Icons.insights_rounded, size: 40, color: _primaryBlue.withOpacity(0.4)),
+            const SizedBox(height: 16),
+            Text(
+              "${single.globalReadinessScore.toStringAsFixed(1)}%",
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: _primaryBlue),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Readiness score for ${single.facilityName.isNotEmpty ? single.facilityName : 'this assessment'}",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _slateLight, fontWeight: FontWeight.w500, fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Add more assessments to unlock trend analysis.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _slateLight.withOpacity(0.6), fontSize: 11),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (validData.length < 2) {
       return _buildEmptyStateCard(
           "Not enough historical data for trend analysis. At least 2 assessments needed.");
@@ -164,86 +196,163 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       spots.add(FlSpot(i.toDouble(), validData[i].globalReadinessScore));
     }
 
-    return Container(
-      height: isLandscape ? 280 : 350,
-      padding: const EdgeInsets.all(24),
-      decoration: _cardDecoration(),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: 20,
-            getDrawingHorizontalLine: (value) =>
-                FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-          ),
-          titlesData: FlTitlesData(
-            topTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  int index = value.toInt();
-                  if (index >= 0 && index < validData.length) {
-                    if (index == 0 ||
-                        index == validData.length - 1 ||
-                        validData.length < 6) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          DateFormat('MMM dd')
-                              .format(validData[index].dateCreated!),
-                          style: TextStyle(
-                              color: _slateLight,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      );
-                    }
-                  }
-                  return const SizedBox();
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 35,
-                interval: 20,
-                getTitlesWidget: (value, meta) => Text("${value.toInt()}%",
-                    style: TextStyle(color: _slateLight, fontSize: 10)),
-              ),
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          minX: 0,
-          maxX: (validData.length - 1).toDouble(),
-          minY: 0,
-          maxY: 100,
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: _primaryBlue,
-              barWidth: 4,
-              isStrokeCapRound: true,
-              dotData: const FlDotData(show: true),
-              belowBarData: BarAreaData(
+    // Periodo coperto dai dati
+    final DateTime firstDate = validData.first.dateCreated!;
+    final DateTime lastDate = validData.last.dateCreated!;
+    final bool sameDay = firstDate.year == lastDate.year &&
+        firstDate.month == lastDate.month &&
+        firstDate.day == lastDate.day;
+    final String periodLabel = sameDay
+        ? DateFormat('d MMM yyyy').format(firstDate)
+        : '${DateFormat('d MMM yyyy').format(firstDate)}  →  ${DateFormat('d MMM yyyy').format(lastDate)}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Grafico ──────────────────────────────────────────────────
+        Container(
+          height: isLandscape ? 260 : 380,
+          padding: const EdgeInsets.fromLTRB(8, 24, 16, 16),
+          decoration: _cardDecoration(),
+          child: LineChart(
+            LineChartData(
+              gridData: FlGridData(
                 show: true,
-                color: _primaryBlue.withOpacity(0.15),
+                drawVerticalLine: false,
+                horizontalInterval: 20,
+                getDrawingHorizontalLine: (value) =>
+                    FlLine(color: Colors.grey.shade200, strokeWidth: 1),
               ),
+              titlesData: FlTitlesData(
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                // Nessuna etichetta sull'asse X: il grafico è pulitissimo.
+                // La data compare nel tooltip al tocco.
+                bottomTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 38,
+                    interval: 20,
+                    getTitlesWidget: (value, meta) => Text(
+                      "${value.toInt()}%",
+                      style: TextStyle(color: _slateLight, fontSize: 10),
+                    ),
+                  ),
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              minX: 0,
+              maxX: (validData.length - 1).toDouble(),
+              minY: 0,
+              maxY: 100,
+              // TOOLTIP PREMIUM: score + nome facility + data
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (_) => Colors.white,
+                  tooltipBorderRadius: BorderRadius.circular(10),
+                  tooltipBorder: BorderSide(color: Colors.grey.shade200, width: 1),
+                  getTooltipItems: (touchedSpots) {
+                    return touchedSpots.map((spot) {
+                      final int index = spot.x.toInt();
+                      final String name = index < validData.length
+                          ? (validData[index].facilityName.isNotEmpty
+                              ? validData[index].facilityName
+                              : 'Assessment ${index + 1}')
+                          : '';
+                      final String dateStr = index < validData.length
+                          ? DateFormat('d MMM yyyy')
+                              .format(validData[index].dateCreated!)
+                          : '';
+                      return LineTooltipItem(
+                        "${spot.y.toStringAsFixed(1)}%\n",
+                        TextStyle(
+                            color: _primaryBlue,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15),
+                        children: [
+                          TextSpan(
+                            text: "$name\n",
+                            style: TextStyle(
+                                color: _slateDark,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10),
+                          ),
+                          TextSpan(
+                            text: dateStr,
+                            style: TextStyle(
+                                color: _slateLight,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 9),
+                          ),
+                        ],
+                      );
+                    }).toList();
+                  },
+                ),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  curveSmoothness: 0.35,
+                  color: _primaryBlue,
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, pct, bar, index) => FlDotCirclePainter(
+                      radius: 4,
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                      strokeColor: _primaryBlue,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        _primaryBlue.withOpacity(0.18),
+                        _primaryBlue.withOpacity(0.0),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        // ── Striscia periodo ────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.only(top: 10, left: 4),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_today_outlined,
+                  size: 11, color: _slateLight.withOpacity(0.5)),
+              const SizedBox(width: 5),
+              Text(
+                periodLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: _slateLight.withOpacity(0.7),
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   // Grafico a ragnatela per il confronto tra le diverse categorie tecniche
-  Widget _buildRadarChartCard(List<FacilityLayout> allData, {bool isLandscape = false}) {
+  Widget _buildRadarChartCard(List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false}) {
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -274,8 +383,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     double logistics = getPct(AssessmentCategory.logistics);
 
     return Container(
-      height: isLandscape ? 280 : 350,
-      padding: const EdgeInsets.all(24),
+      height: isLandscape ? 280 : (isSmartphonePortrait ? 420 : 350),
+      padding: const EdgeInsets.fromLTRB(52, 24, 52, 24),
       decoration: _cardDecoration(),
       child: Column(
         children: [
@@ -311,19 +420,19 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                     case 0:
                       return RadarChartTitle(
                           text: 'IPC\n${ipc.toStringAsFixed(0)}%',
-                          angle: angle);
+                          angle: 0);
                     case 1:
                       return RadarChartTitle(
                           text: 'WASH\n${wash.toStringAsFixed(0)}%',
-                          angle: angle);
+                          angle: 0);
                     case 2:
                       return RadarChartTitle(
                           text: 'LAYOUT\n${layout.toStringAsFixed(0)}%',
-                          angle: angle);
+                          angle: 0);
                     case 3:
                       return RadarChartTitle(
                           text: 'LOGISTICS\n${logistics.toStringAsFixed(0)}%',
-                          angle: angle);
+                          angle: 0);
                     default:
                       return const RadarChartTitle(text: '');
                   }
