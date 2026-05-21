@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
+import '../l10n/app_localizations.dart';
 
 class AdvancedAnalyticsScreen extends StatelessWidget {
   final List<FacilityLayout> data;
@@ -30,7 +31,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Advanced Analytics",
+        title: Text(AppLocalizations.of(context)!.advancedAnalytics,
             style: TextStyle(
                 fontWeight: FontWeight.w800, color: _slateDark, fontSize: 18)),
         backgroundColor: Colors.white,
@@ -39,18 +40,18 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       ),
       body: data.isEmpty
           ? Center(
-              child: Text("No data to display.",
+              child: Text(AppLocalizations.of(context)!.noDataToDisplay,
                   style: TextStyle(color: _slateLight, fontSize: 16)))
           : ScreenTypeLayout.builder(
-              mobile: (context) => _buildMobileLayout(sortedData, isLandscape),
-              tablet: (context) => _buildTabletLayout(sortedData),
-              desktop: (context) => _buildTabletLayout(sortedData),
+              mobile: (context) => _buildMobileLayout(context, sortedData, isLandscape),
+              tablet: (context) => _buildTabletLayout(context, sortedData),
+              desktop: (context) => _buildTabletLayout(context, sortedData),
             ),
     );
   }
 
   // LAYOUT VERTICALE OTTIMIZZATO PER MOBILE E LANDSCAPE
-  Widget _buildMobileLayout(List<FacilityLayout> sortedData, bool isLandscape) {
+  Widget _buildMobileLayout(BuildContext context, List<FacilityLayout> sortedData, bool isLandscape) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: isLandscape
@@ -60,8 +61,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildSectionHeader("Readiness Trend", "Evolution of global score"),
-                      _buildLineChartCard(sortedData, isLandscape: true),
+                      _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionOfGlobalScore),
+                      _buildLineChartCard(context, sortedData, isLandscape: true),
                     ],
                   ),
                 ),
@@ -69,8 +70,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildSectionHeader("Performance Radar", "Pillars balance"),
-                      _buildRadarChartCard(data, isLandscape: true),
+                      _buildSectionHeader(context, AppLocalizations.of(context)!.performanceRadar, AppLocalizations.of(context)!.pillarsBalance),
+                      _buildRadarChartCard(context, data, isLandscape: true),
                     ],
                   ),
                 ),
@@ -79,11 +80,11 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader("Readiness Trend", "Evolution of the global score over time"),
-                _buildLineChartCard(sortedData),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                _buildLineChartCard(context, sortedData),
                 const SizedBox(height: 32),
-                _buildSectionHeader("Multidimensional Performance", "Balance across technical pillars"),
-                _buildRadarChartCard(data, isSmartphonePortrait: true),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                _buildRadarChartCard(context, data, isSmartphonePortrait: true),
                 const SizedBox(height: 40),
               ],
             ),
@@ -91,7 +92,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   }
 
   // LAYOUT ADATTIVO PER TABLET E DESKTOP
-  Widget _buildTabletLayout(List<FacilityLayout> sortedData) {
+  Widget _buildTabletLayout(BuildContext context, List<FacilityLayout> sortedData) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
       child: Column(
@@ -104,8 +105,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader("Readiness Trend", "Evolution of the global score over time"),
-                    _buildLineChartCard(sortedData),
+                    _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                    _buildLineChartCard(context, sortedData),
                   ],
                 ),
               ),
@@ -114,8 +115,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader("Multidimensional Performance", "Balance across technical pillars"),
-                    _buildRadarChartCard(data),
+                    _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                    _buildRadarChartCard(context, data),
                   ],
                 ),
               ),
@@ -127,7 +128,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, String subtitle) {
+  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -151,7 +152,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
 
   // COMPONENTI DEI GRAFICI
   // Grafico a linee per la visualizzazione del trend di readiness
-  Widget _buildLineChartCard(List<FacilityLayout> sortedData, {bool isLandscape = false}) {
+  Widget _buildLineChartCard(BuildContext context, List<FacilityLayout> sortedData, {bool isLandscape = false}) {
     final validData = sortedData.where((d) => d.dateCreated != null).toList();
 
     // Caso con un solo assessment: mostriamo un riepilogo testuale invece di un grafico vuoto
@@ -171,13 +172,13 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Readiness score for ${single.facilityName.isNotEmpty ? single.facilityName : 'this assessment'}",
+              AppLocalizations.of(context)!.readinessScoreFor(single.facilityName.isNotEmpty ? single.facilityName : AppLocalizations.of(context)!.thisAssessment),
               textAlign: TextAlign.center,
               style: TextStyle(color: _slateLight, fontWeight: FontWeight.w500, fontSize: 13),
             ),
             const SizedBox(height: 12),
             Text(
-              "Add more assessments to unlock trend analysis.",
+              AppLocalizations.of(context)!.addMoreAssessmentsUnlock,
               textAlign: TextAlign.center,
               style: TextStyle(color: _slateLight.withOpacity(0.6), fontSize: 11),
             ),
@@ -187,8 +188,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     }
 
     if (validData.length < 2) {
-      return _buildEmptyStateCard(
-          "Not enough historical data for trend analysis. At least 2 assessments needed.");
+      return _buildEmptyStateCard(context, AppLocalizations.of(context)!.notEnoughHistoricalData);
     }
 
     List<FlSpot> spots = [];
@@ -261,7 +261,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                       final String name = index < validData.length
                           ? (validData[index].facilityName.isNotEmpty
                               ? validData[index].facilityName
-                              : 'Assessment ${index + 1}')
+                              : AppLocalizations.of(context)!.assessmentIndex(index + 1))
                           : '';
                       final String dateStr = index < validData.length
                           ? DateFormat('d MMM yyyy')
@@ -352,7 +352,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   }
 
   // Grafico a ragnatela per il confronto tra le diverse categorie tecniche
-  Widget _buildRadarChartCard(List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false}) {
+  Widget _buildRadarChartCard(BuildContext context, List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false}) {
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -465,7 +465,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   }
 
   // Gestione dello stato vuoto o mancanza di dati storici
-  Widget _buildEmptyStateCard(String message) {
+  Widget _buildEmptyStateCard(BuildContext context, String message) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),

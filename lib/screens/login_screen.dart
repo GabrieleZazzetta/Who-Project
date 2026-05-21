@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/local_user_credential.dart';
 import '../services/database_service.dart';
@@ -38,8 +39,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) context.go('/');
       } catch (e) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Login failed: ${e.toString()}"), backgroundColor: Colors.red),
+            SnackBar(content: Text("${l10n.loginFailed}${e.toString()}"), backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -88,10 +90,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       _buildLogo(isDark: true),
                       const SizedBox(height: 32),
-                      const Text(
-                        "Health Facilities\nAssessment Tool",
+                      Text(
+                        AppLocalizations.of(context)!.appTitleMultiline,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1, letterSpacing: -0.5),
+                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1, letterSpacing: -0.5),
                       ),
                       if (_isWhoStaff) ...[
                         const SizedBox(height: 24),
@@ -102,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
                           ),
-                          child: const Text("AUTHORIZED PERSONNEL ONLY", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                          child: Text(AppLocalizations.of(context)!.authorizedPersonnelOnly, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                         ),
                       ]
                     ],
@@ -117,9 +119,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Welcome Back", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: -1)),
+                          Text(AppLocalizations.of(context)!.welcomeBack, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: -1)),
                           const SizedBox(height: 8),
-                          Text("Sign in to continue your assessment activities.", style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                          Text(AppLocalizations.of(context)!.signInToContinue, style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
                           const SizedBox(height: 40),
                           _buildForm(),
                         ]
@@ -175,10 +177,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             _buildLogo(isDark: true),
                             const SizedBox(height: 40),
-                            const Text(
-                              "Health Facilities\nAssessment Tool",
+                            Text(
+                              AppLocalizations.of(context)!.appTitleMultiline,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
@@ -196,9 +198,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
                                 ),
-                                child: const Text(
-                                  "AUTHORIZED PERSONNEL ONLY",
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(context)!.authorizedPersonnelOnly,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -226,9 +228,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Welcome Back",
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)!.welcomeBack,
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF1E293B),
@@ -237,7 +239,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Sign in to continue your assessment activities.",
+                          AppLocalizations.of(context)!.signInToContinue,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -278,9 +280,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     _buildLogo(isDark: true),
                     const SizedBox(height: 16),
-                    const Text(
-                      "Health Facilities",
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                    Text(
+                      AppLocalizations.of(context)!.appTitleLine1,
+                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
                     ),
                     if (_isWhoStaff)
                       Padding(
@@ -292,9 +294,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           // MODIFICA: Tag personalizzato per mobile landscape
-                          child: const Text(
-                            "AUTHORIZED PERSONNEL ONLY",
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          child: Text(
+                            AppLocalizations.of(context)!.authorizedPersonnelOnly,
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -348,12 +350,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   _buildLogo(isDark: true),
                   const SizedBox(height: 24),
-                  const Text(
-                    "Health Facilities",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                  Text(
+                    AppLocalizations.of(context)!.appTitleLine1,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
                   ),
                   Text(
-                    "Assessment Tool",
+                    AppLocalizations.of(context)!.appTitleLine2,
                     style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
                   ),
                   const SizedBox(height: 16),
@@ -366,9 +368,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       // TAG AUTHORIZED PERSONNEL ONLY (Ottimizzato per Mobile Portrait)
-                      child: const Text(
-                        "AUTHORIZED PERSONNEL ONLY",
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.authorizedPersonnelOnly,
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.bold),
@@ -445,7 +447,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _buildLogo(),
         const SizedBox(height: 24),
         Text(
-          "Health Facilities\nAssessment Tool",
+          AppLocalizations.of(context)!.appTitleMultiline,
           textAlign: alignment == CrossAxisAlignment.center ? TextAlign.center : TextAlign.start,
           style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Color(0xFF003D73), height: 1.1, letterSpacing: -0.5),
         ),
@@ -458,10 +460,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: const Color(0xFFFDA4AF).withOpacity(0.5)),
             ),
-            child: const Text(
-              "AUTHORIZED PERSONNEL ONLY",
+            child: Text(
+              AppLocalizations.of(context)!.authorizedPersonnelOnly,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFE11D48), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              style: const TextStyle(color: Color(0xFFE11D48), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
             ),
           ),
       ],
@@ -472,6 +474,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   // COMPONENTE: FORM DI AUTENTICAZIONE
   Widget _buildForm() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -482,8 +485,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.all(4),
           child: Row(
             children: [
-              Expanded(child: _buildModeToggle("WHO Staff", _isWhoStaff, () => setState(() { _isWhoStaff = true; _emailController.clear(); }), key: const Key('toggle_who_staff'))),
-              Expanded(child: _buildModeToggle("External Partner", !_isWhoStaff, () => setState(() { _isWhoStaff = false; _emailController.clear(); }), key: const Key('toggle_external_partner'))),
+              Expanded(child: _buildModeToggle(l10n.whoStaff, _isWhoStaff, () => setState(() { _isWhoStaff = true; _emailController.clear(); }), key: const Key('toggle_who_staff'))),
+              Expanded(child: _buildModeToggle(l10n.externalPartner, !_isWhoStaff, () => setState(() { _isWhoStaff = false; _emailController.clear(); }), key: const Key('toggle_external_partner'))),
             ],
           ),
         ),
@@ -495,7 +498,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFieldLabel(_isWhoStaff ? "WHO ID / Email" : "Partner Email"),
+              _buildFieldLabel(_isWhoStaff ? l10n.whoIdEmail : l10n.partnerEmail),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('input_email'),
@@ -506,21 +509,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   icon: Icons.badge_outlined,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return "Required field";
+                  if (value == null || value.isEmpty) return l10n.requiredField;
                   
                   // Regex per validazione formato email
                   final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                   
                   if (_isWhoStaff) {
-                    if (!value.toLowerCase().endsWith("@who.int")) return "WHO Staff must use a @who.int email";
+                    if (!value.toLowerCase().endsWith("@who.int")) return l10n.whoStaffEmailError;
                   } else {
-                    if (!emailRegex.hasMatch(value)) return "Please enter a valid email address";
+                    if (!emailRegex.hasMatch(value)) return l10n.invalidEmailError;
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
-              _buildFieldLabel("WIMS Password"),
+              _buildFieldLabel(l10n.wimsPassword),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('input_password'),
@@ -533,7 +536,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-                validator: (value) => value == null || value.isEmpty ? "Required field" : null,
+                validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
               ),
               _buildForgotPasswordButton(),
               const SizedBox(height: 16),
@@ -665,7 +668,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
           }
         },
-        child: Text("Forgot Password?", style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+        child: Text(AppLocalizations.of(context)!.forgotPassword, style: TextStyle(color: Theme.of(context).colorScheme.primary)),
       ),
     );
   }
@@ -685,23 +688,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         onPressed: _isLoading ? null : _login,
         child: _isLoading 
           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-          : const Text("Authenticate", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          : Text(AppLocalizations.of(context)!.authenticate, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
       ),
     );
   }
 
   Widget _buildRegisterNavigation() {
-    return Wrap(
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final l10n = AppLocalizations.of(context)!;
+    
+    Widget content = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text("Don't have an account? ", style: TextStyle(color: Colors.grey.shade600)),
+        Text(l10n.dontHaveAccount, style: TextStyle(color: Colors.grey.shade600)),
         TextButton(
           onPressed: () => context.go('/register'),
-          child: Text("Register Here", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+          child: Text(l10n.registerHere, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
         ),
       ],
     );
+
+    if (!isTablet) {
+      return Container(
+        width: double.infinity,
+        alignment: Alignment.center,
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
 

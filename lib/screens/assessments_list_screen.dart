@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
+import '../l10n/app_localizations.dart';
 import '../services/database_service.dart';
 import '../services/report_export_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,7 +86,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     double completionPct =
         totalQuestions == 0 ? 0 : (answeredQuestions / totalQuestions) * 100;
 
-    if (completionPct < 100) return 'In Progress';
+    if (completionPct < 100) return 'In Progress'; // Note: Used in filters
     if (hasCritical) return 'Critical Fails';
     return 'Completed';
   }
@@ -141,11 +142,10 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text("Delete Assessment",
+        title: Text(AppLocalizations.of(context)!.deleteAssessment,
             style: TextStyle(
                 fontWeight: FontWeight.bold, color: Color(0xFF003D73))),
-        content: const Text(
-            "Are you sure you want to permanently delete this assessment? This action cannot be undone."),
+        content: Text(AppLocalizations.of(context)!.deleteAssessmentConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -156,7 +156,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                 backgroundColor: Colors.red.shade600,
                 foregroundColor: Colors.white),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete"),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -168,8 +168,8 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
       _loadAssessments();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Assessment deleted successfully."),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.assessmentDeleted),
               backgroundColor: Colors.green),
         );
       }
@@ -218,7 +218,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
             backgroundColor: Colors.white,
             elevation: 0,
             centerTitle: false,
-            title: const Text("Saved Assessments",
+            title: Text(AppLocalizations.of(context)!.savedAssessments,
                 style: TextStyle(
                     color: Color(0xFF003D73),
                     fontWeight: FontWeight.w900,
@@ -410,7 +410,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: "Search assessment by name...",
+                    hintText: AppLocalizations.of(context)!.searchAssessment,
                     prefixIcon: const Icon(Icons.search,
                         color: Color(0xFF005DA8), size: 20),
                     suffixIcon: IntrinsicHeight(
@@ -433,7 +433,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                           IconButton(
                             icon: const Icon(Icons.map_outlined,
                                 color: Color(0xFF005DA8), size: 20),
-                            tooltip: "View on Map",
+                            tooltip: AppLocalizations.of(context)!.viewOnMap,
                             onPressed: () => context.push('/global-map'),
                           ),
                           const SizedBox(width: 4),
@@ -515,8 +515,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                 color: const Color(0xFF005DA8), size: isCompact ? 22 : 20),
             if (!isCompact) ...[
               const SizedBox(width: 8),
-              const Text(
-                "Analytics",
+              Text(AppLocalizations.of(context)!.analytics,
                 style: TextStyle(
                   color: Color(0xFF005DA8),
                   fontWeight: FontWeight.w900,
@@ -565,9 +564,9 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           enabled: false,
-          child: Text("SORT BY",
+          child: Text(AppLocalizations.of(context)!.sortBy,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -576,22 +575,22 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         CheckedPopupMenuItem(
           checked: _currentSort == SortOption.newest,
           value: SortOption.newest,
-          child: const Text("Newest First"),
+          child: Text(AppLocalizations.of(context)!.newestFirst),
         ),
         CheckedPopupMenuItem(
           checked: _currentSort == SortOption.scoreHighToLow,
           value: SortOption.scoreHighToLow,
-          child: const Text("Highest Score"),
+          child: Text(AppLocalizations.of(context)!.highestScore),
         ),
         CheckedPopupMenuItem(
           checked: _currentSort == SortOption.scoreLowToHigh,
           value: SortOption.scoreLowToHigh,
-          child: const Text("Lowest Score"),
+          child: Text(AppLocalizations.of(context)!.lowestScore),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           enabled: false,
-          child: Text("DATE FILTER",
+          child: Text(AppLocalizations.of(context)!.dateFilter,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -604,16 +603,16 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               const Icon(Icons.date_range_rounded, size: 18),
               const SizedBox(width: 12),
               Text(_filterDate == null
-                  ? "Select Date"
+                  ? AppLocalizations.of(context)!.selectDate
                   : DateFormat('dd MMM yyyy').format(_filterDate!)),
             ],
           ),
         ),
         if (_filterDate != null)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'clear_date',
             child:
-                Text("Clear Date Filter", style: TextStyle(color: Colors.red)),
+                Text(AppLocalizations.of(context)!.clearDateFilter, style: TextStyle(color: Colors.red)),
           ),
       ],
     );
@@ -626,7 +625,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         children: [
           Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          Text("No assessments match your filters.",
+          Text(AppLocalizations.of(context)!.noAssessmentsMatch,
               style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
         ],
       ),
@@ -641,7 +640,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
           Icon(Icons.assignment_outlined,
               size: 80, color: Colors.grey.shade200),
           const SizedBox(height: 16),
-          Text("Select an assessment to view details",
+          Text(AppLocalizations.of(context)!.selectAssessmentToView,
               style: TextStyle(color: Colors.grey.shade400, fontSize: 16)),
         ],
       ),
@@ -693,7 +692,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                         ),
                         onPressed: () => _openAssessmentMap(facility),
                         icon: const Icon(Icons.map),
-                        label: const Text("Open Interactive Map",
+                        label: Text(AppLocalizations.of(context)!.openInteractiveMap,
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -733,7 +732,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                       ),
                       onPressed: () => _openAssessmentMap(facility),
                       icon: const Icon(Icons.map),
-                      label: const Text("Open Interactive Map",
+                      label: Text(AppLocalizations.of(context)!.openInteractiveMap,
                           style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
@@ -743,18 +742,18 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               // GRIGLIA KPI DETTAGLIATA
               Row(
                 children: [
-                  _buildLargeStatCard("Critical Fails",
+                  _buildLargeStatCard(AppLocalizations.of(context)!.criticalFails,
                       _countCriticalFails(facility).toString(), Colors.red,
                       isNarrow: isNarrow),
                   const SizedBox(width: 16),
-                  _buildLargeStatCard("Zones Evaluated",
+                  _buildLargeStatCard(AppLocalizations.of(context)!.zonesEvaluated,
                       _countEvaluatedZones(facility).toString(), Colors.green,
                       isNarrow: isNarrow),
                 ],
               ),
               const SizedBox(height: 32),
 
-              const Text("Zone Breakdown",
+              Text(AppLocalizations.of(context)!.zoneBreakdown,
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1197,6 +1196,12 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
 
   // Componente interattivo per la selezione dei filtri di stato
   Widget _buildFilterChip(String label) {
+    String displayLabel = label;
+    if (label == 'All') displayLabel = AppLocalizations.of(context)!.filterAll;
+    else if (label == 'In Progress') displayLabel = AppLocalizations.of(context)!.inProgress;
+    else if (label == 'Completed') displayLabel = AppLocalizations.of(context)!.completed;
+    else if (label == 'Critical Fails') displayLabel = AppLocalizations.of(context)!.criticalFails;
+
     bool isSelected = _currentFilter == label;
     return GestureDetector(
       onTap: () {
@@ -1214,7 +1219,8 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                   isSelected ? const Color(0xFF005DA8) : Colors.grey.shade300),
         ),
         child: Text(
-          label,
+          displayLabel,
+
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.grey.shade700,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,

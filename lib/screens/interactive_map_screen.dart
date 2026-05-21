@@ -4,6 +4,7 @@ import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import '../data/facility_data_factory.dart';
 import '../data/general_facility_data.dart';
+import '../l10n/app_localizations.dart';
 
 class InteractiveMapScreen extends StatefulWidget {
   final EmergencyType emergencyType;
@@ -175,7 +176,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         },
       ),
       title: Text(
-        "Spatial Assessment",
+        AppLocalizations.of(context)!.spatialAssessment,
         style: TextStyle(
           color: const Color(0xFF003D73),
           fontWeight: FontWeight.bold,
@@ -212,7 +213,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         child: IconButton(
           icon: Icon(Icons.assignment_outlined,
               color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
-          tooltip: "View Saved Assessments",
+          tooltip: AppLocalizations.of(context)!.viewSavedAssessments,
           onPressed: () => context.go('/', extra: 1),
           padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
           constraints: isMobilePortrait ? const BoxConstraints() : null,
@@ -244,7 +245,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         child: IconButton(
           icon: Icon(Icons.domain_verification,
               color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
-          tooltip: "General Assessment",
+          tooltip: AppLocalizations.of(context)!.generalAssessment,
           padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
           constraints: isMobilePortrait ? const BoxConstraints() : null,
           onPressed: () async {
@@ -286,7 +287,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              "Pinch to explore. Tap highlighted pins to evaluate.",
+              AppLocalizations.of(context)!.pinchToExplore,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w600,

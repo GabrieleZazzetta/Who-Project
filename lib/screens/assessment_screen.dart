@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/assessment_models.dart';
+import '../l10n/app_localizations.dart';
 
 class AssessmentScreen extends StatefulWidget {
   final SpatialZone zone;
@@ -82,8 +83,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text(
-          "Add Note",
+        title: Text(AppLocalizations.of(context)!.addNote,
           style:
               TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold),
         ),
@@ -91,14 +91,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           controller: noteController,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: "Enter your observations here...",
+            hintText: AppLocalizations.of(context)!.enterObservations,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -106,7 +106,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               foregroundColor: Colors.white,
             ),
             onPressed: () => context.pop(noteController.text),
-            child: const Text("Save Note"),
+            child: Text(AppLocalizations.of(context)!.saveNote),
           ),
         ],
       ),
@@ -178,7 +178,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Error picking image: $e"),
+              content: Text(AppLocalizations.of(context)!.errorPickingImage + e.toString()),
               backgroundColor: Colors.red),
         );
       }
@@ -212,13 +212,12 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   child: Icon(Icons.linked_camera_outlined, size: 40, color: Colors.amber.shade800),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  "Camera Access Required",
+                Text(AppLocalizations.of(context)!.cameraAccessRequired,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "To capture facility evidence, this app requires camera permissions. Please enable camera access in your device's System Settings.",
+                  AppLocalizations.of(context)!.cameraAccessMsg,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
                 ),
@@ -232,7 +231,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Understood", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.understood, style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -433,8 +432,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                "Overall Completion",
+                              Text(AppLocalizations.of(context)!.overallCompletion,
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
@@ -472,7 +470,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     }
 
     final String titleText =
-        isMobilePortrait ? "Area Checklist" : "Area Assessment Checklist";
+        isMobilePortrait ? AppLocalizations.of(context)!.areaChecklist : AppLocalizations.of(context)!.areaAssessmentChecklist;
     final double titleFontSize = isMobilePortrait ? 18 : 20;
 
     return Container(
@@ -500,7 +498,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              "${widget.zone.completionPercentage.toStringAsFixed(0)}% Completed",
+              AppLocalizations.of(context)!.completedPct(widget.zone.completionPercentage.toStringAsFixed(0)),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.bold,
@@ -534,7 +532,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         _buildComplianceSelector(
           question: question,
           level: ComplianceLevel.meetsTarget,
-          label: "Meets\n(3 pts)",
+          label: AppLocalizations.of(context)!.meetsTarget,
           color: Colors.green.shade600,
           icon: Icons.check_circle,
           isTablet: isTablet,
@@ -543,7 +541,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         _buildComplianceSelector(
           question: question,
           level: ComplianceLevel.partiallyMeets,
-          label: "Partially Meets\n(2 pts)",
+          label: AppLocalizations.of(context)!.partiallyMeets,
           color: Colors.orange.shade500,
           icon: Icons.warning_amber_rounded,
           isTablet: isTablet,
@@ -552,7 +550,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         _buildComplianceSelector(
           question: question,
           level: ComplianceLevel.doesNotMeet,
-          label: "Does Not Meet\n(1 pt)",
+          label: AppLocalizations.of(context)!.doesNotMeet,
           color: Colors.red.shade600,
           icon: Icons.error_outline,
           isTablet: isTablet,
@@ -615,7 +613,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               TextButton.icon(
                 onPressed: () => _showMediaPickerSheet(question),
                 icon: const Icon(Icons.add_a_photo_outlined, size: 22),
-                label: Text("Add Photo",
+                label: Text(AppLocalizations.of(context)!.addPhoto,
                     style: TextStyle(fontSize: isTablet ? 15 : 14)),
                 style: TextButton.styleFrom(
                     foregroundColor: Colors.grey.shade700,
@@ -626,7 +624,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               TextButton.icon(
                 onPressed: () => _showNoteDialog(question),
                 icon: const Icon(Icons.edit_note, size: 22),
-                label: Text(question.note == null ? "Add Note" : "Edit Note",
+                label: Text(question.note == null ? AppLocalizations.of(context)!.addNote : "Edit Note",
                     style: TextStyle(fontSize: isTablet ? 15 : 14)),
                 style: TextButton.styleFrom(
                     foregroundColor: Colors.grey.shade700,
@@ -745,7 +743,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Evaluation Criteria",
+            Text(AppLocalizations.of(context)!.evaluationCriteria,
                 style: TextStyle(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.bold,
@@ -766,7 +764,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               elevation: 0,
             ),
             onPressed: () => context.pop(),
-            child: const Text("Got it",
+            child: Text(AppLocalizations.of(context)!.gotIt,
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
@@ -799,7 +797,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "HOW TO IMPROVE YOUR DESIGN",
+                    AppLocalizations.of(context)!.howToImprove,
                     style: TextStyle(
                       fontSize: isTablet ? 13 : 12,
                       fontWeight: FontWeight.bold,

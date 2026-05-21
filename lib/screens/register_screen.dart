@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import '../models/local_user_credential.dart';
 import '../services/database_service.dart';
 import '../services/auth_service.dart';
+import '../l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -60,14 +61,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _submitRegistration() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Please select your Date of Birth"),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.dateOfBirthError),
             backgroundColor: Colors.red));
         return;
       }
       if (!(_hasMinLength && _hasUpper && _hasNumber && _hasSpecial)) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Please meet all password requirements"),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.passwordReqError),
             backgroundColor: Colors.red));
         return;
       }
@@ -76,14 +77,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       try {
         final email = _emailController.text.trim();
         final password = _passwordController.text;
-        final displayName = "${_firstNameController.text} ${_lastNameController.text}";
+        final displayName =
+            "${_firstNameController.text} ${_lastNameController.text}";
 
         await ref.read(authServiceProvider).register(
-          email,
-          password,
-          isWhoStaff: _isWhoStaff,
-          displayName: displayName,
-        );
+              email,
+              password,
+              isWhoStaff: _isWhoStaff,
+              displayName: displayName,
+            );
 
         // SALVATAGGIO CREDENZIALI LOCALI PER ACCESSO OFFLINE / RECUPERO PASSWORD
         final bytes = utf8.encode(password);
@@ -98,17 +100,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ..isWhoStaff = _isWhoStaff
             ..passwordNeedsSync = false,
         );
-        
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("Registration Successful! Welcome."),
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context)!.registrationSuccess),
               backgroundColor: Colors.green));
           context.go('/');
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Registration failed: ${e.toString()}"), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text(AppLocalizations.of(context)!.registrationFailed +
+                    e.toString()),
+                backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -151,8 +156,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       _buildLogo(isDark: true),
                       const SizedBox(height: 32),
-                      const Text(
-                        "Join the Platform",
+                      Text(AppLocalizations.of(context)!.joinPlatform,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 36,
@@ -163,11 +167,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "Create your account to start managing health facility assessments globally.",
+                        AppLocalizations.of(context)!.createAccountDescGlobal,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 16),
+                            color: Colors.white.withOpacity(0.8), fontSize: 16),
                       ),
                       if (_isWhoStaff) ...[
                         const SizedBox(height: 24),
@@ -178,10 +181,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             color: Colors.red.shade400.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color:
-                                    Colors.red.shade200.withOpacity(0.3)),
+                                color: Colors.red.shade200.withOpacity(0.3)),
                           ),
-                          child: const Text("AUTHORIZED PERSONNEL ONLY",
+                          child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -250,8 +252,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           children: [
                             _buildLogo(isDark: true),
                             const SizedBox(height: 40),
-                            const Text(
-                              "Join the Platform",
+                            Text(AppLocalizations.of(context)!.joinPlatform,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 32,
@@ -263,7 +264,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              "Create your account to start managing health facility assessments globally.",
+                              AppLocalizations.of(context)!
+                                  .createAccountDescGlobal,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
@@ -276,15 +278,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.shade400
-                                      .withOpacity(0.2),
+                                  color: Colors.red.shade400.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                      color: Colors.red.shade200
-                                          .withOpacity(0.3)),
+                                      color:
+                                          Colors.red.shade200.withOpacity(0.3)),
                                 ),
-                                child: const Text(
-                                  "AUTHORIZED PERSONNEL ONLY",
+                                child: Text(AppLocalizations.of(context)!
+                                      .authorizedPersonnel,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -313,8 +314,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Create Account",
+                        Text(AppLocalizations.of(context)!.createAccountTitle,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
@@ -324,7 +324,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Enter your details to register as an authorized user.",
+                          AppLocalizations.of(context)!.createAccountDescAuth,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -365,8 +365,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     _buildLogo(isDark: true),
                     const SizedBox(height: 16),
-                    const Text(
-                      "Join the Platform",
+                    Text(AppLocalizations.of(context)!.joinPlatform,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -383,8 +382,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           // INIZIO MODIFICA: TAG AUTHORIZED PERSONNEL (Mobile Landscape)
-                          child: const Text(
-                            "AUTHORIZED PERSONNEL ONLY",
+                          child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -441,8 +439,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   _buildLogo(isDark: true),
                   const SizedBox(height: 24),
-                  const Text(
-                    "Join the Platform",
+                  Text(AppLocalizations.of(context)!.joinPlatform,
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -450,10 +447,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         letterSpacing: -0.5),
                   ),
                   Text(
-                    "Create your account to get started.",
+                    AppLocalizations.of(context)!.createAccountDescStart,
                     style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8)),
+                        fontSize: 16, color: Colors.white.withOpacity(0.8)),
                   ),
                   const SizedBox(height: 16),
                   // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Mobile Header)
@@ -466,8 +462,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       // TAG AUTHORIZED PERSONNEL ONLY (Ottimizzato per Mobile Portrait)
-                      child: const Text(
-                        "AUTHORIZED PERSONNEL ONLY",
+                      child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -545,7 +540,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _buildLogo(),
         const SizedBox(height: 24),
         Text(
-          "Create Account",
+          AppLocalizations.of(context)!.createAccountTitle,
           textAlign: alignment == CrossAxisAlignment.center
               ? TextAlign.center
               : TextAlign.start,
@@ -563,11 +558,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFFFE4E6), // Pinkish background
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: const Color(0xFFFDA4AF).withOpacity(0.5)),
+              border:
+                  Border.all(color: const Color(0xFFFDA4AF).withOpacity(0.5)),
             ),
-            child: const Text(
-              "AUTHORIZED PERSONNEL ONLY",
+            child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Color(0xFFE11D48),
@@ -596,7 +590,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               Expanded(
                   child: _buildModeToggle(
-                      "WHO Staff",
+                      AppLocalizations.of(context)!.whoStaffRole,
                       _isWhoStaff,
                       () => setState(() {
                             _isWhoStaff = true;
@@ -604,7 +598,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           }))),
               Expanded(
                   child: _buildModeToggle(
-                      "External Partner",
+                      AppLocalizations.of(context)!.externalPartnerRole,
                       !_isWhoStaff,
                       () => setState(() {
                             _isWhoStaff = false;
@@ -625,13 +619,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Expanded(
                       child: _buildTextField(
                           controller: _firstNameController,
-                          hint: "First Name",
+                          hint: AppLocalizations.of(context)!.firstNameLabel,
                           icon: Icons.person_outline)),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildTextField(
                           controller: _lastNameController,
-                          hint: "Last Name",
+                          hint: AppLocalizations.of(context)!.lastNameLabel,
                           icon: Icons.person_outline)),
                 ],
               ),
@@ -667,8 +661,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           boxShadow: isActive
               ? [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4)
+                      color: Colors.black.withOpacity(0.05), blurRadius: 4)
                 ]
               : [],
         ),
@@ -707,7 +700,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(width: 12),
             Text(
               _selectedDate == null
-                  ? "Date of Birth"
+                  ? AppLocalizations.of(context)!.dobLabel
                   : DateFormat('dd MMM yyyy').format(_selectedDate!),
               style: TextStyle(
                   color: _selectedDate == null
@@ -726,7 +719,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
-        hintText: _isWhoStaff ? "WHO Email Address" : "Email Address",
+        hintText: _isWhoStaff
+            ? AppLocalizations.of(context)!.whoEmailLabel
+            : AppLocalizations.of(context)!.emailLabel,
         prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF64748B)),
         filled: true,
         fillColor: Colors.white,
@@ -740,15 +735,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return "Required";
-        
+        if (value == null || value.isEmpty)
+          return AppLocalizations.of(context)!.requiredValidation;
+
         // Regex per validazione formato email
         final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-        
+
         if (_isWhoStaff) {
-          if (!value.toLowerCase().endsWith("@who.int")) return "WHO Staff must use a @who.int email";
+          if (!value.toLowerCase().endsWith("@who.int"))
+            return "WHO Staff must use a @who.int email";
         } else {
-          if (!emailRegex.hasMatch(value)) return "Please enter a valid email address";
+          if (!emailRegex.hasMatch(value))
+            return "Please enter a valid email address";
         }
         return null;
       },
@@ -760,7 +758,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       controller: _passwordController,
       obscureText: _obscurePassword,
       decoration: InputDecoration(
-        hintText: "Create Password",
+        hintText: AppLocalizations.of(context)!.createPasswordLabel,
         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF64748B)),
         suffixIcon: IconButton(
           icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -789,7 +787,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Password must contain:",
+          Text(AppLocalizations.of(context)!.passwordMustContain,
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -797,7 +795,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _buildRequirement(_hasMinLength, "8+ Chars")),
+              Expanded(
+                  child: _buildRequirement(
+                      _hasMinLength, AppLocalizations.of(context)!.chars8Plus)),
               Expanded(child: _buildRequirement(_hasUpper, "1 Uppercase")),
             ],
           ),
@@ -828,10 +828,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
         onPressed: _isLoading ? null : _submitRegistration,
         child: _isLoading
-            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-            : const Text("Create Account",
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2))
+            : Text(AppLocalizations.of(context)!.createAccountTitle,
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5)),
       ),
     );
   }
@@ -840,11 +846,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Already have an account? ",
+        Text(AppLocalizations.of(context)!.alreadyHaveAccount,
             style: TextStyle(color: Colors.grey.shade600)),
         TextButton(
           onPressed: () => context.go('/login'),
-          child: Text("Sign In",
+          child: Text(AppLocalizations.of(context)!.signInLink,
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary)),
@@ -873,7 +879,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
         ),
       ),
-      validator: (value) => value == null || value.isEmpty ? "Required" : null,
+      validator: (value) => value == null || value.isEmpty
+          ? AppLocalizations.of(context)!.requiredValidation
+          : null,
     );
   }
 

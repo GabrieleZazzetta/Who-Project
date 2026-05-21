@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -148,7 +149,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   elevation: 0,
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Got it",
+                child: Text(AppLocalizations.of(context)!.gotIt,
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
@@ -222,7 +223,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Data Analytics",
+        title: Text(AppLocalizations.of(context)!.dataAnalytics,
             style: TextStyle(fontWeight: FontWeight.w800, color: _slateDark)),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -233,7 +234,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
-                tooltip: "Advanced Charts",
+                tooltip: AppLocalizations.of(context)!.advancedCharts,
                 icon: Icon(Icons.insights_rounded, color: _primaryBlue),
                 onPressed: () {
                   context.push('/advanced-analytics', extra: data);
@@ -333,7 +334,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _buildDropdown(
-                  "Country / Region",
+                  AppLocalizations.of(context)!.countryRegion,
                   _selectedCountry,
                   _availableCountries,
                   (val) => setState(() => _selectedCountry = val!)),
@@ -341,7 +342,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildDropdown(
-                  "Reporting Year",
+                  AppLocalizations.of(context)!.reportingYear,
                   _selectedYear,
                   _availableYears,
                   (val) => setState(() => _selectedYear = val!)),
@@ -360,7 +361,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Icon(Icons.analytics_outlined, size: 64, color: Colors.grey.shade300),
             const SizedBox(height: 16),
-            Text("No reports available for this selection.",
+            Text(AppLocalizations.of(context)!.noReportsAvailable,
                 style: TextStyle(color: _slateLight, fontSize: 16, fontWeight: FontWeight.w500)),
           ],
         ),
@@ -381,20 +382,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           : CrossAxisAlignment.center,
       children: [
         Expanded(
-            child: _buildKpiCard("Assessments", count.toString(),
+            child: _buildKpiCard(AppLocalizations.of(context)!.assessmentsCount, count.toString(),
                 Icons.fact_check_outlined, _primaryBlue,
-                info: "Total number of completed facility assessments.")),
+                info: AppLocalizations.of(context)!.assessmentsCountInfo)),
         const SizedBox(width: 12),
         Expanded(
-            child: _buildKpiCard("Avg Readiness",
+            child: _buildKpiCard(AppLocalizations.of(context)!.avgReadiness,
                 "${avgReadiness.toStringAsFixed(1)}%",
                 Icons.health_and_safety_outlined, _primaryBlue,
-                info: "The average percentage score indicating how well the assessed facilities meet the required standards.")),
+                info: AppLocalizations.of(context)!.avgReadinessInfo)),
         const SizedBox(width: 12),
         Expanded(
-            child: _buildKpiCard("Critical Fails", criticalFails.toString(),
+            child: _buildKpiCard(AppLocalizations.of(context)!.criticalFails, criticalFails.toString(),
                 Icons.warning_amber_rounded, _slateDark,
-                info: "Number of high-priority criteria that did not meet the minimum requirements.")),
+                info: AppLocalizations.of(context)!.criticalFailsInfo)),
       ],
     );
 
@@ -408,8 +409,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader("Compliance Breakdown", "Distribution of $total evaluated criteria", 
-          info: "Visualizes the percentage of criteria that fully meet (Meets), partially meet (Partial), or fail (Fails) the standards."),
+        _buildSectionHeader(AppLocalizations.of(context)!.complianceBreakdown, AppLocalizations.of(context)!.distributionCriteria(total), 
+          info: AppLocalizations.of(context)!.complianceBreakdownInfo),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: _cardDecoration(),
@@ -432,9 +433,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildLegendItem("Meets", meetsCount, meetsPct, _colorMeets),
-                  _buildLegendItem("Partial", partialCount, partialPct, _colorPartial),
-                  _buildLegendItem("Fails", doesNotMeetCount, failsPct, _colorFails),
+                  _buildLegendItem(AppLocalizations.of(context)!.meets, meetsCount, meetsPct, _colorMeets),
+                  _buildLegendItem(AppLocalizations.of(context)!.partial, partialCount, partialPct, _colorPartial),
+                  _buildLegendItem(AppLocalizations.of(context)!.fails, doesNotMeetCount, failsPct, _colorFails),
                 ],
               )
             ],
@@ -448,8 +449,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader("Category Performance", "Readiness score across technical areas", 
-          info: "Average compliance scores grouped by technical categories like IPC, WASH, and Logistics."),
+        _buildSectionHeader(AppLocalizations.of(context)!.categoryPerformance, AppLocalizations.of(context)!.readinessScoreTech, 
+          info: AppLocalizations.of(context)!.categoryPerformanceInfo),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: _cardDecoration(),
@@ -490,8 +491,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader("Geographical Ranking", "Average readiness score by country",
-          info: "Compares the readiness performance between different countries or regions."),
+        _buildSectionHeader(AppLocalizations.of(context)!.geographicalRanking, AppLocalizations.of(context)!.avgReadinessCountry,
+          info: AppLocalizations.of(context)!.geographicalRankingInfo),
         _buildGeographicalRanking(),
       ],
     );
@@ -570,13 +571,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               value: value,
               icon: Icon(Icons.keyboard_arrow_down_rounded, color: _slateLight),
               items: items
-                  .map((e) => DropdownMenuItem(
+                  .map((e) {
+                    String displayE = e;
+                    if (e == 'All Countries') displayE = AppLocalizations.of(context)!.allCountries;
+                    else if (e == 'All Years') displayE = AppLocalizations.of(context)!.allYears;
+                    return DropdownMenuItem(
                       value: e,
-                      child: Text(e,
+                      child: Text(displayE,
                           style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: _slateDark))))
+                              color: _slateDark)));
+                  })
                   .toList(),
               onChanged: onChanged,
             ),

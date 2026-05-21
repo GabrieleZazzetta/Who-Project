@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/assessment_models.dart';
 import '../data/facility_data_factory.dart';
+import '../l10n/app_localizations.dart';
 
 class PreAssessmentScreen extends StatefulWidget {
   final EmergencyType emergencyType;
@@ -139,7 +140,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
 
     layoutData.facilityName = _assessmentNameController.text.isNotEmpty
         ? _assessmentNameController.text
-        : "Unnamed Assessment";
+        : AppLocalizations.of(context)!.unnamedAssessment;
 
     layoutData.generalInfo = GeneralFacilityInfo()
       ..assessedDisease = widget.emergencyType.name.toUpperCase()
@@ -298,7 +299,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                               ? 16
                                               : 32),
                                   Text(
-                                    "Facility Configuration",
+                                    AppLocalizations.of(context)!
+                                        .facilityConfigurationTitle,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize:
@@ -313,7 +315,9 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    "Complete the pre-assessment steps to set up the environment for ${widget.emergencyType.name}.",
+                                    AppLocalizations.of(context)!
+                                        .facilityConfigurationDesc(
+                                            widget.emergencyType.name),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize:
@@ -328,7 +332,9 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                   const SizedBox(height: 32),
                                   // INDICATORE DI PROGRESSO LATERALE
                                   Text(
-                                      "Step ${_currentStep + 1} of $_totalSteps",
+                                      AppLocalizations.of(context)!
+                                          .stepProgress(
+                                              _currentStep + 1, _totalSteps),
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                           color: Colors.white,
@@ -405,7 +411,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded,
                           color: Colors.white, size: 22),
                       onPressed: () => context.pop(),
-                      tooltip: "Back",
+                      tooltip: AppLocalizations.of(context)!.backButton,
                     ),
                   ),
                 ),
@@ -449,7 +455,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         toolbarHeight: isTablet ? 80 : 56,
-        title: Text("Facility Configuration",
+        title: Text(AppLocalizations.of(context)!.facilityConfigurationTitle,
             style: TextStyle(
                 fontSize: isTablet ? 32 : 22,
                 fontWeight: FontWeight.bold,
@@ -472,7 +478,9 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
               child: isLandscape
                   ? Row(
                       children: [
-                        Text("Step ${_currentStep + 1} of $_totalSteps",
+                        Text(
+                            AppLocalizations.of(context)!
+                                .stepProgress(_currentStep + 1, _totalSteps),
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
@@ -494,7 +502,9 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Step ${_currentStep + 1} of $_totalSteps",
+                        Text(
+                            AppLocalizations.of(context)!
+                                .stepProgress(_currentStep + 1, _totalSteps),
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
@@ -532,15 +542,14 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   Widget _buildStep1() {
     return _buildPageWrapper(
       formKey: _formKeys[0],
-      title: "Assessment Information",
+      title: AppLocalizations.of(context)!.step1Title,
       icon: Icons.person_pin,
       children: [
-        _buildInfoBanner(
-            "Please enter a title to easily identify this assessment later, along with the assessor details."),
-        _buildQuestionField("Assessment Title (e.g. Hospital North - Baseline)",
+        _buildInfoBanner(AppLocalizations.of(context)!.step1Desc),
+        _buildQuestionField(AppLocalizations.of(context)!.assessmentTitleLabel,
             _buildTextInput(_assessmentNameController, Icons.title)),
         _buildQuestionField(
-          "Date of assessment",
+          AppLocalizations.of(context)!.assessmentDateLabel,
           Builder(builder: (context) {
             final isWideScreen = MediaQuery.of(context).size.width >= 800;
             return InkWell(
@@ -560,20 +569,20 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                 child: Text(
                     _assessmentDate != null
                         ? DateFormat('dd/MM/yyyy').format(_assessmentDate!)
-                        : "Select Date",
+                        : AppLocalizations.of(context)!.selectDate,
                     style: TextStyle(fontSize: isWideScreen ? 16 : 15)),
               ),
             );
           }),
         ),
-        _buildQuestionField("Name of the person conducting the assessment",
+        _buildQuestionField(AppLocalizations.of(context)!.assessorNameLabel,
             _buildTextInput(_assessorNameController, Icons.person)),
         _buildQuestionField(
-            "Email of the person conducting the assessment",
+            AppLocalizations.of(context)!.assessorEmailLabel,
             _buildTextInput(_assessorEmailController, Icons.email,
                 keyboardType: TextInputType.emailAddress)),
         _buildQuestionField(
-            "Phone of the person conducting the assessment",
+            AppLocalizations.of(context)!.assessorPhoneLabel,
             _buildTextInput(_assessorPhoneController, Icons.phone,
                 keyboardType: TextInputType.phone)),
       ],
@@ -583,21 +592,21 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   Widget _buildStep2() {
     return _buildPageWrapper(
       formKey: _formKeys[1],
-      title: "Geographical Location",
+      title: AppLocalizations.of(context)!.step2Title,
       icon: Icons.location_on,
       children: [
-        _buildQuestionField(
-            "Country", _buildTextInput(_countryController, Icons.flag)),
-        _buildQuestionField("Region/province name",
+        _buildQuestionField(AppLocalizations.of(context)!.countryLabel,
+            _buildTextInput(_countryController, Icons.flag)),
+        _buildQuestionField(AppLocalizations.of(context)!.regionLabel,
             _buildTextInput(_regionController, Icons.map)),
-        _buildQuestionField("District name",
+        _buildQuestionField(AppLocalizations.of(context)!.districtLabel,
             _buildTextInput(_districtController, Icons.location_city)),
-        _buildQuestionField("City/Village/clan/locality name",
+        _buildQuestionField(AppLocalizations.of(context)!.cityLabel,
             _buildTextInput(_cityController, Icons.home)),
-        _buildQuestionField("Address of facility / GPS coordinates",
+        _buildQuestionField(AppLocalizations.of(context)!.addressLabel,
             _buildTextInput(_addressController, Icons.pin_drop)),
         _buildQuestionField(
-            "Record of facility location",
+            AppLocalizations.of(context)!.locationRecordLabel,
             _buildDropdown(["Urban", "Peri-/ex-urban", "Rural"],
                 (val) => _locationRecord = val)),
       ],
@@ -607,17 +616,18 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   Widget _buildStep3() {
     return _buildPageWrapper(
       formKey: _formKeys[2],
-      title: "Facility Identification",
+      title: AppLocalizations.of(context)!.step3Title,
       icon: Icons.local_hospital,
       children: [
-        _buildInfoBanner(
-            "Metadata Auto-fill: The assessment is set for ${widget.emergencyType.name.toUpperCase()} in a facility type: '${_getFacilityTypeName(widget.facilityType)}'."),
-        _buildQuestionField("Facility code",
+        _buildInfoBanner(AppLocalizations.of(context)!.metadataAutofill(
+            widget.emergencyType.name.toUpperCase(),
+            _getFacilityTypeName(widget.facilityType))),
+        _buildQuestionField(AppLocalizations.of(context)!.facilityCodeLabel,
             _buildTextInput(_facilityCodeController, Icons.numbers)),
-        _buildQuestionField("Facility name",
+        _buildQuestionField(AppLocalizations.of(context)!.facilityNameLabel,
             _buildTextInput(_facilityNameController, Icons.business)),
         _buildQuestionField(
-            "Managing authority",
+            AppLocalizations.of(context)!.managingAuthorityLabel,
             _buildDropdown([
               "Government / public",
               "Private for profit",
@@ -626,31 +636,32 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
               "University",
               "Other ..."
             ], (val) => _managingAuthority = val)),
-        _buildQuestionField("Facility director/manager’s name",
+        _buildQuestionField(AppLocalizations.of(context)!.directorNameLabel,
             _buildTextInput(_directorNameController, Icons.person_outline)),
         _buildQuestionField(
-            "Facility director/manager’s telephone number",
+            AppLocalizations.of(context)!.directorPhoneLabel,
             _buildTextInput(_directorPhoneController, Icons.phone_outlined,
                 keyboardType: TextInputType.phone)),
         _buildQuestionField(
-            "Facility director/manager’s email address",
+            AppLocalizations.of(context)!.directorEmailLabel,
             _buildTextInput(_directorEmailController, Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress)),
         _buildQuestionField(
-            "Respondent or key informant’s name",
+            AppLocalizations.of(context)!.respondentNameLabel,
             _buildTextInput(
                 _respondentNameController, Icons.record_voice_over)),
-        _buildQuestionField("Respondent or key informant’s position",
+        _buildQuestionField(
+            AppLocalizations.of(context)!.respondentPositionLabel,
             _buildTextInput(_respondentPositionController, Icons.work_outline)),
         _buildQuestionField(
-            "Type of structure",
+            AppLocalizations.of(context)!.structureTypeLabel,
             _buildDropdown([
               "Permanent facility (existing facility built with i.e. concrete, bricks, etc.)",
               "Temporary (medium-term) facility (i.e. concrete slabs and wooden structure, rub halls, etc.)",
               "Temporary (short-term) facility (i.e. tents, etc.)"
             ], (val) => _structureType = val)),
         _buildQuestionField(
-            "Type of existing healthcare facility",
+            AppLocalizations.of(context)!.existingFacilityTypeLabel,
             _buildDropdown([
               "First referral hospital / district hospital",
               "Regional / provincial referral hospital",
@@ -666,13 +677,13 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   Widget _buildStep4() {
     return _buildPageWrapper(
       formKey: _formKeys[3],
-      title: "Existing Healthcare Services",
+      title: AppLocalizations.of(context)!.step4Title,
       icon: Icons.medical_services,
       children: [
-        _buildQuestionField("The facility offers outpatient services",
+        _buildQuestionField(AppLocalizations.of(context)!.offersOutpatientLabel,
             _buildDropdown(["Yes", "No"], (val) => _offersOutpatient = val)),
         _buildQuestionField(
-            "The facility offers inpatient services",
+            AppLocalizations.of(context)!.offersInpatientLabel,
             _buildDropdown(["Yes", "No"], (val) {
               setState(() {
                 _offersInpatient = val;
@@ -695,11 +706,12 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoBanner("Please provide inpatient capacity details."),
-                _buildQuestionField("Total number of overnight/ inpatient beds",
-                    _buildNumberInput(_inpatientBedsController)),
+                _buildInfoBanner(
+                    AppLocalizations.of(context)!.inpatientCapacityDesc),
                 _buildQuestionField(
-                    "Of the total number of inpatient beds, how many are intensive care unit (ICU) beds?",
+                    AppLocalizations.of(context)!.totalBedsLabel,
+                    _buildNumberInput(_inpatientBedsController)),
+                _buildQuestionField(AppLocalizations.of(context)!.icuBedsLabel,
                     Builder(builder: (context) {
                   final isWideScreen = MediaQuery.of(context).size.width >= 800;
                   return TextFormField(
@@ -711,11 +723,11 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                   );
                 })),
                 _buildQuestionField(
-                    "The facility has dedicated 24-hour staffed emergency unit",
+                    AppLocalizations.of(context)!.has24hEmergencyLabel,
                     _buildDropdown(
                         ["Yes", "No"], (val) => _has24hEmergency = val)),
                 _buildQuestionField(
-                    "The facility has intensive care or high-dependency unit",
+                    AppLocalizations.of(context)!.hasIcuOrHduLabel,
                     _buildDropdown(["Yes", "No"], (val) => _hasIcuOrHdu = val)),
               ],
             ),
@@ -809,7 +821,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                               ),
                               clipBehavior: Clip.antiAlias, // Evita sbavature
                               onPressed: _prevStep,
-                              child: Text("Back",
+                              child: Text(
+                                  AppLocalizations.of(context)!.backButton,
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -838,7 +851,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                             child: Text(
                                 _currentStep == _totalSteps - 1
                                     ? "Start Assessment"
-                                    : "Next",
+                                    : AppLocalizations.of(context)!.nextButton,
                                 style: TextStyle(
                                     fontSize: btnFontSize,
                                     fontWeight: FontWeight.bold)),

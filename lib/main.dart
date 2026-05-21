@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/locale_provider.dart';
 import 'firebase_options.dart';
 import 'models/assessment_models.dart';
 import 'services/database_service.dart';
@@ -42,12 +45,18 @@ void main() async {
   // INIZIALIZZAZIONE DATABASE LOCALE
   await DatabaseService.instance.init();
 
+  // INIZIALIZZAZIONE PREFERENCES
+  final prefs = await SharedPreferences.getInstance();
+
   // CONTROLLO SESSIONE LOCALE (Hybrid Auth)
   final session = await DatabaseService.instance.getCurrentSession();
   final String initialLocation = (session != null && session.isLoggedIn) ? '/' : '/login';
 
   runApp(
     ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: WHOAssessmentApp(initialLocation: initialLocation),
     ),
   );
@@ -139,19 +148,34 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
 );
 
 // CONFIGURAZIONE APP
-class WHOAssessmentApp extends StatelessWidget {
+class WHOAssessmentApp extends ConsumerStatefulWidget {
   final String initialLocation;
   const WHOAssessmentApp({super.key, required this.initialLocation});
 
   @override
+  ConsumerState<WHOAssessmentApp> createState() => _WHOAssessmentAppState();
+}
+
+class _WHOAssessmentAppState extends ConsumerState<WHOAssessmentApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = _buildRouter(widget.initialLocation);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Spostiamo la logica del router all'interno del build o la rendiamo dinamica
-    final router = _buildRouter(initialLocation);
+    final locale = ref.watch(localeProvider);
     
     return MaterialApp.router(
       title: 'WHO Health Facilities Assessment',
       debugShowCheckedModeBanner: false,
-      routerConfig: router,
+      routerConfig: _router,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Public Sans',

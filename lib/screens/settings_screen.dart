@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 import '../services/sync_service.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
@@ -10,6 +12,52 @@ import '../models/assessment_models.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  void _showLanguageSelector(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    final currentLocale = ref.read(localeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.chooseLanguage,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                _buildLanguageOption(context, ref, 'English', const Locale('en'), currentLocale),
+                _buildLanguageOption(context, ref, 'Italiano', const Locale('it'), currentLocale),
+                _buildLanguageOption(context, ref, 'Español', const Locale('es'), currentLocale),
+                _buildLanguageOption(context, ref, 'Français', const Locale('fr'), currentLocale),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption(BuildContext context, WidgetRef ref, String name, Locale locale, Locale currentLocale) {
+    final isSelected = locale.languageCode == currentLocale.languageCode;
+    return ListTile(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      tileColor: isSelected ? const Color(0xFF005DA8).withOpacity(0.05) : Colors.transparent,
+      title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF005DA8) : Colors.black87)),
+      trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF005DA8)) : null,
+      onTap: () {
+        ref.read(localeProvider.notifier).setLocale(locale);
+        Navigator.pop(context);
+      },
+    );
+  }
 
   // LOGICA DI STATO E SINCRONIZZAZIONE
   // FUNZIONALITÀ PROFILO UTENTE PREMIUM
@@ -162,6 +210,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final syncState = ref.watch(syncProvider);
     final bool isTablet = MediaQuery.of(context).size.width >= 800;
 
@@ -189,7 +238,7 @@ class SettingsScreen extends ConsumerWidget {
                       centerTitle: false,
                       titlePadding: EdgeInsets.only(
                           left: 20, bottom: isMobilePortrait ? 12 : 16),
-                      title: Text("Settings",
+                      title: Text(l10n.settings,
                           style: TextStyle(
                               color: const Color(0xFF0F172A),
                               fontWeight: FontWeight.w900,
@@ -206,13 +255,13 @@ class SettingsScreen extends ConsumerWidget {
                       top: isTablet
                           ? 40
                           : 16), // Aumentato il padding su tablet per sopperire alla mancanza dell'header
-                  child: _buildSectionHeader("ACCOUNT & SYNC"),
+                  child: _buildSectionHeader(l10n.accountAndSync),
                 ),
               ),
               SliverToBoxAdapter(
                 child: _buildSettingsTile(
                   icon: Icons.person_outline,
-                  title: "User Profile",
+                  title: l10n.userProfile,
                   subtitle: "Logistics Officer",
                   onTap: () => _showUserProfile(context),
                 ),
@@ -228,7 +277,7 @@ class SettingsScreen extends ConsumerWidget {
                       icon: syncState.value?.status == SyncStatus.syncing
                           ? Icons.sync_rounded
                           : Icons.cloud_sync_outlined,
-                      title: "Offline Sync",
+                      title: l10n.offlineSync,
                       subtitle: hasData 
                           ? _getSyncSubtitle(syncState.value, assessments) 
                           : "No data to synchronize",
@@ -243,14 +292,17 @@ class SettingsScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 24),
-                  child: _buildSectionHeader("PREFERENCES"),
+                  child: _buildSectionHeader(l10n.preferences),
                 ),
               ),
               SliverToBoxAdapter(
                 child: _buildSettingsTile(
                   icon: Icons.language,
-                  title: "Language",
-                  subtitle: "English (UK)",
+                  title: l10n.language,
+                  subtitle: ref.watch(localeProvider).languageCode == 'it' ? 'Italiano' : 
+                            ref.watch(localeProvider).languageCode == 'es' ? 'Español' : 
+                            ref.watch(localeProvider).languageCode == 'fr' ? 'Français' : 'English',
+                  onTap: () => _showLanguageSelector(context, ref, l10n),
                 ),
               ),
 
@@ -258,21 +310,21 @@ class SettingsScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 24),
-                  child: _buildSectionHeader("ABOUT"),
+                  child: _buildSectionHeader(l10n.about),
                 ),
               ),
               SliverToBoxAdapter(
                 child: _buildSettingsTile(
-                    icon: Icons.menu_book, title: "WHO Guidelines"),
+                    icon: Icons.menu_book, title: l10n.whoGuidelines),
               ),
               SliverToBoxAdapter(
                 child: _buildSettingsTile(
-                    icon: Icons.privacy_tip_outlined, title: "Privacy Policy"),
+                    icon: Icons.privacy_tip_outlined, title: l10n.privacyPolicy),
               ),
               SliverToBoxAdapter(
                 child: _buildSettingsTile(
                   icon: Icons.info_outline,
-                  title: "App Version",
+                  title: l10n.appVersion,
                   subtitle: "1.0.0-beta",
                   isLink: false,
                 ),
@@ -298,15 +350,15 @@ class SettingsScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.red.shade100),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.logout_rounded,
+                          const Icon(Icons.logout_rounded,
                               color: Colors.redAccent, size: 20),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Text(
-                            "Log Out",
-                            style: TextStyle(
+                            l10n.logOut,
+                            style: const TextStyle(
                               color: Colors.redAccent,
                               fontWeight: FontWeight.w900,
                               fontSize: 16,

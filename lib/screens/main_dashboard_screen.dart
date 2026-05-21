@@ -5,6 +5,7 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import 'assessments_list_screen.dart';
 import 'settings_screen.dart';
+import '../l10n/app_localizations.dart';
 
 // LOGICA DI NAVIGAZIONE PRINCIPALE
 // Gestisce il passaggio tra le sezioni principali tramite la Bottom Bar o Navigation Rail
@@ -115,10 +116,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(icon: Icons.home_filled, label: "Home", index: 0),
+              _buildNavItem(icon: Icons.home_filled, label: AppLocalizations.of(context)!.home, index: 0),
               _buildNavItem(
-                  icon: Icons.assignment, label: "Assessments", index: 1),
-              _buildNavItem(icon: Icons.settings, label: "Settings", index: 2),
+                  icon: Icons.assignment, label: AppLocalizations.of(context)!.assessments, index: 1),
+              _buildNavItem(icon: Icons.settings, label: AppLocalizations.of(context)!.settings, index: 2),
             ],
           ),
         ),
@@ -208,7 +209,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                       child: SizedBox(
                         width: 248, // 280 - 32 padding
                         child: Text(
-                          "Health Facilities\nAssessment Tool",
+                          AppLocalizations.of(context)!.appTitleMultiline,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -235,17 +236,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     children: [
                       _buildSidebarItem(
                           icon: Icons.grid_view_rounded,
-                          label: "Dashboard",
+                          label: AppLocalizations.of(context)!.dashboard,
                           index: 0),
                       const SizedBox(height: 12),
                       _buildSidebarItem(
                           icon: Icons.assignment_rounded,
-                          label: "Assessments",
+                          label: AppLocalizations.of(context)!.assessments,
                           index: 1),
                       const SizedBox(height: 12),
                       _buildSidebarItem(
                           icon: Icons.settings_rounded,
-                          label: "Settings",
+                          label: AppLocalizations.of(context)!.settings,
                           index: 2),
                     ],
                   ),
@@ -452,17 +453,17 @@ class HomeContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "WHO Assessment Tool",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.infoDialogTitle,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E293B),
+                      color: Color(0xFF1E293B),
                       height: 1.1,
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "This application provides structural rapid assessment tools for health facilities during infectious disease outbreaks, based on official WHO guidelines.",
+                    AppLocalizations.of(context)!.infoDialogBody,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.grey.shade800, fontSize: 14, height: 1.5),
@@ -479,8 +480,8 @@ class HomeContent extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => context.pop(),
-                      child: const Text("Close",
-                          style: TextStyle(
+                      child: Text(AppLocalizations.of(context)!.close,
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   )
@@ -695,7 +696,7 @@ class HomeContent extends StatelessWidget {
         iconColor: const Color(0xFF9333EA),
         iconBgColor: const Color(0xFFFAF5FF),
         borderColor: const Color(0xFFA855F7),
-        badgeText: "Active",
+        badgeText: AppLocalizations.of(context)!.statusActive,
         badgeColor: const Color(0xFF7E22CE),
         badgeBgColor: const Color(0xFFF3E8FF),
         isActive: true,
@@ -709,7 +710,7 @@ class HomeContent extends StatelessWidget {
         iconColor: const Color(0xFFDC2626),
         iconBgColor: const Color(0xFFFEF2F2),
         borderColor: const Color(0xFFF87171),
-        badgeText: "Soon",
+        badgeText: AppLocalizations.of(context)!.statusSoon,
         badgeColor: const Color(0xFF475569),
         badgeBgColor: const Color(0xFFE2E8F0),
         isActive: false,
@@ -723,7 +724,7 @@ class HomeContent extends StatelessWidget {
         iconColor: const Color(0xFF0D9488),
         iconBgColor: const Color(0xFFF0FDFA),
         borderColor: const Color(0xFF2DD4BF),
-        badgeText: "Soon",
+        badgeText: AppLocalizations.of(context)!.statusSoon,
         badgeColor: const Color(0xFF475569),
         badgeBgColor: const Color(0xFFE2E8F0),
         isActive: false,
@@ -796,8 +797,8 @@ class HomeContent extends StatelessWidget {
                     onTap: isActive
                         ? () => context.push('/facility-selection', extra: type)
                         : () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Module currently locked."))),
+                            SnackBar(
+                                content: Text(AppLocalizations.of(context)!.moduleLocked))),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: cardPadding,

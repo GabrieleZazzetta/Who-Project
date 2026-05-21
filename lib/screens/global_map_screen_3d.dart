@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
+import '../l10n/app_localizations.dart';
 
 const String _mapboxPublicToken =
     'pk.eyJ1IjoiemF6em8zMyIsImEiOiJjbW9xdmQ0b2wxeTEzMnBwaHhzamVwaHF1In0.7cm8WazVMzTogDvB8A6WMA';
@@ -295,7 +296,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
             children: [
               Text(
                 facility.facilityName.isEmpty
-                    ? "Unnamed Facility"
+                    ? AppLocalizations.of(context)!.unnamedFacility
                     : facility.facilityName,
                 style: const TextStyle(
                     fontSize: 22,
@@ -314,7 +315,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
               ]),
               const SizedBox(height: 4),
               Text(
-                "Assessed on ${DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())}",
+                AppLocalizations.of(context)!.assessedOn(DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())),
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
               ),
             ],
@@ -338,7 +339,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("READINESS SCORE",
+              Text(AppLocalizations.of(context)!.readinessScoreUppercase,
                   style: TextStyle(
                       color: Colors.grey.shade500,
                       fontSize: 10,
@@ -380,7 +381,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
             ),
             onPressed: () => _navigateToDetails(facility),
             icon: const Icon(Icons.analytics_rounded, size: 20),
-            label: const Text("View Details",
+            label: Text(AppLocalizations.of(context)!.viewDetails,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ),
         ],
@@ -464,7 +465,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text("Global Assessment Map",
+        title: Text(AppLocalizations.of(context)!.globalAssessmentMap,
             style:
                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A),
@@ -472,14 +473,14 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircularProgressIndicator(
                       color: Color(0xFF38BDF8), strokeWidth: 3),
                   SizedBox(height: 24),
-                  Text("Initializing 3D Engine...",
+                  Text(AppLocalizations.of(context)!.initializing3dEngine,
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -506,7 +507,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
               foregroundColor: const Color(0xFF0F172A),
               elevation: 6,
               icon: const Icon(Icons.my_location_rounded),
-              label: const Text("Fit to Extent",
+              label: Text(AppLocalizations.of(context)!.fitToExtent,
                   style: TextStyle(fontWeight: FontWeight.bold)),
             ),
     );

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import 'interactive_map_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class GlobalMapScreen2D extends StatefulWidget {
   const GlobalMapScreen2D({super.key});
@@ -239,7 +240,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                       children: [
                         Text(
                           facility.facilityName.isEmpty
-                              ? "Unnamed Facility"
+                              ? AppLocalizations.of(context)!.unnamedFacility
                               : facility.facilityName,
                           style: const TextStyle(
                               fontSize: 20,
@@ -273,7 +274,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("GLOBAL READINESS",
+                      Text(AppLocalizations.of(context)!.globalReadiness,
                           style: TextStyle(
                               color: Colors.grey.shade500,
                               fontSize: 10,
@@ -342,10 +343,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                         ),
                       );
                     },
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("View Details",
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [Text(AppLocalizations.of(context)!.viewDetails,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 15)),
                         SizedBox(width: 8),
@@ -368,7 +366,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text("Global Assessment Map",
+        title: Text(AppLocalizations.of(context)!.globalAssessmentMap,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
@@ -382,13 +380,13 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
                   const CircularProgressIndicator(
                       color: Color(0xFF38BDF8), strokeWidth: 3),
                   const SizedBox(height: 24),
-                  const Text("Calibrating Satellite Imagery...",
+                  Text(AppLocalizations.of(context)!.calibratingSatelliteImagery,
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text("Syncing assessment coordinates",
+                  Text(AppLocalizations.of(context)!.syncingAssessmentCoordinates,
                       style:
                           TextStyle(color: Colors.grey.shade400, fontSize: 12)),
                 ],
@@ -459,7 +457,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
               foregroundColor: const Color(0xFF0F172A),
               elevation: 6,
               icon: const Icon(Icons.zoom_out_map_rounded),
-              label: const Text("Fit to Extent",
+              label: Text(AppLocalizations.of(context)!.fitToExtent,
                   style: TextStyle(fontWeight: FontWeight.bold)),
             ),
     );

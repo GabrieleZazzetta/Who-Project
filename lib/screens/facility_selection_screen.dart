@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/assessment_models.dart';
+import '../l10n/app_localizations.dart';
 
 // LOGICA DI PRESENTAZIONE E DATI
 // Gestisce i metadati delle strutture sanitarie e i calcoli del layout
@@ -109,7 +110,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
         _buildMobileHeader(context),
         Padding(
           padding: EdgeInsets.fromLTRB(24, isTablet ? 40 : 28, 24, 16),
-          child: Text("Select Facility Type",
+          child: Text(AppLocalizations.of(context)!.selectFacilityType,
               style: TextStyle(
                   fontSize: isTablet ? 28 : 22,
                   fontWeight: FontWeight.w900,
@@ -159,7 +160,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           // Titolo: centrato e più grande solo su tablet/mobile portrait
           Expanded(
             child: Text(
-              "$_emergencyName Facilities",
+              AppLocalizations.of(context)!.facilitiesLabel(_emergencyName),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF003D73),
@@ -278,7 +279,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                             ? 16
                                             : 32),
                                 Text(
-                                  "Select Facility Type",
+                                  AppLocalizations.of(context)!.selectFacilityType,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize:
@@ -293,7 +294,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  "Choose the specific health facility configuration to proceed with the Mpox assessment module.",
+                                  AppLocalizations.of(context)!.facilitySelectionDescription(_emergencyName),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize:
@@ -330,8 +331,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                         onPressed: () => setState(
                             () => _isSidebarExpanded = !_isSidebarExpanded),
                         tooltip: _isSidebarExpanded
-                            ? "Collapse Menu"
-                            : "Expand Menu",
+                            ? AppLocalizations.of(context)!.collapseMenu
+                            : AppLocalizations.of(context)!.expandMenu,
                       )
                     : Center(
                         child: IconButton(
@@ -343,8 +344,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                           onPressed: () => setState(
                               () => _isSidebarExpanded = !_isSidebarExpanded),
                           tooltip: _isSidebarExpanded
-                              ? "Collapse Menu"
-                              : "Expand Menu",
+                              ? AppLocalizations.of(context)!.collapseMenu
+                              : AppLocalizations.of(context)!.expandMenu,
                         ),
                       ),
               ),
@@ -359,7 +360,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                     icon: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white, size: 22),
                     onPressed: () => context.pop(),
-                    tooltip: "Back",
+                    tooltip: AppLocalizations.of(context)!.back,
                   ),
                 ),
               ),
@@ -490,8 +491,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                 });
               }
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text("Module locked or in development.")));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(AppLocalizations.of(context)!.moduleLockedDevelopment)));
             }
           },
           child: Padding(

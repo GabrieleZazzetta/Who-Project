@@ -1,0 +1,295 @@
+{
+  "@@locale": "en",
+  "appTitle": "Health Facilities Assessment Tool",
+  "authorizedPersonnelOnly": "AUTHORIZED PERSONNEL ONLY",
+  "welcomeBack": "Welcome Back",
+  "signInToContinue": "Sign in to continue your assessment activities.",
+  "whoStaff": "WHO Staff",
+  "externalPartner": "External Partner",
+  "whoIdEmail": "WHO ID / Email",
+  "partnerEmail": "Partner Email",
+  "wimsPassword": "WIMS Password",
+  "forgotPassword": "Forgot Password?",
+  "authenticate": "Authenticate",
+  "dontHaveAccount": "Don't have an account? ",
+  "registerHere": "Register Here",
+  "settings": "Settings",
+  "accountAndSync": "ACCOUNT & SYNC",
+  "userProfile": "User Profile",
+  "offlineSync": "Offline Sync",
+  "preferences": "PREFERENCES",
+  "language": "Language",
+  "about": "ABOUT",
+  "whoGuidelines": "WHO Guidelines",
+  "privacyPolicy": "Privacy Policy",
+  "appVersion": "App Version",
+  "logOut": "Log Out",
+  "chooseLanguage": "Choose Language",
+  "appTitleLine1": "Health Facilities",
+  "appTitleLine2": "Assessment Tool",
+  "appTitleMultiline": "Health Facilities\nAssessment Tool",
+  "requiredField": "Required field",
+  "whoStaffEmailError": "WHO Staff must use a @who.int email",
+  "invalidEmailError": "Please enter a valid email address",
+  "loginFailed": "Login failed: ",
+  "home": "Home",
+  "assessments": "Assessments",
+  "dashboard": "Dashboard",
+  "infoDialogTitle": "WHO Assessment Tool",
+  "infoDialogBody": "This application provides structural rapid assessment tools for health facilities during infectious disease outbreaks, based on official WHO guidelines.",
+  "close": "Close",
+  "statusActive": "Active",
+  "statusSoon": "Soon",
+  "moduleLocked": "Module currently locked.",
+  "selectFacilityType": "Select Facility Type",
+  "facilitiesLabel": "{emergencyName} Facilities",
+  "@facilitiesLabel": {
+    "placeholders": {
+      "emergencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "facilitySelectionDescription": "Choose the specific health facility configuration to proceed with the {emergencyName} assessment module.",
+  "@facilitySelectionDescription": {
+    "placeholders": {
+      "emergencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "moduleLockedDevelopment": "Module locked or in development.",
+  "collapseMenu": "Collapse Menu",
+  "expandMenu": "Expand Menu",
+  "back": "Back",
+  "step1Title": "Assessment Information",
+  "step1Desc": "Please enter a title to easily identify this assessment later, along with the assessor details.",
+  "assessmentTitleLabel": "Assessment Title (e.g. Hospital North - Baseline)",
+  "assessmentDateLabel": "Date of assessment",
+  "selectDate": "Select Date",
+  "assessorNameLabel": "Name of the person conducting the assessment",
+  "assessorEmailLabel": "Email of the person conducting the assessment",
+  "assessorPhoneLabel": "Phone of the person conducting the assessment",
+  "step2Title": "Geographical Location",
+  "countryLabel": "Country",
+  "regionLabel": "Region/province name",
+  "districtLabel": "District name",
+  "cityLabel": "City/Village/clan/locality name",
+  "addressLabel": "Address of facility / GPS coordinates",
+  "locationRecordLabel": "Record of facility location",
+  "step3Title": "Facility Identification",
+  "metadataAutofill": "Metadata Auto-fill: The assessment is set for {emergencyType} in a facility type: '{facilityType}'.",
+  "@metadataAutofill": {
+    "placeholders": {
+      "emergencyType": {
+        "type": "String"
+      },
+      "facilityType": {
+        "type": "String"
+      }
+    }
+  },
+  "facilityCodeLabel": "Facility code",
+  "facilityNameLabel": "Facility name",
+  "managingAuthorityLabel": "Managing authority",
+  "directorNameLabel": "Facility director/manager’s name",
+  "directorPhoneLabel": "Facility director/manager’s telephone number",
+  "directorEmailLabel": "Facility director/manager’s email address",
+  "respondentNameLabel": "Respondent or key informant’s name",
+  "respondentPositionLabel": "Respondent or key informant’s position",
+  "structureTypeLabel": "Type of structure",
+  "existingFacilityTypeLabel": "Type of existing healthcare facility",
+  "step4Title": "Existing Healthcare Services",
+  "offersOutpatientLabel": "The facility offers outpatient services",
+  "offersInpatientLabel": "The facility offers inpatient services",
+  "inpatientCapacityDesc": "Please provide inpatient capacity details.",
+  "totalBedsLabel": "Total number of overnight/ inpatient beds",
+  "icuBedsLabel": "Of the total number of inpatient beds, how many are intensive care unit (ICU) beds?",
+  "has24hEmergencyLabel": "The facility has dedicated 24-hour staffed emergency unit",
+  "hasIcuOrHduLabel": "The facility has intensive care or high-dependency unit",
+  "facilityConfigurationTitle": "Facility Configuration",
+  "facilityConfigurationDesc": "Complete the pre-assessment steps to set up the environment for {emergencyType}.",
+  "@facilityConfigurationDesc": {
+    "placeholders": {
+      "emergencyType": {
+        "type": "String"
+      }
+    }
+  },
+  "stepProgress": "Step {current} of {total}",
+  "@stepProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "backButton": "Back",
+  "nextButton": "Next",
+  "submitButton": "Submit",
+  "unnamedAssessment": "Unnamed Assessment",
+  "dateOfBirthError": "Please select your Date of Birth",
+  "passwordReqError": "Please meet all password requirements",
+  "registrationSuccess": "Registration Successful! Welcome.",
+  "registrationFailed": "Registration failed: ",
+  "joinPlatform": "Join the Platform",
+  "createAccountDescGlobal": "Create your account to start managing health facility assessments globally.",
+  "authorizedPersonnel": "AUTHORIZED PERSONNEL ONLY",
+  "createAccountTitle": "Create Account",
+  "createAccountDescAuth": "Enter your details to register as an authorized user.",
+  "createAccountDescStart": "Create your account to get started.",
+  "whoStaffRole": "WHO Staff",
+  "externalPartnerRole": "External Partner",
+  "firstNameLabel": "First Name",
+  "lastNameLabel": "Last Name",
+  "dobLabel": "Date of Birth",
+  "whoEmailLabel": "WHO Email Address",
+  "emailLabel": "Email Address",
+  "requiredValidation": "Required",
+  "createPasswordLabel": "Create Password",
+  "passwordMustContain": "Password must contain:",
+  "chars8Plus": "8+ Chars",
+  "uppercase": "Uppercase",
+  "number": "Number",
+  "special": "Special",
+  "registerAccountBtn": "Register Account",
+  "alreadyHaveAccount": "Already have an account? ",
+  "addNote": "Add Note",
+  "editNote": "Edit Note",
+  "enterObservations": "Enter your observations here...",
+  "cancel": "Cancel",
+  "saveNote": "Save Note",
+  "takePhoto": "Take a Photo",
+  "chooseGallery": "Choose from Gallery",
+  "errorPickingImage": "Error picking image: ",
+  "cameraAccessRequired": "Camera Access Required",
+  "cameraAccessMsg": "To capture facility evidence, this app requires camera permissions. Please enable camera access in your device's System Settings.",
+  "understood": "Understood",
+  "overallCompletion": "Overall Completion",
+  "completedPct": "{pct}% Completed",
+  "@completedPct": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "areaChecklist": "Area Checklist",
+  "areaAssessmentChecklist": "Area Assessment Checklist",
+  "meetsTarget": "Meets\n(3 pts)",
+  "partiallyMeets": "Partially Meets\n(2 pts)",
+  "doesNotMeet": "Does Not Meet\n(1 pt)",
+  "addPhoto": "Add Photo",
+  "evaluationCriteria": "Evaluation Criteria",
+  "gotIt": "Got it",
+  "howToImprove": "HOW TO IMPROVE YOUR DESIGN",
+  "savedAssessments": "Saved Assessments",
+  "analytics": "Analytics",
+  "searchAssessment": "Search assessment by name...",
+  "viewOnMap": "View on Map",
+  "sortBy": "SORT BY",
+  "newestFirst": "Newest First",
+  "highestScore": "Highest Score",
+  "lowestScore": "Lowest Score",
+  "dateFilter": "DATE FILTER",
+  "clearDateFilter": "Clear Date Filter",
+  "noAssessmentsMatch": "No assessments match your filters.",
+  "selectAssessmentToView": "Select an assessment to view details",
+  "openInteractiveMap": "Open Interactive Map",
+  "criticalFails": "Critical Fails",
+  "zonesEvaluated": "Zones Evaluated",
+  "zoneBreakdown": "Zone Breakdown",
+  "deleteAssessment": "Delete Assessment",
+  "deleteAssessmentConfirm": "Are you sure you want to permanently delete this assessment? This action cannot be undone.",
+  "delete": "Delete",
+  "assessmentDeleted": "Assessment deleted successfully.",
+  "inProgress": "In Progress",
+  "completed": "Completed",
+  "allCountries": "All Countries",
+  "allYears": "All Years",
+  "dataAnalytics": "Data Analytics",
+  "advancedCharts": "Advanced Charts",
+  "noReportsAvailable": "No reports available for this selection.",
+  "assessmentsCount": "Assessments",
+  "assessmentsCountInfo": "Total number of completed facility assessments.",
+  "avgReadiness": "Avg Readiness",
+  "avgReadinessInfo": "The average percentage score indicating how well the assessed facilities meet the required standards.",
+  "criticalFailsInfo": "Number of high-priority criteria that did not meet the minimum requirements.",
+  "complianceBreakdown": "Compliance Breakdown",
+  "distributionCriteria": "Distribution of {total} evaluated criteria",
+  "@distributionCriteria": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "complianceBreakdownInfo": "Visualizes the percentage of criteria that fully meet (Meets), partially meet (Partial), or fail (Fails) the standards.",
+  "meets": "Meets",
+  "partial": "Partial",
+  "fails": "Fails",
+  "categoryPerformance": "Category Performance",
+  "readinessScoreTech": "Readiness score across technical areas",
+  "categoryPerformanceInfo": "Average compliance scores grouped by technical categories like IPC, WASH, and Logistics.",
+  "geographicalRanking": "Geographical Ranking",
+  "avgReadinessCountry": "Average readiness score by country",
+  "geographicalRankingInfo": "Compares the readiness performance between different countries or regions.",
+  "countryRegion": "Country / Region",
+  "reportingYear": "Reporting Year",
+  "advancedAnalytics": "Advanced Analytics",
+  "noDataToDisplay": "No data to display.",
+  "readinessTrend": "Readiness Trend",
+  "evolutionOfGlobalScore": "Evolution of global score",
+  "performanceRadar": "Performance Radar",
+  "pillarsBalance": "Pillars balance",
+  "evolutionGlobalScoreTime": "Evolution of the global score over time",
+  "multidimensionalPerformance": "Multidimensional Performance",
+  "balanceAcrossPillars": "Balance across technical pillars",
+  "thisAssessment": "this assessment",
+  "readinessScoreFor": "Readiness score for {name}",
+  "@readinessScoreFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addMoreAssessmentsUnlock": "Add more assessments to unlock trend analysis.",
+  "notEnoughHistoricalData": "Not enough historical data for trend analysis. At least 2 assessments needed.",
+  "assessmentIndex": "Assessment {index}",
+  "@assessmentIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "spatialAssessment": "Spatial Assessment",
+  "viewSavedAssessments": "View Saved Assessments",
+  "generalAssessment": "General Assessment",
+  "pinchToExplore": "Pinch to explore. Tap highlighted pins to evaluate.",
+  "unnamedFacility": "Unnamed Facility",
+  "unknownCity": "Unknown City",
+  "unknown": "Unknown",
+  "globalReadiness": "GLOBAL READINESS",
+  "viewDetails": "View Details",
+  "globalAssessmentMap": "Global Assessment Map",
+  "calibratingSatelliteImagery": "Calibrating Satellite Imagery...",
+  "syncingAssessmentCoordinates": "Syncing assessment coordinates",
+  "fitToExtent": "Fit to Extent",
+  "assessedOn": "Assessed on {date}",
+  "@assessedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessScoreUppercase": "READINESS SCORE",
+  "initializing3dEngine": "Initializing 3D Engine...",
+  "filterAll": "All",
+  "signInLink": "Sign In"
+}
