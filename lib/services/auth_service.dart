@@ -97,7 +97,7 @@ class AuthService {
     } catch (e) {
       // Anche se il logout firebase fallisce (es. no internet), puliamo locale
     } finally {
-      await DatabaseService.instance.clearSession();
+      await DatabaseService.instance.clearAllLocalData();
     }
   }
 

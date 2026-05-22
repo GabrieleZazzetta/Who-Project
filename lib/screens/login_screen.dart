@@ -9,6 +9,7 @@ import '../models/user_model.dart';
 import '../models/local_user_credential.dart';
 import '../services/database_service.dart';
 import '../services/auth_service.dart';
+import '../services/sync_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -36,6 +37,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _emailController.text.trim(),
           _passwordController.text,
         );
+        
+        // Sincronizza i dati del nuovo utente (scarica gli assessment da Firebase)
+        try {
+          await ref.read(syncProvider.notifier).syncAll();
+        } catch (e) {
+          debugPrint("Sync error after login: $e");
+        }
+        
         if (mounted) context.go('/');
       } catch (e) {
         if (mounted) {

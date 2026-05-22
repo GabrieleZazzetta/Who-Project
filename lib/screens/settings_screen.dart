@@ -336,7 +336,55 @@ class SettingsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
                   child: InkWell(
                     onTap: () async {
-                      // LOGICA DI LOGOUT IBRIDA (Firebase + Isar)
+                      // 1. Controlla se ci sono dati offline pendenti
+                      final db = DatabaseService.instance;
+                      var dirtyAssessments = await db.getDirtyAssessments();
+                      
+                      if (dirtyAssessments.isNotEmpty) {
+                        // 2. Sincronizza eventuali dati offline pendenti verso Firebase prima di uscire
+                        try {
+                          await ref.read(syncProvider.notifier).syncAll();
+                        } catch (e) {
+                          debugPrint("Sync fallita durante il logout: $e");
+                        }
+                        
+                        // 3. Ricontrolla se ci sono ancora dati pendenti (es. senza rete)
+                        dirtyAssessments = await db.getDirtyAssessments();
+                        
+                        if (dirtyAssessments.isNotEmpty) {
+                          if (context.mounted) {
+                            final lang = ref.read(localeProvider).languageCode;
+                            final title = lang == 'it' ? "Sincronizzazione necessaria" : "Sync Required";
+                            final content = lang == 'it' 
+                                ? "Ci sono dati offline non ancora inviati al server. Connettiti a Internet per sincronizzare prima di fare logout, altrimenti andranno persi." 
+                                : "You have offline data that hasn't been synced to the server. Please connect to the internet to sync before logging out, otherwise it will be lost.";
+                            
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Row(
+                                  children: [
+                                    const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                                    const SizedBox(width: 8),
+                                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  ],
+                                ),
+                                content: Text(content),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            );
+                          }
+                          return; // Interrompe il logout
+                        }
+                      }
+
+                      // 4. LOGICA DI LOGOUT IBRIDA (Firebase + Isar)
                       await ref.read(authServiceProvider).logout();
                       if (context.mounted) {
                         context.go('/login');

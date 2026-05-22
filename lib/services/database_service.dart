@@ -100,6 +100,12 @@ class DatabaseService {
     });
   }
 
+  Future<void> clearAllLocalData() async {
+    await _isar.writeTxn(() async {
+      await _isar.clear();
+    });
+  }
+
   // --- LOCAL USER CREDENTIALS (Offline Password Recovery) ---
 
   Future<void> saveLocalCredential(LocalUserCredential credential) async {
