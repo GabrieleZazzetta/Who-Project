@@ -102,7 +102,9 @@ class DatabaseService {
 
   Future<void> clearAllLocalData() async {
     await _isar.writeTxn(() async {
-      await _isar.clear();
+      await _isar.facilityLayouts.clear();
+      await _isar.userSessions.clear();
+      // DO NOT clear localUserCredentials to preserve offline login
     });
   }
 

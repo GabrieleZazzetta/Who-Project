@@ -67,9 +67,52 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     return SyncState(status: SyncStatus.idle);
   }
 
+  // PUSH SELETTIVO (Usato prima del logout per evitare pull di dati che verranno subito cancellati)
+  Future<void> pushPendingData() async {
+    final current = state.value ?? SyncState(status: SyncStatus.idle);
+    if (current.status == SyncStatus.syncing) {
+      // Se c'è già una sync in corso, attendiamo un istante per permetterle di finire
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    state = AsyncData(current.copyWith(status: SyncStatus.syncing));
+
+    try {
+      try {
+        await ref.read(authServiceProvider).syncPendingPasswordChanges();
+      } catch (pwErr) {
+        print("Errore sync password in background: $pwErr");
+      }
+
+      final dirtyAssessments = await _db.getDirtyAssessments();
+      for (var facility in dirtyAssessments) {
+        final remoteId = await _repository.pushAssessment(facility);
+        if (remoteId != null) {
+          facility.remoteId = remoteId;
+          facility.isDirty = false;
+          facility.lastSyncedAt = DateTime.now().toUtc();
+          await _db.saveFromSync(facility);
+        } else {
+          throw Exception("Network failure during push");
+        }
+      }
+
+      state = AsyncData(SyncState(
+        status: SyncStatus.success,
+        lastSyncedAt: DateTime.now().toUtc(),
+      ));
+    } catch (e) {
+      state = AsyncData(state.value!.copyWith(
+        status: SyncStatus.error,
+        errorMessage: "Sync failed. Please check connection.",
+      ));
+      throw e; // Rilancia per notificare il chiamante (es. SettingsScreen)
+    }
+  }
+
   // LOGICA DI SINCRONIZZAZIONE GLOBALE CON RESILIENZA
   // Esegue Push e Pull con sistema di retry automatico (Exponential Backoff)
-  Future<void> syncAll({int attempt = 0}) async {
+  Future<void> syncAll({int attempt = 0, bool forcePullAll = false}) async {
     final current = state.value ?? SyncState(status: SyncStatus.idle);
     if (current.status == SyncStatus.syncing && attempt == 0) return;
 
@@ -99,7 +142,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
       }
 
       // 2. INCOMING SYNC (PULL)
-      final lastSync = state.value?.lastSyncedAt;
+      final lastSync = forcePullAll ? null : state.value?.lastSyncedAt;
       final remoteData = await _repository.pullAssessments(lastSync);
       
       for (var json in remoteData) {
@@ -116,7 +159,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
         final delay = Platform.environment.containsKey('FLUTTER_TEST')
             ? const Duration(milliseconds: 1)
             : Duration(seconds: pow(2, attempt).toInt() * 2);
-        Future.delayed(delay, () => syncAll(attempt: attempt + 1));
+        Future.delayed(delay, () => syncAll(attempt: attempt + 1, forcePullAll: forcePullAll));
       } else {
 
         state = AsyncData(state.value!.copyWith(

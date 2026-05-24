@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:assessment_tool/screens/register_screen.dart';
+import 'package:assessment_tool/l10n/app_localizations.dart';
 
 void main() {
   group('RegisterScreen Widget Tests', () {
@@ -22,6 +23,8 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: RegisterScreen(),
             ),
@@ -43,6 +46,8 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: RegisterScreen(),
             ),

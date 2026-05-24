@@ -8,6 +8,7 @@ import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/services/database_service.dart';
 import 'package:assessment_tool/screens/assessments_list_screen.dart';
+import 'package:assessment_tool/l10n/app_localizations.dart';
 
 void main() {
   late Isar testIsar;
@@ -54,6 +55,8 @@ void main() {
         await tester.pumpWidget(
           const ProviderScope(
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: AssessmentsListScreen(),
             ),
           ),
@@ -87,6 +90,8 @@ void main() {
         await tester.pumpWidget(
           const ProviderScope(
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: AssessmentsListScreen(),
             ),
           ),
@@ -120,6 +125,8 @@ void main() {
         await tester.pumpWidget(
           const ProviderScope(
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: AssessmentsListScreen(),
             ),
           ),

@@ -40,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         
         // Sincronizza i dati del nuovo utente (scarica gli assessment da Firebase)
         try {
-          await ref.read(syncProvider.notifier).syncAll();
+          await ref.read(syncProvider.notifier).syncAll(forcePullAll: true);
         } catch (e) {
           debugPrint("Sync error after login: $e");
         }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:assessment_tool/screens/assessment_screen.dart';
 import 'package:assessment_tool/models/assessment_models.dart';
+import 'package:assessment_tool/l10n/app_localizations.dart';
 
 void main() {
   group('2.3 Widget Testing - Permessi e Fotocamera', () {
@@ -60,9 +61,10 @@ void main() {
         checklist: [dummyQuestion],
       );
 
-      // 2. Costruiamo l'AssessmentScreen
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AssessmentScreen(zone: dummyZone),
           ),
@@ -124,6 +126,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AssessmentScreen(zone: dummyZone),
           ),

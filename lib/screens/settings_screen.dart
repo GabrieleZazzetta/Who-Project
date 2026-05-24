@@ -343,9 +343,9 @@ class SettingsScreen extends ConsumerWidget {
                       if (dirtyAssessments.isNotEmpty) {
                         // 2. Sincronizza eventuali dati offline pendenti verso Firebase prima di uscire
                         try {
-                          await ref.read(syncProvider.notifier).syncAll();
+                          await ref.read(syncProvider.notifier).pushPendingData();
                         } catch (e) {
-                          debugPrint("Sync fallita durante il logout: $e");
+                          debugPrint("Push fallito durante il logout: $e");
                         }
                         
                         // 3. Ricontrolla se ci sono ancora dati pendenti (es. senza rete)
