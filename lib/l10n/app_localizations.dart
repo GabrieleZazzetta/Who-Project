@@ -1397,6 +1397,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign In'**
   String get signInLink;
+
+  /// No description provided for @warningUnsavedDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: Unsaved Data'**
+  String get warningUnsavedDataTitle;
+
+  /// No description provided for @warningUnsavedDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have offline assessments that haven\'t been synced to the server.\n\nIf you proceed with the logout now, all unsynced data will be permanently lost. Are you sure you want to log out?'**
+  String get warningUnsavedDataBody;
+
+  /// No description provided for @logoutAndLoseData.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout & Lose Data'**
+  String get logoutAndLoseData;
 }
 
 class _AppLocalizationsDelegate

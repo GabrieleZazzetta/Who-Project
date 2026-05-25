@@ -714,4 +714,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get signInLink => 'Accedi';
+
+  @override
+  String get warningUnsavedDataTitle => 'Attenzione: Dati Non Salvati';
+
+  @override
+  String get warningUnsavedDataBody =>
+      'Ci sono valutazioni offline non ancora inviate al server.\n\nSe procedi con il logout adesso, tutti i dati non sincronizzati verranno definitivamente persi. Sei sicuro di voler uscire?';
+
+  @override
+  String get logoutAndLoseData => 'Esci e Perdi i Dati';
 }

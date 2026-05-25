@@ -215,5 +215,8 @@
   "readinessScoreUppercase": "PUNTEGGIO DI PRONTEZZA",
   "initializing3dEngine": "Inizializzazione Motore 3D...",
   "filterAll": "Tutti",
-  "signInLink": "Accedi"
+  "signInLink": "Accedi",
+  "warningUnsavedDataTitle": "Attenzione: Dati Non Salvati",
+  "warningUnsavedDataBody": "Ci sono valutazioni offline non ancora inviate al server.\n\nSe procedi con il logout adesso, tutti i dati non sincronizzati verranno definitivamente persi. Sei sicuro di voler uscire?",
+  "logoutAndLoseData": "Esci e Perdi i Dati"
 }

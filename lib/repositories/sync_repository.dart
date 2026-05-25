@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/assessment_models.dart';
 import '../main.dart'; // Importa isFirebaseInitialized
 
@@ -67,15 +68,30 @@ class SyncRepository {
     try {
       Query query = firestore.collection(_collectionName);
       
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        query = query.where('ownerId', isEqualTo: uid);
+      }
+      
       if (lastSync != null) {
         query = query.where('updatedAt', isGreaterThan: Timestamp.fromDate(lastSync));
       }
-
+      
       final snapshot = await query.get();
 
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['remoteId'] = doc.id;
+        
+        // Convertiamo i Timestamp nativi di Firestore in stringhe ISO8601 
+        // per compatibilità con il parsing nel SyncService
+        if (data['updatedAt'] is Timestamp) {
+          data['updatedAt'] = (data['updatedAt'] as Timestamp).toDate().toUtc().toIso8601String();
+        }
+        if (data['dateCreated'] is Timestamp) {
+          data['dateCreated'] = (data['dateCreated'] as Timestamp).toDate().toUtc().toIso8601String();
+        }
+        
         return data;
       }).toList();
     } catch (e) {
@@ -87,7 +103,9 @@ class SyncRepository {
   // MAPPATURA PER FIRESTORE
   // Converte l'oggetto FacilityLayout in un formato compatibile con Firestore.
   Map<String, dynamic> _facilityToMap(FacilityLayout facility) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
     return {
+      'ownerId': uid,
       'facilityName': facility.facilityName,
       'emergencyType': facility.emergencyType.name,
       'updatedAt': Timestamp.fromDate(facility.updatedAt ?? DateTime.now().toUtc()),

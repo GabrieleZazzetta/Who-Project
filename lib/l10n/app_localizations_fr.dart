@@ -716,4 +716,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get signInLink => 'Se connecter';
+
+  @override
+  String get warningUnsavedDataTitle => 'Attention : Données non enregistrées';
+
+  @override
+  String get warningUnsavedDataBody =>
+      'Vous avez des évaluations hors ligne qui n\'ont pas été synchronisées avec le serveur.\n\nSi vous vous déconnectez maintenant, toutes les données non synchronisées seront définitivement perdues. Êtes-vous sûr de vouloir vous déconnecter ?';
+
+  @override
+  String get logoutAndLoseData => 'Déconnexion et Perte';
 }

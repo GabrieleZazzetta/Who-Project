@@ -703,4 +703,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signInLink => 'Sign In';
+
+  @override
+  String get warningUnsavedDataTitle => 'Warning: Unsaved Data';
+
+  @override
+  String get warningUnsavedDataBody =>
+      'You have offline assessments that haven\'t been synced to the server.\n\nIf you proceed with the logout now, all unsynced data will be permanently lost. Are you sure you want to log out?';
+
+  @override
+  String get logoutAndLoseData => 'Logout & Lose Data';
 }

@@ -353,34 +353,57 @@ class SettingsScreen extends ConsumerWidget {
                         
                         if (dirtyAssessments.isNotEmpty) {
                           if (context.mounted) {
-                            final lang = ref.read(localeProvider).languageCode;
-                            final title = lang == 'it' ? "Sincronizzazione necessaria" : "Sync Required";
-                            final content = lang == 'it' 
-                                ? "Ci sono dati offline non ancora inviati al server. Connettiti a Internet per sincronizzare prima di fare logout, altrimenti andranno persi." 
-                                : "You have offline data that hasn't been synced to the server. Please connect to the internet to sync before logging out, otherwise it will be lost.";
+                            final localizations = AppLocalizations.of(context)!;
+                            final title = localizations.warningUnsavedDataTitle;
+                            final content = localizations.warningUnsavedDataBody;
                             
-                            showDialog(
+                            final bool? confirmLogout = await showDialog<bool>(
                               context: context,
                               builder: (context) => AlertDialog(
+                                backgroundColor: Colors.white,
+                                surfaceTintColor: Colors.transparent,
                                 title: Row(
                                   children: [
-                                    const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                                    const SizedBox(width: 8),
-                                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade50,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.warning_rounded, color: Colors.red.shade600),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
                                   ],
                                 ),
-                                content: Text(content),
+                                content: Text(content, style: const TextStyle(height: 1.4, fontSize: 15)),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: Text(localizations.cancel, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red.shade600,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    ),
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: Text(localizations.logoutAndLoseData, style: const TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                               ),
                             );
+
+                            if (confirmLogout != true) {
+                              return; // Interrompe il logout
+                            }
+                          } else {
+                            return; // Se il context non è montato, fermiamo
                           }
-                          return; // Interrompe il logout
                         }
                       }
 

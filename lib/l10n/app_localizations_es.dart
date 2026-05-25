@@ -716,4 +716,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get signInLink => 'Iniciar sesión';
+
+  @override
+  String get warningUnsavedDataTitle => 'Advertencia: Datos no guardados';
+
+  @override
+  String get warningUnsavedDataBody =>
+      'Tienes evaluaciones sin conexión que no se han sincronizado con el servidor.\n\nSi procedes con el cierre de sesión ahora, todos los datos no sincronizados se perderán permanentemente. ¿Estás seguro de que quieres salir?';
+
+  @override
+  String get logoutAndLoseData => 'Salir y Perder Datos';
 }

@@ -215,5 +215,8 @@
   "readinessScoreUppercase": "SCORE DE PRÉPARATION",
   "initializing3dEngine": "Initialisation du Moteur 3D...",
   "filterAll": "Tous",
-  "signInLink": "Se connecter"
+  "signInLink": "Se connecter",
+  "warningUnsavedDataTitle": "Attention : Données non enregistrées",
+  "warningUnsavedDataBody": "Vous avez des évaluations hors ligne qui n'ont pas été synchronisées avec le serveur.\n\nSi vous vous déconnectez maintenant, toutes les données non synchronisées seront définitivement perdues. Êtes-vous sûr de vouloir vous déconnecter ?",
+  "logoutAndLoseData": "Déconnexion et Perte"
 }

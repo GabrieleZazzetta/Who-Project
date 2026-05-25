@@ -113,13 +113,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              _buildNavItem(icon: Icons.home_filled, label: AppLocalizations.of(context)!.home, index: 0),
-              _buildNavItem(
-                  icon: Icons.assignment, label: AppLocalizations.of(context)!.assessments, index: 1),
-              _buildNavItem(icon: Icons.settings, label: AppLocalizations.of(context)!.settings, index: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildNavItem(icon: Icons.home_filled, label: AppLocalizations.of(context)!.home, index: 0),
+                  _buildNavItem(icon: Icons.settings, label: AppLocalizations.of(context)!.settings, index: 2),
+                ],
+              ),
+              _buildNavItem(icon: Icons.assignment, label: AppLocalizations.of(context)!.assessments, index: 1),
             ],
           ),
         ),
@@ -315,8 +319,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         padding: EdgeInsets.symmetric(
-            horizontal: _isSidebarExpanded ? 16 : 0,
-            vertical: verticalPadding),
+            horizontal: _isSidebarExpanded ? 16 : 0, vertical: verticalPadding),
         decoration: BoxDecoration(
           color: isActive ? Colors.white.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
@@ -798,7 +801,8 @@ class HomeContent extends StatelessWidget {
                         ? () => context.push('/facility-selection', extra: type)
                         : () => ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(AppLocalizations.of(context)!.moduleLocked))),
+                                content: Text(AppLocalizations.of(context)!
+                                    .moduleLocked))),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: cardPadding,

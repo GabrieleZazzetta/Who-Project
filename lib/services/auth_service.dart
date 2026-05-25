@@ -48,7 +48,10 @@ class AuthService {
   Future<UserCredential?> login(String email, String password) async {
     final cleanEmail = email.toLowerCase().trim();
     try {
-      final credential = await _auth.signInWithEmailAndPassword(email: cleanEmail, password: password);
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: cleanEmail, 
+        password: password
+      ).timeout(const Duration(seconds: 8));
       
       if (credential.user != null) {
         // Determina se è WHO Staff dall'email (come logica attuale nella UI)
