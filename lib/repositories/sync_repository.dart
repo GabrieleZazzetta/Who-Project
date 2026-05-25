@@ -110,9 +110,38 @@ class SyncRepository {
       'emergencyType': facility.emergencyType.name,
       'updatedAt': Timestamp.fromDate(facility.updatedAt ?? DateTime.now().toUtc()),
       'dateCreated': Timestamp.fromDate(facility.dateCreated ?? DateTime.now().toUtc()),
-      // Nota: Per una sync completa qui andrebbero mappate tutte le zone e domande
       'zonesCount': facility.zones.length,
       'readinessScore': facility.globalReadinessScore,
+      'mapImagePath': facility.mapImagePath,
+      'generalInfo': facility.generalInfo != null ? {
+        'facilityLocationRecord': facility.generalInfo!.facilityLocationRecord,
+        'facilityAddressOrGps': facility.generalInfo!.facilityAddressOrGps,
+        'country': facility.generalInfo!.country,
+        'city': facility.generalInfo!.city,
+        'assessedDisease': facility.generalInfo!.assessedDisease,
+        'assessedFacilityType': facility.generalInfo!.assessedFacilityType,
+      } : null,
+      'zones': facility.zones.map((z) => {
+        'id': z.id,
+        'name': z.name,
+        'coordinates': {
+          'top': z.coordinates.top, 'left': z.coordinates.left,
+          'width': z.coordinates.width, 'height': z.coordinates.height
+        },
+        'touchArea': {
+          'top': z.touchArea.top, 'left': z.touchArea.left,
+          'width': z.touchArea.width, 'height': z.touchArea.height
+        },
+        'checklist': z.checklist.map((q) => {
+          'id': q.id,
+          'text': q.text,
+          'category': q.category.name,
+          'recommendationText': q.recommendationText,
+          'selectedCompliance': q.selectedCompliance.name,
+          'mediaPaths': q.mediaPaths,
+          'note': q.note,
+        }).toList()
+      }).toList(),
     };
   }
 }

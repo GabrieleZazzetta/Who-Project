@@ -304,15 +304,34 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
                     color: Colors.white),
               ),
               const SizedBox(height: 6),
-              Row(children: [
-                Icon(Icons.location_on, size: 14, color: Colors.grey.shade400),
-                const SizedBox(width: 4),
-                Text(
-                  "${facility.generalInfo?.city ?? 'Unknown'}, "
-                  "${facility.generalInfo?.country ?? 'Unknown'}",
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                ),
-              ]),
+              Builder(
+                builder: (context) {
+                  final bool isSmartphone = MediaQuery.of(context).size.width < 600;
+                  final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+                  final bool isSmartphonePortrait = isSmartphone && isPortrait;
+                  
+                  final locationText = Text(
+                    "${facility.generalInfo?.city ?? 'Unknown'}, "
+                    "${facility.generalInfo?.country ?? 'Unknown'}",
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                  );
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Icon(Icons.location_on, size: 14, color: Colors.grey.shade400),
+                      ),
+                      const SizedBox(width: 4),
+                      if (isSmartphonePortrait)
+                        Expanded(child: locationText)
+                      else
+                        locationText,
+                    ],
+                  );
+                }
+              ),
               const SizedBox(height: 4),
               Text(
                 AppLocalizations.of(context)!.assessedOn(DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())),

@@ -190,9 +190,58 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
       
       facility.remoteId = remoteId;
       facility.facilityName = json['facilityName'] ?? facility.facilityName;
+      facility.dateCreated = json['dateCreated'] != null ? DateTime.tryParse(json['dateCreated']) : facility.dateCreated;
       facility.updatedAt = remoteUpdatedAt;
       facility.isDirty = false;
       facility.lastSyncedAt = DateTime.now().toUtc();
+      
+      if (json['mapImagePath'] != null) {
+        facility.mapImagePath = json['mapImagePath'];
+      }
+      if (json['generalInfo'] != null) {
+        final g = json['generalInfo'];
+        facility.generalInfo ??= GeneralFacilityInfo();
+        facility.generalInfo!.facilityLocationRecord = g['facilityLocationRecord'];
+        facility.generalInfo!.facilityAddressOrGps = g['facilityAddressOrGps'];
+        facility.generalInfo!.country = g['country'];
+        facility.generalInfo!.city = g['city'];
+        facility.generalInfo!.assessedDisease = g['assessedDisease'];
+        facility.generalInfo!.assessedFacilityType = g['assessedFacilityType'];
+      }
+      if (json['zones'] != null) {
+        final zonesList = json['zones'] as List;
+        facility.zones = zonesList.map((z) {
+          final c = z['coordinates'] ?? {};
+          final t = z['touchArea'] ?? {};
+          return SpatialZone(
+            id: z['id'] ?? '',
+            name: z['name'] ?? '',
+            coordinates: MapCoordinates(
+              top: (c['top'] ?? 0).toDouble(),
+              left: (c['left'] ?? 0).toDouble(),
+              width: (c['width'] ?? 0).toDouble(),
+              height: (c['height'] ?? 0).toDouble(),
+            ),
+            touchArea: MapCoordinates(
+              top: (t['top'] ?? 0).toDouble(),
+              left: (t['left'] ?? 0).toDouble(),
+              width: (t['width'] ?? 0).toDouble(),
+              height: (t['height'] ?? 0).toDouble(),
+            ),
+            checklist: (z['checklist'] as List?)?.map((q) {
+              return AssessmentQuestion(
+                id: q['id'] ?? '',
+                text: q['text'] ?? '',
+                category: AssessmentCategory.values.firstWhere((e) => e.name == q['category'], orElse: () => AssessmentCategory.infectionPreventionControl),
+                recommendationText: q['recommendationText'] ?? '',
+                selectedCompliance: ComplianceLevel.values.firstWhere((e) => e.name == q['selectedCompliance'], orElse: () => ComplianceLevel.pending),
+                mediaPaths: (q['mediaPaths'] as List?)?.cast<String>(),
+                note: q['note'],
+              );
+            }).toList() ?? [],
+          );
+        }).toList();
+      }
       
       await _db.saveFromSync(facility);
     }
