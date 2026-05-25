@@ -482,7 +482,7 @@ class HomeContent extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: () => context.pop(),
+                      onPressed: () => Navigator.of(context).pop(),
                       child: Text(AppLocalizations.of(context)!.close,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),

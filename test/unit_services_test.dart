@@ -23,10 +23,8 @@ void main() {
   });
 
   tearDownAll(() async {
-    await testIsar.close();
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
+    testIsar.close();
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
   });
 
   setUp(() async {

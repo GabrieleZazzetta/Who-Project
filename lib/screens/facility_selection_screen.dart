@@ -371,18 +371,11 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
         Expanded(
           child: Container(
             color: const Color(0xFFF8FAFC),
-            child: Column(
-              children: [
-                const SizedBox(height: 60),
-                Expanded(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1000),
-                      child: _buildGrid(context, columns: columns),
-                    ),
-                  ),
-                ),
-              ],
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: _buildGrid(context, columns: columns),
+              ),
             ),
           ),
         ),
@@ -419,19 +412,22 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     final bool isPortraitGrid =
         MediaQuery.of(context).orientation == Orientation.portrait;
     final bool isTabletGrid = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isIpadLandscape = isTabletGrid && !isPortraitGrid;
 
-    // BINARIO ISOLATO PER TELEFONO ORIZZONTALE:
-    // Riduciamo l'aspect ratio (rendendo i box più alti) solo ed esclusivamente per il telefono landscape,
-    // per assorbire l'overflow di 8.9px. Il tablet landscape mantiene il suo 2.5 intatto.
-    final double gridAspectRatio =
-        (!isPortraitGrid && !isTabletGrid) ? 2.0 : 2.5;
+    // BINARIO ISOLATO PER IPAD LANDSCAPE E TELEFONO ORIZZONTALE
+    final double gridAspectRatio = isIpadLandscape ? 1.9 : ((!isPortraitGrid && !isTabletGrid) ? 2.0 : 2.5);
+    final double spacing = isIpadLandscape ? 32.0 : 16.0;
 
     return GridView.count(
+      shrinkWrap: isIpadLandscape ? true : false,
+      physics: isIpadLandscape ? const NeverScrollableScrollPhysics() : null,
       crossAxisCount: columns,
       childAspectRatio: gridAspectRatio,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      crossAxisSpacing: spacing,
+      mainAxisSpacing: spacing,
+      padding: EdgeInsets.symmetric(
+          horizontal: isIpadLandscape ? 48.0 : 24.0, 
+          vertical: isIpadLandscape ? 0 : 8.0),
       children: items,
     );
   }

@@ -15,33 +15,151 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showLanguageSelector(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final currentLocale = ref.read(localeProvider);
+    final bool isTablet = MediaQuery.of(context).size.width >= 800;
 
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.chooseLanguage,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                _buildLanguageOption(context, ref, 'English', const Locale('en'), currentLocale),
-                _buildLanguageOption(context, ref, 'Italiano', const Locale('it'), currentLocale),
-                _buildLanguageOption(context, ref, 'Español', const Locale('es'), currentLocale),
-                _buildLanguageOption(context, ref, 'Français', const Locale('fr'), currentLocale),
-              ],
+    if (isTablet) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              width: 420,
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 50,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF005DA8).withOpacity(0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.language_rounded, size: 40, color: Color(0xFF005DA8)),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.chooseLanguage,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Select your preferred language",
+                    style: TextStyle(fontSize: 15, color: Colors.blueGrey.shade400),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildLanguageOptionPremium(context, ref, 'English', const Locale('en'), currentLocale),
+                  const SizedBox(height: 12),
+                  _buildLanguageOptionPremium(context, ref, 'Italiano', const Locale('it'), currentLocale),
+                  const SizedBox(height: 12),
+                  _buildLanguageOptionPremium(context, ref, 'Español', const Locale('es'), currentLocale),
+                  const SizedBox(height: 12),
+                  _buildLanguageOptionPremium(context, ref, 'Français', const Locale('fr'), currentLocale),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Text("Cancel", style: TextStyle(color: Colors.blueGrey.shade400, fontWeight: FontWeight.w700, fontSize: 16)),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.chooseLanguage,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildLanguageOption(context, ref, 'English', const Locale('en'), currentLocale),
+                  _buildLanguageOption(context, ref, 'Italiano', const Locale('it'), currentLocale),
+                  _buildLanguageOption(context, ref, 'Español', const Locale('es'), currentLocale),
+                  _buildLanguageOption(context, ref, 'Français', const Locale('fr'), currentLocale),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildLanguageOptionPremium(BuildContext context, WidgetRef ref, String name, Locale locale, Locale currentLocale) {
+    final isSelected = locale.languageCode == currentLocale.languageCode;
+    return InkWell(
+      onTap: () {
+        ref.read(localeProvider.notifier).setLocale(locale);
+        Navigator.pop(context);
       },
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF005DA8) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF005DA8) : Colors.grey.shade200,
+            width: 2,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: const Color(0xFF005DA8).withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
+          ] : [],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              name, 
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, 
+                fontSize: 16,
+                color: isSelected ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22)
+            else
+              Icon(Icons.radio_button_unchecked_rounded, color: Colors.blueGrey.shade200, size: 22),
+          ],
+        ),
+      ),
     );
   }
 

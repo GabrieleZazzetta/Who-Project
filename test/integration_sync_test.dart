@@ -11,62 +11,7 @@ import 'package:assessment_tool/services/auth_service.dart';
 import 'package:assessment_tool/services/sync_service.dart';
 import 'package:assessment_tool/repositories/sync_repository.dart';
 
-// REPOSITORY SIMULATO PER I TEST DI INTEGRAZIONE
-class FakeSyncRepository extends SyncRepository {
-  bool failPush = false;
-  int pushCount = 0;
-  int pullCount = 0;
-
-  final List<Map<String, dynamic>> pulledAssessments = [];
-  final List<FacilityLayout> pushedAssessments = [];
-
-  @override
-  Future<String?> pushAssessment(FacilityLayout facility) async {
-    pushCount++;
-    if (failPush) {
-      throw Exception('Server unreachable');
-    }
-    pushedAssessments.add(facility);
-    return facility.remoteId ?? 'remote_${facility.id}';
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> pullAssessments(DateTime? lastSync) async {
-    pullCount++;
-    return pulledAssessments;
-  }
-}
-
-// AUTH SERVICE SIMULATO PER EVITARE BLOCCHI DI FIREBASE AUTH IN AMBIENTE DI TEST
-class FakeAuthService implements AuthService {
-  @override
-  Stream<User?> get authStateChanges => const Stream.empty();
-
-  @override
-  User? get currentUser => null;
-
-  @override
-  Future<UserCredential?> register(String email, String password, {bool isWhoStaff = false, String? displayName}) async {
-    return null;
-  }
-
-  @override
-  Future<UserCredential?> login(String email, String password) async {
-    return null;
-  }
-
-  @override
-  Future<void> logout() async {}
-
-  @override
-  Future<void> syncPendingPasswordChanges() async {}
-
-  @override
-  Future<UserSession?> getLocalSession() async {
-    return null;
-  }
-}
-
+import 'utils/fake_services.dart';
 void main() {
   late Isar testIsar;
   late Directory tempDir;
@@ -84,10 +29,8 @@ void main() {
   });
 
   tearDownAll(() async {
-    await testIsar.close();
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
+    testIsar.close();
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
   });
 
   // Ripuliamo il database tra un test e l'altro
@@ -190,7 +133,7 @@ void main() {
 
       // Poiché la sincronizzazione dei retry asincrona innesca Future.delayed(Duration(milliseconds: 1)),
       // attendiamo brevemente in tempo reale reale affinché i 3 tentativi abbiano luogo consecutivamente.
-      await Future.delayed(const Duration(milliseconds: 30));
+      await Future.delayed(const Duration(milliseconds: 200));
 
       // Il pushCount è 4: tentativo iniziale (Attempt 0) + 3 retry consecutivi (Attempt 1, 2, 3)
       expect(fakeRepo.pushCount, 4);

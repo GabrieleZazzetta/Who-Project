@@ -9,6 +9,8 @@ import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/services/database_service.dart';
 import 'package:assessment_tool/services/sync_service.dart';
 import 'package:assessment_tool/repositories/sync_repository.dart';
+import 'package:assessment_tool/services/auth_service.dart';
+import 'utils/fake_services.dart';
 
 // Mock del Repository per evitare chiamate reali a Firebase durante i test
 class MockSyncRepository extends SyncRepository {
@@ -56,22 +58,33 @@ void main() {
   late ProviderContainer container;
 
   setUp(() async {
-    await Isar.initializeIsarCore(download: true);
+    await Isar.initializeIsarCore(download: false);
     testIsar = await Isar.open(
       [FacilityLayoutSchema, UserSessionSchema, LocalUserCredentialSchema],
       directory: '',
     );
     DatabaseService.instance.setTestIsar(testIsar);
+    
+    await testIsar.writeTxn(() async {
+      await testIsar.facilityLayouts.clear();
+      await testIsar.userSessions.clear();
+      await testIsar.localUserCredentials.clear();
+    });
 
     mockRepo = MockSyncRepository();
-    container = ProviderContainer();
+    container = ProviderContainer(
+      overrides: [
+        // Needed to prevent Firebase errors in pushPendingData
+        authServiceProvider.overrideWith((ref) => FakeAuthService()),
+      ]
+    );
     
     // Inject mock repo into the notifier
     container.read(syncProvider.notifier).repository = mockRepo;
   });
 
   tearDown(() async {
-    await testIsar.close(deleteFromDisk: true);
+    testIsar.close();
     container.dispose();
   });
 

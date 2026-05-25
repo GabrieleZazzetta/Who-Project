@@ -9,7 +9,9 @@ import 'database_service.dart';
 final authServiceProvider = Provider((ref) => AuthService());
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth;
+
+  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
   // Stream per ascoltare i cambiamenti dello stato auth di Firebase
   Stream<User?> get authStateChanges => _auth.authStateChanges();
