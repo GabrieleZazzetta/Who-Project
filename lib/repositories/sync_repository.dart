@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/assessment_models.dart';
 import '../main.dart'; // Importa isFirebaseInitialized
 
@@ -24,7 +26,7 @@ class SyncRepository {
   
   static const String _collectionName = 'assessments';
 
-  // INVIO DATI A CLOUD FIRESTORE (PUSH)
+  // INVIO DATI A CLOUD FIRESTORE E STORAGE (PUSH)
   // Crea o aggiorna un documento su Firestore. Ritorna l'ID remoto.
   Future<String?> pushAssessment(FacilityLayout facility) async {
     final firestore = _firestore;
@@ -34,25 +36,72 @@ class SyncRepository {
     }
 
     try {
+      // 1. Assegna un ID remoto se non esiste, in modo da usarlo per lo Storage
+      facility.remoteId ??= firestore.collection(_collectionName).doc().id;
+
+      // 2. Carica eventuali immagini locali su Firebase Storage
+      await _uploadLocalImages(facility);
+
+      // 3. Converte il FacilityLayout aggiornato in un Map per Firestore
       final data = _facilityToMap(facility);
 
-      
-      if (facility.remoteId != null) {
-        // Aggiorna record esistente
-        await firestore
-            .collection(_collectionName)
-            .doc(facility.remoteId)
-            .set(data, SetOptions(merge: true));
-        return facility.remoteId;
-      } else {
-        // Crea nuovo record
-        final docRef = await firestore.collection(_collectionName).add(data);
-        return docRef.id;
-      }
-
+      // 4. Salva il documento su Firestore con l'ID assegnato
+      await firestore
+          .collection(_collectionName)
+          .doc(facility.remoteId)
+          .set(data, SetOptions(merge: true));
+          
+      return facility.remoteId;
     } catch (e) {
       print("Firebase Push Error: $e");
       return null;
+    }
+  }
+
+  // CARICAMENTO IMMAGINI
+  // Cerca percorsi locali nelle risposte e li carica su Storage, sostituendoli con gli URL remoti
+  Future<void> _uploadLocalImages(FacilityLayout facility) async {
+    if (!isFirebaseInitialized) return;
+    
+    try {
+      final storage = FirebaseStorage.instance;
+      final remoteId = facility.remoteId!;
+      
+      for (var zone in facility.zones) {
+        for (var question in zone.checklist) {
+          if (question.mediaPaths != null && question.mediaPaths!.isNotEmpty) {
+            List<String> updatedPaths = [];
+            
+            for (var path in question.mediaPaths!) {
+              if (path.startsWith('http')) {
+                // Già un URL remoto
+                updatedPaths.add(path);
+              } else {
+                try {
+                  final file = File(path);
+                  if (await file.exists()) {
+                    final fileName = path.split('/').last;
+                    final timestamp = DateTime.now().millisecondsSinceEpoch;
+                    final ref = storage.ref().child('assessments/$remoteId/images/${timestamp}_$fileName');
+                    
+                    final uploadTask = await ref.putFile(file);
+                    final downloadUrl = await uploadTask.ref.getDownloadURL();
+                    updatedPaths.add(downloadUrl);
+                  } else {
+                    print("Local file not found, skipping upload: $path");
+                  }
+                } catch (e) {
+                  print("Failed to upload image $path: $e");
+                  updatedPaths.add(path); // Conserviamo il path originale in caso di errore
+                }
+              }
+            }
+            question.mediaPaths = updatedPaths;
+          }
+        }
+      }
+    } catch (e) {
+      print("Firebase Storage error: $e");
     }
   }
 

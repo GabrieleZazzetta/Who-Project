@@ -254,7 +254,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               panEnabled: true,
               minScale: 0.5,
               maxScale: 4.0,
-              child: kIsWeb
+              child: kIsWeb || path.startsWith('http')
                   ? Image.network(path, fit: BoxFit.contain)
                   : Image.file(File(path), fit: BoxFit.contain),
             ),
@@ -876,7 +876,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     onTap: () => _openFullScreenViewer(path),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: kIsWeb
+                      child: kIsWeb || path.startsWith('http')
                           ? Image.network(path,
                               height: 100, width: 100, fit: BoxFit.cover)
                           : Image.file(File(path),
