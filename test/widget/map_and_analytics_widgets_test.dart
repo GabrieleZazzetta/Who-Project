@@ -59,9 +59,11 @@ void main() {
     // ==========================================
     group('AnalyticsScreen Tests', () {
       testWidgets('renders empty state when no assessments available', (tester) async {
-        await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pumpAndSettle();
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.text('No reports available for this selection.'), findsWidgets);
       });
@@ -85,9 +87,11 @@ void main() {
           await testIsar.facilityLayouts.put(facility);
         });
 
-        await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pumpAndSettle();
         
         expect(find.text('No reports available for this selection.'), findsNothing);
         expect(find.text('DATA ANALYTICS'), findsOneWidget);
