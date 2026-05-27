@@ -118,6 +118,7 @@ void main() {
       test('register should create user in firebase and save session locally', () async {
         final mockUser = MockUser();
         when(() => mockUser.uid).thenReturn('fake_uid_123');
+        when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
         final mockCred = MockUserCredential();
         when(() => mockCred.user).thenReturn(mockUser);
 
@@ -314,7 +315,7 @@ void main() {
         expect(() => generateTestHtml(facilityVuota), returnsNormally);
         final html = generateTestHtml(facilityVuota);
         expect(html.contains("Unnamed Facility"), isTrue);
-        expect(html.contains("Score: 0%"), isTrue);
+        expect(html.contains("Score: 0.0%"), isTrue);
       });
     });
 
