@@ -655,41 +655,45 @@ class SettingsScreen extends ConsumerWidget {
         ],
         border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF005DA8).withOpacity(0.08),
-            borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF005DA8).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF005DA8), size: 22),
           ),
-          child: Icon(icon, color: const Color(0xFF005DA8), size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: Color(0xFF0F172A),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              color: Color(0xFF0F172A),
+            ),
           ),
+          subtitle: subtitle != null
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    subtitle,
+                    style:
+                        TextStyle(fontSize: 14, color: Colors.blueGrey.shade500),
+                  ),
+                )
+              : null,
+          trailing: trailing ??
+              (isLink
+                  ? Icon(Icons.chevron_right_rounded,
+                      color: Colors.blueGrey.shade400)
+                  : null),
+          onTap: onTap ?? (isLink ? () {} : null),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
-        subtitle: subtitle != null
-            ? Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  subtitle,
-                  style:
-                      TextStyle(fontSize: 14, color: Colors.blueGrey.shade500),
-                ),
-              )
-            : null,
-        trailing: trailing ??
-            (isLink
-                ? Icon(Icons.chevron_right_rounded,
-                    color: Colors.blueGrey.shade400)
-                : null),
-        onTap: onTap ?? (isLink ? () {} : null),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
