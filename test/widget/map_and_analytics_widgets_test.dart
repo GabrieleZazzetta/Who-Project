@@ -63,7 +63,8 @@ void main() {
           await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.text('No reports available for this selection.'), findsWidgets);
       });
@@ -91,7 +92,8 @@ void main() {
           await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
         
         expect(find.text('No reports available for this selection.'), findsNothing);
         expect(find.text('DATA ANALYTICS'), findsOneWidget);
