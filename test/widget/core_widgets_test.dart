@@ -155,20 +155,29 @@ void main() {
           await testIsar.userSessions.put(session);
         });
 
-        await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const SettingsScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('User Profile'), findsOneWidget);
         expect(find.text('Language'), findsOneWidget);
 
-        await tester.tap(find.text('User Profile'));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.tap(find.text('User Profile'));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('Test User'), findsWidgets);
         
         await tester.tap(find.text('Cancel'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
       });
 
       testWidgets('logout prompts when there are dirty assessments', (WidgetTester tester) async {
@@ -179,16 +188,25 @@ void main() {
         facility.isDirty = true;
         await DatabaseService.instance.saveAssessment(facility);
 
-        await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const SettingsScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
-        await tester.tap(find.text('Log Out'));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.tap(find.text('Log Out'));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('Warning: Unsaved Data'), findsWidgets);
         await tester.tap(find.text('Cancel'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
       });
     });
 
@@ -200,8 +218,12 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text("No assessments match your filters."), findsOneWidget);
       });
@@ -213,15 +235,22 @@ void main() {
         await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
         await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
 
-        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsAtLeastNWidgets(1));
 
         final searchFieldFinder = find.byType(TextField).first;
         await tester.enterText(searchFieldFinder, "Rome");
-        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.pump();
+          await Future.delayed(const Duration(seconds: 1));
+        });
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsNothing);
@@ -237,7 +266,8 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.pumpWidget(createProviderApp(const Scaffold(body: RegisterScreen())));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text("Join the Platform"), findsAtLeastNWidgets(1));
         expect(find.text("Create Account"), findsAtLeastNWidgets(1));
@@ -250,7 +280,8 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.pumpWidget(createProviderApp(const Scaffold(body: RegisterScreen())));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         final passwordFieldFinder = find.byType(TextFormField).at(3);
         expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
@@ -293,7 +324,8 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
         expect(find.text('Existing Facility with Dedicated Ward'), findsOneWidget);
@@ -301,7 +333,8 @@ void main() {
         expect(find.text('Congregate Settings'), findsOneWidget);
 
         await tester.tap(find.text('Screening, Triage & Temporary Isolation'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(preAssessmentVisited, isTrue);
         expect(find.text('PreAssessment Placeholder'), findsOneWidget);
@@ -317,13 +350,15 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.pumpWidget(createProviderApp(const Scaffold(body: LoginScreen())));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         final externalPartnerToggleFinder = find.byKey(const Key('toggle_external_partner'));
         expect(externalPartnerToggleFinder, findsOneWidget);
         
         await tester.tap(externalPartnerToggleFinder);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         final emailFieldFinder = find.byKey(const Key('input_email'));
         final passwordFieldFinder = find.byKey(const Key('input_password'));
@@ -332,13 +367,15 @@ void main() {
         await tester.enterText(emailFieldFinder, "not-a-valid-email");
         await tester.enterText(passwordFieldFinder, "dummyPassword123!");
         await tester.tap(authButtonFinder);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text("Please enter a valid email address"), findsOneWidget);
 
         await tester.enterText(emailFieldFinder, "partner@gmail.com");
         await tester.tap(authButtonFinder);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text("Please enter a valid email address"), findsNothing);
       });
