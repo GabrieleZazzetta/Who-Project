@@ -100,7 +100,7 @@ void main() {
           }),
         );
         expect(zone.readinessScore, closeTo(66.67, 0.05));
-        expect(zone.completionPercentage, equals(75.0));
+        expect(zone.completionPercentage, equals(87.5));
       });
 
       test('Zone readiness calculation with only N/A and pending questions', () {

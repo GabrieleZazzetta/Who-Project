@@ -26,7 +26,7 @@ void main() {
   final List<MethodCall> shareMethodCalls = [];
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: false);
+    await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_alarm_test_dir');
     testIsar = await Isar.open(
       [FacilityLayoutSchema, UserSessionSchema, LocalUserCredentialSchema],

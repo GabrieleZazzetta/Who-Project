@@ -28,7 +28,7 @@ void main() {
   late SharedPreferences prefs;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: false);
+    await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_core_widgets_test');
     testIsar = await Isar.open(
       [FacilityLayoutSchema, UserSessionSchema, LocalUserCredentialSchema],

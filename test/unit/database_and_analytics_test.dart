@@ -13,7 +13,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: false);
+    await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_db_analytics_test');
     isar = await Isar.open(
       [FacilityLayoutSchema, UserSessionSchema, LocalUserCredentialSchema],
