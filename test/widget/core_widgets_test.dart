@@ -6,6 +6,8 @@ import 'package:isar/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:mocktail/mocktail.dart';
+
 import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
@@ -60,9 +62,13 @@ void main() {
   });
 
   Widget createProviderApp(Widget home) {
+    final mockAuth = MockAuthService();
+    when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
+    when(() => mockAuth.logout()).thenAnswer((_) async {});
+    
     return ProviderScope(
       overrides: [
-        authServiceProvider.overrideWithValue(MockAuthService()),
+        authServiceProvider.overrideWithValue(mockAuth),
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
