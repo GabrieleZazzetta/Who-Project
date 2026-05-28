@@ -93,7 +93,8 @@ void main() {
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text('Mpox Outbreak'), findsOneWidget);
         expect(find.text('Ebola Virus Disease'), findsOneWidget);
@@ -109,14 +110,17 @@ void main() {
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         await tester.tap(find.byIcon(Icons.info_outline));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('WHO Assessment Tool'), findsOneWidget);
         
         await tester.tap(find.text('Close'));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('WHO Assessment Tool'), findsNothing);
       });
 
@@ -127,21 +131,21 @@ void main() {
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text('Mpox Outbreak'), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.settings));
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('Mpox Outbreak'), findsNothing);
         
         await tester.tap(find.byIcon(Icons.home_filled));
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
         
         expect(find.text('Mpox Outbreak'), findsOneWidget);
       });
