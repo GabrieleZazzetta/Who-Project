@@ -13,6 +13,7 @@ import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/services/database_service.dart';
 import 'package:assessment_tool/services/auth_service.dart';
+import 'package:assessment_tool/services/sync_service.dart';
 import 'package:assessment_tool/providers/locale_provider.dart';
 import 'package:assessment_tool/screens/main_dashboard_screen.dart';
 import 'package:assessment_tool/screens/settings_screen.dart';
@@ -70,6 +71,7 @@ void main() {
       overrides: [
         authServiceProvider.overrideWithValue(mockAuth),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        syncProvider.overrideWith(() => MockSyncNotifier()),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
