@@ -459,6 +459,7 @@ class SettingsScreen extends ConsumerWidget {
                       final db = ref.read(databaseServiceProvider);
                       var dirtyAssessments = await db.getDirtyAssessments();
                       
+                      debugPrint("SETTINGS ONTAP DIRTY LENGTH: ${dirtyAssessments.length}");
                       if (dirtyAssessments.isNotEmpty) {
                         // 2. Sincronizza eventuali dati offline pendenti verso Firebase prima di uscire
                         try {
@@ -469,6 +470,7 @@ class SettingsScreen extends ConsumerWidget {
                         
                         // 3. Ricontrolla se ci sono ancora dati pendenti (es. senza rete)
                         dirtyAssessments = await db.getDirtyAssessments();
+                        debugPrint("DIRTY ASSESSMENTS AFTER PUSH: ${dirtyAssessments.length}");
                         
                         if (dirtyAssessments.isNotEmpty) {
                           if (context.mounted) {

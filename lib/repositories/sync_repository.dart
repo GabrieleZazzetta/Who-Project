@@ -9,9 +9,22 @@ import '../main.dart'; // Importa isFirebaseInitialized
 // Gestisce l'allineamento dei dati tra Isar (locale) e Cloud Firestore (remoto).
 
 class SyncRepository {
+  final FirebaseFirestore? _firestoreInstance;
+  final FirebaseStorage? _storageInstance;
+  final FirebaseAuth? _authInstance;
+
+  SyncRepository({
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+    FirebaseAuth? auth,
+  })  : _firestoreInstance = firestore,
+        _storageInstance = storage,
+        _authInstance = auth;
+
   // GESTIONE SICURA ISTANZA FIRESTORE
   // Evita eccezioni letali (e disconnessioni del device) se Firebase non si è inizializzato a causa di errori GMS
   FirebaseFirestore? get _firestore {
+    if (_firestoreInstance != null) return _firestoreInstance;
     if (isFirebaseInitialized) {
       try {
         return FirebaseFirestore.instance;
@@ -21,6 +34,22 @@ class SyncRepository {
       }
     }
     return null;
+  }
+  
+  FirebaseStorage? get _storage {
+    if (_storageInstance != null) return _storageInstance;
+    if (isFirebaseInitialized) {
+      try {
+        return FirebaseStorage.instance;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+  
+  FirebaseAuth get _auth {
+    return _authInstance ?? FirebaseAuth.instance;
   }
 
   
@@ -61,10 +90,11 @@ class SyncRepository {
   // CARICAMENTO IMMAGINI
   // Cerca percorsi locali nelle risposte e li carica su Storage, sostituendoli con gli URL remoti
   Future<void> _uploadLocalImages(FacilityLayout facility) async {
-    if (!isFirebaseInitialized) return;
+    if (!isFirebaseInitialized && _storageInstance == null) return;
     
     try {
-      final storage = FirebaseStorage.instance;
+      final storage = _storage;
+      if (storage == null) return;
       final remoteId = facility.remoteId!;
       
       for (var zone in facility.zones) {
@@ -117,7 +147,7 @@ class SyncRepository {
     try {
       Query query = firestore.collection(_collectionName);
       
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = _auth.currentUser?.uid;
       if (uid != null) {
         query = query.where('ownerId', isEqualTo: uid);
       }
@@ -152,7 +182,7 @@ class SyncRepository {
   // MAPPATURA PER FIRESTORE
   // Converte l'oggetto FacilityLayout in un formato compatibile con Firestore.
   Map<String, dynamic> _facilityToMap(FacilityLayout facility) {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
+    final uid = _auth.currentUser?.uid ?? 'unknown';
     return {
       'ownerId': uid,
       'facilityName': facility.facilityName,
