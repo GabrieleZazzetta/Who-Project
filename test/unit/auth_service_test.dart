@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:assessment_tool/services/auth_service.dart';
 import 'package:assessment_tool/services/database_service.dart';
+import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
@@ -33,9 +34,24 @@ void main() {
     await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('auth_test_dir');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir);
+
+    // Apri Isar manualmente invece di dbService.init()
+    // che tenta di scaricare la libreria di nuovo
+    final isar = await Isar.open(
+      [FacilityLayoutSchema, UserSessionSchema, LocalUserCredentialSchema],
+      directory: tempDir.path,
+      name: 'auth_test_instance',
+    );
     
     dbService = DatabaseService.instance;
-    await dbService.init();
+    dbService.setTestIsar(isar);
+  });
+
+  tearDownAll(() async {
+    await dbService.clearAllLocalData();
+    if (tempDir.existsSync()) {
+      try { tempDir.deleteSync(recursive: true); } catch (e) {}
+    }
   });
 
   setUp(() async {
