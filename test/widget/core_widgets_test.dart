@@ -279,7 +279,6 @@ void main() {
     // ==========================================
     group('RegisterScreen Tests', () {
       testWidgets('should render all input fields and branding elements',
-          skip: true, // RegisterScreen — investigate CI hang
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -295,7 +294,6 @@ void main() {
       });
 
       testWidgets('password requirements checkmark state updates dynamically',
-          skip: true, // RegisterScreen — investigate CI hang
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -323,7 +321,6 @@ void main() {
     // ==========================================
     group('FacilitySelectionScreen Tests', () {
       testWidgets('renders all facility types and handles navigation for mpox',
-          skip: true, // FacilitySelectionScreen — investigate CI hang
           (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1000);
         tester.view.devicePixelRatio = 1.0;
@@ -370,7 +367,6 @@ void main() {
     // ==========================================
     group('LoginScreen Tests', () {
       testWidgets('Enforcement Autenticazione: Toggling a External Partner consente email generiche',
-          skip: true, // LoginScreen — investigate CI hang
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));

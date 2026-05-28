@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../data/facility_data_factory.dart';
 import '../data/general_facility_data.dart';
 import '../l10n/app_localizations.dart';
 
-class InteractiveMapScreen extends StatefulWidget {
+class InteractiveMapScreen extends ConsumerStatefulWidget {
   final EmergencyType emergencyType;
   final FacilityType facilityType;
   final int? assessmentId;
@@ -21,10 +23,10 @@ class InteractiveMapScreen extends StatefulWidget {
   });
 
   @override
-  State<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
+  ConsumerState<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
 }
 
-class _InteractiveMapScreenState extends State<InteractiveMapScreen>
+class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
     with SingleTickerProviderStateMixin {
   // LOGICA DI STATO
 
@@ -58,7 +60,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   Future<void> _initializeData() async {
     try {
       if (widget.assessmentId != null) {
-        final existing = await DatabaseService.instance
+        final existing = await ref.read(databaseServiceProvider)
             .getAssessmentById(widget.assessmentId!);
         if (existing != null) {
           layoutData = existing;
@@ -115,7 +117,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     if (_hasRealAnswers()) {
       _isSaving = true;
       try {
-        final savedId = await DatabaseService.instance.saveAssessment(layoutData);
+        final savedId = await ref.read(databaseServiceProvider).saveAssessment(layoutData);
         layoutData.id = savedId;
       } catch (e) {
         debugPrint("Errore durante il salvataggio dello stato: $e");

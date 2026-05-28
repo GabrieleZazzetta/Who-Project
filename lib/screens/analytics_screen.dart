@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../l10n/app_localizations.dart';
 
-class AnalyticsScreen extends StatefulWidget {
+class AnalyticsScreen extends ConsumerStatefulWidget {
   const AnalyticsScreen({super.key});
 
   @override
-  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+  ConsumerState<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
-class _AnalyticsScreenState extends State<AnalyticsScreen> {
+class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   // LOGICA DI STATO E CONFIGURAZIONE GRAFICA
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
@@ -39,7 +41,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // LOGICA DI CARICAMENTO DATI
   Future<void> _loadData() async {
-    final data = await DatabaseService.instance.getAllAssessments();
+    final data = await ref.read(databaseServiceProvider).getAllAssessments();
 
     Set<String> countries = {};
     Set<String> years = {};

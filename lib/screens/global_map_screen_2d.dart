@@ -5,19 +5,21 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import 'interactive_map_screen.dart';
 import '../l10n/app_localizations.dart';
 
-class GlobalMapScreen2D extends StatefulWidget {
+class GlobalMapScreen2D extends ConsumerStatefulWidget {
   const GlobalMapScreen2D({super.key});
 
   @override
-  State<GlobalMapScreen2D> createState() => _GlobalMapScreen2DState();
+  ConsumerState<GlobalMapScreen2D> createState() => _GlobalMapScreen2DState();
 }
 
-class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
+class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
   // STATO E CONFIGURAZIONE
   final MapController _mapController = MapController();
   bool _isLoading = true;
@@ -36,7 +38,7 @@ class _GlobalMapScreen2DState extends State<GlobalMapScreen2D> {
   Future<void> _loadAssessmentsAndGeocode() async {
     setState(() => _isLoading = true);
 
-    final assessments = await DatabaseService.instance.getAllAssessments();
+    final assessments = await ref.read(databaseServiceProvider).getAllAssessments();
     final List<Marker> generatedMarkers = [];
     final List<LatLng> coords = [];
 

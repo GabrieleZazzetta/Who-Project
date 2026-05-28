@@ -6,22 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import 'interactive_map_screen.dart';
 import '../l10n/app_localizations.dart';
 
 const String _mapboxPublicToken =
-    'pk.eyJ1IjoiemF6em8zMyIsImEiOiJjbW9xdmQ0b2wxeTEzMnBwaHhzamVwaHF1In0.7cm8WazVMzTogDvB8A6WMA';
+    String.fromEnvironment('MAPBOX_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN_HERE');
 
-class GlobalMapScreen3D extends StatefulWidget {
+class GlobalMapScreen3D extends ConsumerStatefulWidget {
   const GlobalMapScreen3D({super.key});
 
   @override
-  State<GlobalMapScreen3D> createState() => _GlobalMapScreen3DState();
+  ConsumerState<GlobalMapScreen3D> createState() => _GlobalMapScreen3DState();
 }
 
-class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
+class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   // STATO
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
@@ -50,7 +52,7 @@ class _GlobalMapScreen3DState extends State<GlobalMapScreen3D> {
     _pinAmber = await _generatePinImage(Colors.amber.shade500);
     _pinGreen = await _generatePinImage(Colors.green.shade500);
 
-    final assessments = await DatabaseService.instance.getAllAssessments();
+    final assessments = await ref.read(databaseServiceProvider).getAllAssessments();
     final List<FacilityLayout> facilities = [];
     final List<Point> coords = [];
 

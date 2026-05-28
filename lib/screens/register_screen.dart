@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../models/local_user_credential.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
 
@@ -91,7 +92,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         final bytes = utf8.encode(password);
         final passwordHash = sha256.convert(bytes).toString();
 
-        await DatabaseService.instance.saveLocalCredential(
+        await ref.read(databaseServiceProvider).saveLocalCredential(
           LocalUserCredential()
             ..email = email
             ..displayName = displayName

@@ -52,3 +52,18 @@ jobs:
           files: coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
+      - name: Install lcov
+        if: always()
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Generate HTML Report
+        if: always()
+        run: genhtml coverage/lcov.info -o coverage/html
+
+      - name: Upload HTML Report Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html-report
+          path: coverage/html/

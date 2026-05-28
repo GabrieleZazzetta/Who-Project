@@ -5,6 +5,7 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import '../l10n/app_localizations.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../services/report_export_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,7 +52,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
   // Gestisce il recupero asincrono dal database e l'applicazione dei filtri di ricerca
   Future<void> _loadAssessments() async {
     setState(() => _isLoading = true);
-    final data = await DatabaseService.instance.getAllAssessments();
+    final data = await ref.read(databaseServiceProvider).getAllAssessments();
 
     if (!mounted) return;
 
@@ -163,7 +164,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
 
     if (confirm == true) {
-      await DatabaseService.instance.deleteAssessment(facility.id);
+      await ref.read(databaseServiceProvider).deleteAssessment(facility.id);
       if (!mounted) return;
       _loadAssessments();
       if (mounted) {

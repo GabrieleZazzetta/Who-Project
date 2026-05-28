@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/local_user_credential.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 
@@ -734,15 +735,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 // FORGOT PASSWORD MODAL (OFFLINE RECOVERY)
 // ==========================================
 
-class ForgotPasswordModal extends StatefulWidget {
+class ForgotPasswordModal extends ConsumerStatefulWidget {
   final bool isWhoStaff;
   const ForgotPasswordModal({super.key, required this.isWhoStaff});
 
   @override
-  State<ForgotPasswordModal> createState() => _ForgotPasswordModalState();
+  ConsumerState<ForgotPasswordModal> createState() => _ForgotPasswordModalState();
 }
 
-class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
+class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
   int _step = 1; // 1 = Verify DOB, 2 = Set Password
   bool _loading = false;
   String? _errorMessage;
@@ -796,7 +797,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
     });
 
     try {
-      final cred = await DatabaseService.instance.getLocalCredential(email);
+      final cred = await ref.read(databaseServiceProvider).getLocalCredential(email);
       if (cred == null) {
         setState(() {
           _errorMessage = "No matching registered account found locally.";
@@ -859,10 +860,10 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
       }
       _foundCredential!.passwordNeedsSync = true;
       
-      await DatabaseService.instance.saveLocalCredential(_foundCredential!);
+      await ref.read(databaseServiceProvider).saveLocalCredential(_foundCredential!);
 
       // Crea sessione locale per login immediato
-      await DatabaseService.instance.saveSession(UserSession()
+      await ref.read(databaseServiceProvider).saveSession(UserSession()
         ..uid = "local_${_foundCredential!.id}"
         ..email = _foundCredential!.email
         ..displayName = _foundCredential!.displayName

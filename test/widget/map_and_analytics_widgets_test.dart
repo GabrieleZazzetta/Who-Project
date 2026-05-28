@@ -12,6 +12,8 @@ import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/services/database_service.dart';
+import 'package:assessment_tool/providers/database_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
 
 void main() {
@@ -40,15 +42,20 @@ void main() {
   });
 
   Widget createTestWidget(Widget screen) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+    return ProviderScope(
+      overrides: [
+        databaseServiceProvider.overrideWithValue(DatabaseService.instance),
       ],
-      supportedLocales: const [Locale('en', '')],
-      home: screen,
+      child: MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        home: screen,
+      ),
     );
   }
 

@@ -7,6 +7,7 @@ import '../providers/locale_provider.dart';
 import '../services/sync_service.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
+import '../providers/database_provider.dart';
 import '../models/user_model.dart';
 import '../models/assessment_models.dart';
 
@@ -179,7 +180,7 @@ class SettingsScreen extends ConsumerWidget {
 
   // LOGICA DI STATO E SINCRONIZZAZIONE
   // FUNZIONALITÀ PROFILO UTENTE PREMIUM
-  void _showUserProfile(BuildContext context) {
+  void _showUserProfile(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -229,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 40),
                   FutureBuilder<UserSession?>(
-                    future: DatabaseService.instance.getCurrentSession(),
+                    future: ref.read(databaseServiceProvider).getCurrentSession(),
                     builder: (context, snapshot) {
                       final session = snapshot.data;
                       // Se la sessione è ancora in caricamento, mostriamo un indicatore minimo
@@ -381,12 +382,12 @@ class SettingsScreen extends ConsumerWidget {
                   icon: Icons.person_outline,
                   title: l10n.userProfile,
                   subtitle: "Logistics Officer",
-                  onTap: () => _showUserProfile(context),
+                  onTap: () => _showUserProfile(context, ref),
                 ),
               ),
               SliverToBoxAdapter(
                 child: FutureBuilder<List<FacilityLayout>>(
-                  future: DatabaseService.instance.getAllAssessments(),
+                  future: ref.read(databaseServiceProvider).getAllAssessments(),
                   builder: (context, snapshot) {
                     final assessments = snapshot.data ?? [];
                     final bool hasData = assessments.isNotEmpty;
@@ -455,7 +456,7 @@ class SettingsScreen extends ConsumerWidget {
                   child: InkWell(
                     onTap: () async {
                       // 1. Controlla se ci sono dati offline pendenti
-                      final db = DatabaseService.instance;
+                      final db = ref.read(databaseServiceProvider);
                       var dirtyAssessments = await db.getDirtyAssessments();
                       
                       if (dirtyAssessments.isNotEmpty) {
