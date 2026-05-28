@@ -204,6 +204,11 @@ void main() {
         });
 
         await tester.runAsync(() async {
+          // DEBUG: verifica che i dirty assessments siano nel db
+          final dirty = await DatabaseService.instance.getDirtyAssessments();
+          debugPrint('Dirty assessments count: ${dirty.length}');
+          expect(dirty.isNotEmpty, true, reason: 'Deve esserci almeno un assessment dirty');
+
           await tester.pumpWidget(createProviderApp(const SettingsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
