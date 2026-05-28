@@ -37,12 +37,15 @@ jobs:
 
       - name: Run Tests with Coverage
         run: flutter test --coverage test/unit test/widget
+        timeout-minutes: 10
 
       - name: Remove Generated Files from Coverage
+        if: always()
         run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        if: always()
         with:
           file: coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
