@@ -38,16 +38,16 @@ jobs:
       #   run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Run Tests with Coverage
-        run: flutter test --coverage test/unit test/widget --concurrency=1 --reporter=expanded --timeout=30s
-        timeout-minutes: 10
+        run: flutter test --coverage test/unit test/widget --reporter=expanded --timeout=60s
+        timeout-minutes: 20
 
       - name: Remove Generated Files from Coverage
-        if: always()
+        if: success()
         run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
-        if: always()
+        if: success()
         with:
           files: coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}

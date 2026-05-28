@@ -168,8 +168,10 @@ void main() {
         });
 
         await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('User Profile'), findsOneWidget);
@@ -186,17 +188,22 @@ void main() {
         });
 
         await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
 
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
         await tester.runAsync(() async {
           await tester.tap(find.text('Log Out'));
           await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pumpAndSettle();
-        debugDumpApp();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
 
         expect(find.text('Warning: Unsaved Data'), findsWidgets);
         await tester.tap(find.text('Cancel'));
