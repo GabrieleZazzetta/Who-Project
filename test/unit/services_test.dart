@@ -184,6 +184,7 @@ void main() {
       setUp(() {
         mockRepo = MockSyncRepository();
         mockAuth = MockAuthService();
+        when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
       });
 
       ProviderContainer createContainer() {

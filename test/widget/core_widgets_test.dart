@@ -230,10 +230,10 @@ void main() {
           await testIsar.writeTxn(() async {
             await testIsar.facilityLayouts.clear();
           });
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pumpAndSettle();
+        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text("No assessments match your filters."), findsOneWidget);
       });
@@ -248,21 +248,18 @@ void main() {
           });
           await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
           await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
-          
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pumpAndSettle();
+        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsAtLeastNWidgets(1));
 
         final searchFieldFinder = find.byType(TextField).first;
-        await tester.runAsync(() async {
-          await tester.enterText(searchFieldFinder, "Rome");
-          await Future.delayed(const Duration(milliseconds: 1000));
-        });
-        await tester.pumpAndSettle();
+        await tester.enterText(searchFieldFinder, "Rome");
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsNothing);
