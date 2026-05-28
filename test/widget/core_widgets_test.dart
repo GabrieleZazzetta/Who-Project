@@ -66,6 +66,7 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
+        locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: home,
@@ -121,14 +122,14 @@ void main() {
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
         await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
         await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('Mpox Outbreak'), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.settings));
         await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
         await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
@@ -136,7 +137,7 @@ void main() {
         
         await tester.tap(find.byIcon(Icons.home_filled));
         await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
         await tester.pump(const Duration(seconds: 1));
         
         expect(find.text('Mpox Outbreak'), findsOneWidget);
@@ -165,7 +166,7 @@ void main() {
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 2000));
         });
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
@@ -186,7 +187,7 @@ void main() {
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 2000));
         });
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
@@ -194,7 +195,7 @@ void main() {
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
         await tester.runAsync(() async {
           await tester.tap(find.text('Log Out'));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 2000));
         });
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
@@ -216,7 +217,7 @@ void main() {
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 2000));
         });
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
@@ -235,7 +236,7 @@ void main() {
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 2000));
         });
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
@@ -247,7 +248,7 @@ void main() {
         await tester.enterText(searchFieldFinder, "Rome");
         await tester.runAsync(() async {
           await tester.pump();
-          await Future.delayed(const Duration(seconds: 1));
+          await Future.delayed(const Duration(seconds: 2));
         });
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
@@ -318,6 +319,7 @@ void main() {
         );
 
         await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
           routerConfig: router,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
