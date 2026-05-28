@@ -430,8 +430,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                spacing: 8.0,
+                runSpacing: 8.0,
                 children: [
                   _buildLegendItem(AppLocalizations.of(context)!.meets, meetsCount, meetsPct, _colorMeets),
                   _buildLegendItem(AppLocalizations.of(context)!.partial, partialCount, partialPct, _colorPartial),

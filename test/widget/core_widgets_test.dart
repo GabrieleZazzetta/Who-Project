@@ -145,14 +145,16 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await testIsar.writeTxn(() async {
-          final session = UserSession()
-            ..displayName = 'Test User'
-            ..email = 'test@who.int'
-            ..isWhoStaff = true
-            ..isLoggedIn = true
-            ..lastLogin = DateTime.now();
-          await testIsar.userSessions.put(session);
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            final session = UserSession()
+              ..displayName = 'Test User'
+              ..email = 'test@who.int'
+              ..isWhoStaff = true
+              ..isLoggedIn = true
+              ..lastLogin = DateTime.now();
+            await testIsar.userSessions.put(session);
+          });
         });
 
         await tester.runAsync(() async {
@@ -186,7 +188,9 @@ void main() {
 
         final facility = FacilityLayout(facilityName: 'Dirty Clinic', emergencyType: EmergencyType.mpox);
         facility.isDirty = true;
-        await DatabaseService.instance.saveAssessment(facility);
+        await tester.runAsync(() async {
+          await DatabaseService.instance.saveAssessment(facility);
+        });
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const SettingsScreen()));
@@ -232,8 +236,10 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
-        await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
+        await tester.runAsync(() async {
+          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
+          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
+        });
 
         await tester.runAsync(() async {
           await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
