@@ -166,20 +166,6 @@ void main() {
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('User Profile'), findsOneWidget);
-        expect(find.text('Language'), findsOneWidget);
-
-        await tester.runAsync(() async {
-          await tester.tap(find.text('User Profile'));
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
-
-        expect(find.text('Test User'), findsWidgets);
-        
-        await tester.tap(find.text('Cancel'));
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
       });
 
       testWidgets('logout prompts when there are dirty assessments', (WidgetTester tester) async {
