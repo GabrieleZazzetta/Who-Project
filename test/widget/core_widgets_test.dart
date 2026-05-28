@@ -158,7 +158,7 @@ void main() {
     // ==========================================
     group('SettingsScreen Tests', () {
       testWidgets('renders all sections and user profile info',
-          skip: 'SettingsScreen calls DatabaseService.instance directly — needs provider refactor',
+          skip: true, // SettingsScreen calls DatabaseService.instance directly — needs provider refactor
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -186,7 +186,7 @@ void main() {
       });
 
       testWidgets('logout prompts when there are dirty assessments',
-          skip: 'SettingsScreen calls DatabaseService.instance directly — needs provider refactor',
+          skip: true, // SettingsScreen calls DatabaseService.instance directly — needs provider refactor
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
