@@ -127,24 +127,21 @@ void main() {
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
-        await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
-        await tester.pump(const Duration(seconds: 1));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
+        await tester.pumpAndSettle();
 
         expect(find.text('Mpox Outbreak'), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.settings));
-        await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
-        await tester.pump(const Duration(seconds: 1));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
+        await tester.pumpAndSettle();
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('Mpox Outbreak'), findsNothing);
         
         await tester.tap(find.byIcon(Icons.home_filled));
-        await tester.pump();
-        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 2000)));
-        await tester.pump(const Duration(seconds: 1));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
+        await tester.pumpAndSettle();
         
         expect(find.text('Mpox Outbreak'), findsOneWidget);
       });
@@ -170,12 +167,9 @@ void main() {
           });
         });
 
-        await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-          await Future.delayed(const Duration(milliseconds: 2000));
-        });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpWidget(createProviderApp(const SettingsScreen()));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
+        await tester.pumpAndSettle();
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('User Profile'), findsOneWidget);
@@ -191,20 +185,18 @@ void main() {
           await DatabaseService.instance.saveAssessment(facility);
         });
 
-        await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const SettingsScreen()));
-          await Future.delayed(const Duration(milliseconds: 2000));
-        });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpWidget(createProviderApp(const SettingsScreen()));
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 1000)));
+        await tester.pumpAndSettle();
 
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
+        await tester.pumpAndSettle();
         await tester.runAsync(() async {
           await tester.tap(find.text('Log Out'));
-          await Future.delayed(const Duration(milliseconds: 2000));
+          await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
+        debugDumpApp();
 
         expect(find.text('Warning: Unsaved Data'), findsWidgets);
         await tester.tap(find.text('Cancel'));
@@ -222,11 +214,13 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.clear();
+          });
           await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 2000));
+          await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
 
         expect(find.text("No assessments match your filters."), findsOneWidget);
       });
@@ -236,26 +230,26 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.clear();
+          });
           await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
           await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
-        });
-
-        await tester.runAsync(() async {
+          
           await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 2000));
+          await Future.delayed(const Duration(milliseconds: 1000));
         });
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsAtLeastNWidgets(1));
 
         final searchFieldFinder = find.byType(TextField).first;
-        await tester.enterText(searchFieldFinder, "Rome");
         await tester.runAsync(() async {
-          await tester.pump();
-          await Future.delayed(const Duration(seconds: 2));
+          await tester.enterText(searchFieldFinder, "Rome");
+          await Future.delayed(const Duration(milliseconds: 1000));
         });
+        await tester.pumpAndSettle();
 
         expect(find.text("Clinic Rome"), findsAtLeastNWidgets(1));
         expect(find.text("Clinic London"), findsNothing);
