@@ -42,12 +42,12 @@ jobs:
         timeout-minutes: 20
 
       - name: Remove Generated Files from Coverage
-        if: success()
+        if: always()
         run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
-        if: success()
+        if: always()
         with:
           files: coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
