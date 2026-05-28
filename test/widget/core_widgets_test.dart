@@ -120,18 +120,24 @@ void main() {
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('Mpox Outbreak'), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.settings));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.pump(const Duration(seconds: 1));
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('Mpox Outbreak'), findsNothing);
         
         await tester.tap(find.byIcon(Icons.home_filled));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.runAsync(() async => await Future.delayed(const Duration(milliseconds: 500)));
+        await tester.pump(const Duration(seconds: 1));
         
         expect(find.text('Mpox Outbreak'), findsOneWidget);
       });

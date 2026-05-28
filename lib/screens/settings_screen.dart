@@ -644,7 +644,7 @@ class SettingsScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // color moved to Material to avoid ListTile assertion
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -656,7 +656,7 @@ class SettingsScreen extends ConsumerWidget {
         border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
       child: Material(
-        color: Colors.transparent,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
