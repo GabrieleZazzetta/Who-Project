@@ -215,19 +215,17 @@ void main() {
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Esegui il tap dentro runAsync per permettere
-        // all'intera catena async del logout di completare
+        // Tutto dentro runAsync: tap + attesa della catena async completa
         await tester.runAsync(() async {
           await tester.tap(find.text('Log Out'));
-          // Aspetta che pushPendingData() e getDirtyAssessments() completino
-          await Future.delayed(const Duration(milliseconds: 800));
+          // Aspetta: pushPendingData (mock) + getDirtyAssessments (Isar) + showDialog
+          await Future.delayed(const Duration(seconds: 2));
         });
 
-        // Pompa i frame per far apparire il dialog
+        // Pompa i frame per rendere visibile il dialog
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         // Il dialog di warning deve apparire perché isDirty=true
         // e MockSyncNotifier.pushPendingData() non pulisce i dirty

@@ -10,8 +10,11 @@ final authServiceProvider = Provider((ref) => AuthService());
 
 class AuthService {
   final FirebaseAuth _auth;
+  final DatabaseService _db;
 
-  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
+  AuthService({FirebaseAuth? auth, DatabaseService? db})
+      : _auth = auth ?? FirebaseAuth.instance,
+        _db = db ?? DatabaseService.instance;
 
   // Stream per ascoltare i cambiamenti dello stato auth di Firebase
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -31,7 +34,7 @@ class AuthService {
         }
         
         // Salva sessione locale in Isar IMMEDIATAMENTE con i dati certi della registrazione
-        await DatabaseService.instance.saveSession(UserSession()
+        await _db.saveSession(UserSession()
           ..uid = credential.user!.uid
           ..email = email
           ..displayName = displayName
@@ -60,7 +63,7 @@ class AuthService {
         bool isWho = cleanEmail.endsWith("@who.int");
         
         // Salva/Aggiorna sessione locale
-        await DatabaseService.instance.saveSession(UserSession()
+        await _db.saveSession(UserSession()
           ..uid = credential.user!.uid
           ..email = cleanEmail
           ..displayName = credential.user!.displayName
@@ -73,14 +76,14 @@ class AuthService {
     } catch (e) {
       // OFFLINE OR FALLBACK LOCAL AUTHENTICATION
       // Se Firebase fallisce per problemi di rete, tentiamo l'accesso locale sicuro
-      final LocalUserCredential? localCred = await DatabaseService.instance.getLocalCredential(cleanEmail);
+      final LocalUserCredential? localCred = await _db.getLocalCredential(cleanEmail);
       if (localCred != null) {
         final bytes = utf8.encode(password);
         final inputHash = sha256.convert(bytes).toString();
         
         if (localCred.passwordHash == inputHash) {
           // Password locale corretta! Creiamo una sessione offline
-          await DatabaseService.instance.saveSession(UserSession()
+          await _db.saveSession(UserSession()
             ..uid = "local_${localCred.id}"
             ..email = cleanEmail
             ..displayName = localCred.displayName
@@ -102,13 +105,13 @@ class AuthService {
     } catch (e) {
       // Anche se il logout firebase fallisce (es. no internet), puliamo locale
     } finally {
-      await DatabaseService.instance.clearAllLocalData();
+      await _db.clearAllLocalData();
     }
   }
 
   // Sincronizza qualsiasi cambio password effettuato offline
   Future<void> syncPendingPasswordChanges() async {
-    final pendingSyncs = await DatabaseService.instance.getPendingPasswordSyncs();
+    final pendingSyncs = await _db.getPendingPasswordSyncs();
     if (pendingSyncs.isEmpty) return;
 
     for (var cred in pendingSyncs) {
@@ -145,7 +148,7 @@ class AuthService {
         cred.passwordNeedsSync = false;
         cred.pendingPassword = null;
         cred.oldPassword = null;
-        await DatabaseService.instance.saveLocalCredential(cred);
+        await _db.saveLocalCredential(cred);
         
         print("Sincronizzazione password riuscita con successo per: ${cred.email}");
       } catch (e) {
@@ -156,6 +159,6 @@ class AuthService {
 
   // Verifica se esiste una sessione valida locale (Offline mode)
   Future<UserSession?> getLocalSession() async {
-    return await DatabaseService.instance.getCurrentSession();
+    return await _db.getCurrentSession();
   }
 }
