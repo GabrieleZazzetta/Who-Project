@@ -9,6 +9,7 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'dart:io';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:isar/isar.dart';
 
 class FakePathProviderPlatform extends PathProviderPlatform {
   final Directory tempDir;
@@ -29,6 +30,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('auth_test_dir');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir);
     

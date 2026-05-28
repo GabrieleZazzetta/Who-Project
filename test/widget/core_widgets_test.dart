@@ -215,14 +215,17 @@ void main() {
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Tap Log Out
+        // Tap Log Out e aspetta il dialog con più pump
         await tester.runAsync(() async {
           await tester.tap(find.text('Log Out'));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(seconds: 1));
         });
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
 
         // Il dialog di warning deve apparire perché isDirty=true
         // e MockSyncNotifier.pushPendingData() non pulisce i dirty
