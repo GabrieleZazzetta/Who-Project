@@ -43,7 +43,7 @@ jobs:
 
       - name: Remove Generated Files from Coverage
         if: always()
-        run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$"
+        run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$|l10n/.*"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
