@@ -257,10 +257,12 @@ void main() {
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Tutto dentro runAsync: tap + attesa della catena async completa
+        // Esegui il tap
+        await tester.tap(find.text('Log Out'));
+        await tester.pump(); // Triggera l'onTap dell'InkWell
+
+        // Aspetta in runAsync per permettere a Isar e alle chiamate async di SettingsScreen di completare
         await tester.runAsync(() async {
-          await tester.tap(find.text('Log Out'));
-          // Aspetta: pushPendingData (mock) + getDirtyAssessments (Isar) + showDialog
           await Future.delayed(const Duration(seconds: 2));
         });
 
@@ -274,13 +276,15 @@ void main() {
         expect(find.text('Warning: Unsaved Data'), findsOneWidget);
 
         // Tap su 'Logout & Lose Data' per proseguire ed eseguire context.go('/login')
+        await tester.tap(find.text('Logout & Lose Data'));
+        await tester.pump(); // Triggera onTap del bottone nel dialog
+
+        // Aspetta che authServiceProvider.logout() finisca
         await tester.runAsync(() async {
-          await tester.tap(find.text('Logout & Lose Data'));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         
-        await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.pumpAndSettle(); // Aspetta la chiusura del dialog e l'animazione di navigazione
 
         // Verifica che abbia navigato alla finta schermata di login
         expect(find.text('Login Placeholder'), findsOneWidget);
