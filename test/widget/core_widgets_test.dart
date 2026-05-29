@@ -230,61 +230,68 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        // Salva un assessment dirty nel db di test
-        await tester.runAsync(() async {
+        final mockDb = MockDatabaseService();
+        when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async {
           final facility = FacilityLayout(
             facilityName: 'Dirty Clinic',
             emergencyType: EmergencyType.mpox,
           );
           facility.isDirty = true;
-          await DatabaseService.instance.saveAssessment(facility);
+          return [facility];
         });
 
-        await tester.runAsync(() async {
-          // DEBUG: verifica che i dirty assessments siano nel db
-          final dirty = await DatabaseService.instance.getDirtyAssessments();
-          debugPrint('Dirty assessments count: ${dirty.length}');
-          expect(dirty.isNotEmpty, true, reason: 'Deve esserci almeno un assessment dirty');
+        // Crea router app mockando esplicitamente il db
+        final mockAuth = MockAuthService();
+        when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
+        when(() => mockAuth.logout()).thenAnswer((_) async {});
 
-          await tester.pumpWidget(createProviderAppWithRouter(const SettingsScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pump(const Duration(milliseconds: 300));
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => const SettingsScreen(),
+            ),
+            GoRoute(
+              path: '/login',
+              builder: (context, state) => const Scaffold(
+                body: Text('Login Placeholder'),
+              ),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            authServiceProvider.overrideWithValue(mockAuth),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+            databaseServiceProvider.overrideWithValue(mockDb),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ));
+
+        await tester.pumpAndSettle();
 
         // Scrolla fino al bottone Log Out
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle();
 
         // Esegui il tap
         await tester.tap(find.text('Log Out'));
-        await tester.pump(); // Triggera l'onTap dell'InkWell
+        await tester.pumpAndSettle(); 
 
-        // Aspetta in runAsync per permettere a Isar e alle chiamate async di SettingsScreen di completare
-        await tester.runAsync(() async {
-          await Future.delayed(const Duration(seconds: 2));
-        });
-
-        // Pompa i frame per rendere visibile il dialog
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-        await tester.pump(const Duration(milliseconds: 500));
-
-        // Il dialog di warning deve apparire perché isDirty=true
-        // e MockSyncNotifier.pushPendingData() non pulisce i dirty
+        // Il dialog di warning deve apparire
         expect(find.text('Warning: Unsaved Data'), findsOneWidget);
 
         // Tap su 'Logout & Lose Data' per proseguire ed eseguire context.go('/login')
         await tester.tap(find.text('Logout & Lose Data'));
-        await tester.pump(); // Triggera onTap del bottone nel dialog
-
-        // Aspetta che authServiceProvider.logout() finisca
-        await tester.runAsync(() async {
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
-        
-        await tester.pumpAndSettle(); // Aspetta la chiusura del dialog e l'animazione di navigazione
+        await tester.pumpAndSettle(); 
 
         // Verifica che abbia navigato alla finta schermata di login
         expect(find.text('Login Placeholder'), findsOneWidget);
