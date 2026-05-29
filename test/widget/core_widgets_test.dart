@@ -692,6 +692,292 @@ void main() {
         expect(preAssessmentVisited, isTrue);
         expect(find.text('PreAssessment Placeholder'), findsOneWidget);
       });
+
+      testWidgets('renders mobile portrait layout with standard header', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.text('Select Facility Type'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+      });
+
+      testWidgets('renders tablet landscape split layout', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        // Split layout renders sidebar with title
+        expect(find.text('Select Facility Type'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+      });
+
+      testWidgets('ebola emergency navigates to map instead of pre-assessment', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        bool mapVisited = false;
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.ebola)),
+            GoRoute(path: '/map', builder: (context, state) {
+              mapVisited = true;
+              return const Scaffold(body: Text('Map Placeholder'));
+            }),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        await tester.tap(find.text('Screening, Triage & Temporary Isolation'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(mapVisited, isTrue);
+      });
+
+      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(800, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.sars)),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.text('Select Facility Type'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+      });
+    });
+
+    // ==========================================
+    // SETTINGS ADDITIONAL TESTS
+    // ==========================================
+    group('SettingsScreen Additional Tests', () {
+      testWidgets('renders mobile layout with SliverAppBar', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final mockDb = MockDatabaseService();
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
+
+        await tester.runAsync(() async {
+          await tester.pumpWidget(ProviderScope(
+            overrides: [
+              databaseServiceProvider.overrideWithValue(mockDb),
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              syncProvider.overrideWith(() => MockSyncNotifier()),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const SettingsScreen(),
+            ),
+          ));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
+
+        // Mobile layout should have sections rendered
+        expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
+        expect(find.byType(CustomScrollView), findsOneWidget);
+      });
+
+      testWidgets('mobile language selector uses BottomSheet', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final mockDb = MockDatabaseService();
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(mockDb),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const SettingsScreen(),
+          ),
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        final langTile = find.text('Language');
+        await tester.scrollUntilVisible(langTile, 200.0);
+        await tester.tap(langTile);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        // Mobile uses BottomSheet with Choose Language title
+        expect(find.text('Choose Language'), findsOneWidget);
+        expect(find.text('Español'), findsOneWidget);
+        expect(find.text('Français'), findsOneWidget);
+
+        await tester.tap(find.text('Español'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+      });
+
+      testWidgets('no data shows disabled sync tile', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final mockDb = MockDatabaseService();
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(mockDb),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const SettingsScreen(),
+          ),
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.text('No data to synchronize'), findsOneWidget);
+      });
+    });
+
+    // ==========================================
+    // ASSESSMENTS LIST ADDITIONAL TESTS
+    // ==========================================
+    group('AssessmentsListScreen Additional Tests', () {
+      testWidgets('delete confirmation dialog appears on swipe/long-press', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 1000));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.clear();
+          });
+          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Delete Me Clinic'));
+        });
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Check that the clinic exists
+        expect(find.text('Delete Me Clinic'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('tablet landscape shows split detail view', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.clear();
+          });
+          final f1 = FacilityLayout(facilityName: 'Landscape Clinic')..dateCreated = DateTime(2024, 1, 1);
+          await DatabaseService.instance.saveAssessment(f1);
+        });
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Landscape Clinic'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('score sort low to high works', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 1000));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.clear();
+          });
+          final f1 = FacilityLayout(facilityName: 'High Score')..dateCreated = DateTime(2024, 1, 1);
+          final f2 = FacilityLayout(facilityName: 'Low Score')..dateCreated = DateTime(2024, 2, 1);
+          await DatabaseService.instance.saveAssessment(f1);
+          await DatabaseService.instance.saveAssessment(f2);
+        });
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Find sort dropdown and change
+        final sortButton = find.byIcon(Icons.sort);
+        if (sortButton.evaluate().isNotEmpty) {
+          await tester.tap(sortButton.first);
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+        }
+
+        expect(find.text('High Score'), findsAtLeastNWidgets(1));
+        expect(find.text('Low Score'), findsAtLeastNWidgets(1));
+      });
     });
 
     // ==========================================

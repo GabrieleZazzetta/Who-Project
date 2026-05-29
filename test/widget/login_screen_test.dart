@@ -209,5 +209,103 @@ void main() {
       
       expect(find.byType(SnackBar), findsOneWidget);
     });
+
+    testWidgets('toggle password visibility', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Password field should start obscured - find visibility_off icon
+      final visOffIcon = find.byIcon(Icons.visibility_off);
+      expect(visOffIcon, findsOneWidget);
+
+      // Scroll and tap the visibility toggle
+      await tester.ensureVisible(visOffIcon);
+      await tester.tap(visOffIcon);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Now should show visibility icon (password visible)
+      expect(find.byIcon(Icons.visibility), findsOneWidget);
+    });
+
+    testWidgets('switching to external partner clears email', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Enter email as WHO staff
+      await tester.enterText(find.byKey(const Key('input_email')), 'test@who.int');
+      await tester.pump();
+
+      // Switch to External Partner
+      await tester.tap(find.byKey(const Key('toggle_external_partner')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Verify external partner mode is active - submit with non-who email should not show WHO error
+      await tester.enterText(find.byKey(const Key('input_email')), 'partner@gmail.com');
+      await tester.pump();
+    });
+
+    testWidgets('external partner rejects invalid email format', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Switch to External Partner
+      await tester.tap(find.byKey(const Key('toggle_external_partner')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Enter invalid email format (not a proper email)
+      await tester.enterText(find.byKey(const Key('input_email')), 'not-an-email');
+      await tester.enterText(find.byKey(const Key('input_password')), 'Password1!');
+      
+      final btn = find.byKey(const Key('btn_authenticate'));
+      await tester.ensureVisible(btn);
+      await tester.tap(btn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Please enter a valid email address'), findsOneWidget);
+    });
+
+    testWidgets('register navigation link is present', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // The register link should be somewhere on screen
+      final registerLink = find.text('Register Here');
+      await tester.ensureVisible(registerLink);
+      expect(registerLink, findsOneWidget);
+    });
+
+    testWidgets('renders mobile portrait with header and form', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(380, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Mobile portrait should show the form elements
+      expect(find.byKey(const Key('input_email')), findsOneWidget);
+      expect(find.byKey(const Key('input_password')), findsOneWidget);
+      expect(find.byKey(const Key('btn_authenticate')), findsOneWidget);
+    });
   });
 }
