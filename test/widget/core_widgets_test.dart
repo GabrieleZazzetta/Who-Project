@@ -231,6 +231,7 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final mockDb = MockDatabaseService();
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
         when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async {
           final facility = FacilityLayout(
             facilityName: 'Dirty Clinic',
