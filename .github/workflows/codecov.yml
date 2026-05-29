@@ -43,7 +43,7 @@ jobs:
 
       - name: Remove Generated Files from Coverage
         if: always()
-        run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$|l10n/.*"
+        run: dart run remove_from_coverage -f coverage/lcov.info -r "\.g\.dart$|l10n/.*|firebase_options\.dart$|main\.dart$"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -56,10 +56,6 @@ jobs:
       - name: Install lcov
         if: always()
         run: sudo apt-get update && sudo apt-get install -y lcov
-
-      - name: Remove generated and excluded files from coverage
-        if: always()
-        run: lcov --remove coverage/lcov.info 'lib/**/*.g.dart' 'lib/firebase_options.dart' 'lib/l10n/*' 'lib/main.dart' -o coverage/lcov.info
 
       - name: Generate HTML Report
         if: always()
