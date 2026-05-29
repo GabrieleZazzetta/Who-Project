@@ -84,6 +84,43 @@ void main() {
     );
   }
 
+  Widget createProviderAppWithRouter(Widget home) {
+    final mockAuth = MockAuthService();
+    when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
+    when(() => mockAuth.logout()).thenAnswer((_) async {});
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => home,
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const Scaffold(
+            body: Text('Login Placeholder'),
+          ),
+        ),
+      ],
+    );
+
+    return ProviderScope(
+      overrides: [
+        authServiceProvider.overrideWithValue(mockAuth),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        syncProvider.overrideWith(() => MockSyncNotifier()),
+        databaseServiceProvider.overrideWithValue(DatabaseService.instance),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
+    );
+  }
+
   group('Core Widgets Tests', () {
 
     // ==========================================
@@ -209,7 +246,7 @@ void main() {
           debugPrint('Dirty assessments count: ${dirty.length}');
           expect(dirty.isNotEmpty, true, reason: 'Deve esserci almeno un assessment dirty');
 
-          await tester.pumpWidget(createProviderApp(const SettingsScreen()));
+          await tester.pumpWidget(createProviderAppWithRouter(const SettingsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -236,9 +273,17 @@ void main() {
         // e MockSyncNotifier.pushPendingData() non pulisce i dirty
         expect(find.text('Warning: Unsaved Data'), findsOneWidget);
 
-        await tester.tap(find.text('Cancel'));
+        // Tap su 'Logout & Lose Data' per proseguire ed eseguire context.go('/login')
+        await tester.runAsync(() async {
+          await tester.tap(find.text('Logout & Lose Data'));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle();
+
+        // Verifica che abbia navigato alla finta schermata di login
+        expect(find.text('Login Placeholder'), findsOneWidget);
       });
     });
 

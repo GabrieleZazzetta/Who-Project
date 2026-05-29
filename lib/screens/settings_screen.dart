@@ -520,18 +520,24 @@ class SettingsScreen extends ConsumerWidget {
                             );
 
                             if (confirmLogout != true) {
+                              debugPrint("LOGOUT ABORTED, confirmLogout=$confirmLogout");
                               return; // Interrompe il logout
                             }
+                            debugPrint("LOGOUT CONFIRMED");
                           } else {
+                            debugPrint("CONTEXT NOT MOUNTED");
                             return; // Se il context non è montato, fermiamo
                           }
                         }
                       }
 
                       // 4. LOGICA DI LOGOUT IBRIDA (Firebase + Isar)
+                      debugPrint("CALLING LOGOUT ON AUTHSERVICE");
                       await ref.read(authServiceProvider).logout();
+                      debugPrint("LOGOUT COMPLETED, context.mounted=${context.mounted}");
                       if (context.mounted) {
                         context.go('/login');
+                        debugPrint("CONTEXT.GO CALLED");
                       }
                     },
                     borderRadius: BorderRadius.circular(16),
