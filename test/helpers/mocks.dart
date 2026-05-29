@@ -32,11 +32,15 @@ void registerFallbackValues() {
 
 class MockSyncNotifier extends AsyncNotifier<SyncState>
     implements SyncNotifier {
+  bool syncAllCalled = false;
+
   @override
   Future<SyncState> build() async => SyncState(status: SyncStatus.idle);
 
   @override
-  Future<void> syncAll({int attempt = 0, bool forcePullAll = false}) async {}
+  Future<void> syncAll({int attempt = 0, bool forcePullAll = false}) async {
+    syncAllCalled = true;
+  }
 
   @override
   Future<void> pushPendingData() async {}

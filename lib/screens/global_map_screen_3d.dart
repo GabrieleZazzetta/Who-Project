@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -10,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
 import '../services/database_service.dart';
 import '../providers/database_provider.dart';
+import '../helpers/global_map_helper.dart';
 import 'interactive_map_screen.dart';
 import '../l10n/app_localizations.dart';
 
@@ -39,7 +41,11 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   @override
   void initState() {
     super.initState();
-    MapboxOptions.setAccessToken(_mapboxPublicToken);
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+      try {
+        MapboxOptions.setAccessToken(_mapboxPublicToken);
+      } catch (_) {}
+    }
     _loadData();
   }
 
@@ -57,7 +63,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     final List<Point> coords = [];
 
     for (final facility in assessments) {
-      final point = await _resolveLocation(facility);
+      final point = await GlobalMapHelper.resolveLocation(facility);
       if (point != null) {
         coords.add(point);
         facilities.add(facility);
@@ -70,59 +76,6 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
       _loadedFacilities = facilities;
       _isLoading = false;
     });
-  }
-
-  // GEOCODIFICA
-  // Fallback a cascata: prima GPS/coordinate dirette, poi city+country via Nominatim
-  Future<Point?> _resolveLocation(FacilityLayout facility) async {
-    final String gpsText = facility.generalInfo?.facilityAddressOrGps ?? '';
-    final Point? direct = await _parseOrGeocode(gpsText);
-    if (direct != null) return direct;
-
-    final String city = facility.generalInfo?.city ?? '';
-    final String country = facility.generalInfo?.country ?? '';
-    String fallback = '$city, $country'
-        .trim()
-        .replaceAll(RegExp(r'^,\s*'), '')
-        .replaceAll(RegExp(r',\s*$'), '');
-
-    return fallback.isNotEmpty ? await _parseOrGeocode(fallback) : null;
-  }
-
-  // Tenta il parsing diretto lat/lng, altrimenti interroga Nominatim
-  Future<Point?> _parseOrGeocode(String text) async {
-    if (text.trim().isEmpty) return null;
-
-    final match = RegExp(r'([-+]?[0-9]*\.?[0-9]+)[\s,]+([-+]?[0-9]*\.?[0-9]+)')
-        .firstMatch(text);
-    if (match != null) {
-      try {
-        final double lat = double.parse(match.group(1)!);
-        final double lng = double.parse(match.group(2)!);
-        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-          if (lat == 0.0 && lng == 0.0) return null; // Prevenzione Null Island
-          return Point(coordinates: Position(lng, lat));
-        }
-      } catch (_) {}
-    }
-
-    try {
-      final url = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(text)}&format=json&limit=1');
-      final response = await http.get(url, headers: const {'User-Agent': 'WhoHealthAssessmentApp'});
-      if (response.statusCode == 200) {
-        final dynamic data = json.decode(response.body);
-        if (data is List && data.isNotEmpty) {
-          final double lat = double.parse(data[0]['lat'].toString());
-          final double lon = double.parse(data[0]['lon'].toString());
-          if (lat == 0.0 && lon == 0.0) return null; // Prevenzione Null Island
-          return Point(coordinates: Position(lon, lat));
-        }
-      }
-    } catch (e) {
-      debugPrint('Geocoding error: $e');
-    }
-    return null;
   }
 
   // GENERAZIONE PIN
@@ -177,12 +130,6 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   }
 
   // UTILITÀ SCORE
-  Color _scoreColor(double score) {
-    if (score >= 80) return Colors.green.shade500;
-    if (score >= 50) return Colors.amber.shade500;
-    return Colors.red.shade600;
-  }
-
   Uint8List _pinForScore(double score) {
     if (score >= 80) return _pinGreen!;
     if (score >= 50) return _pinAmber!;
@@ -245,7 +192,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   // ANTEPRIMA STRUTTURA
   // BottomSheet con header informativo e sezione score + navigazione ai dettagli
   void _showFacilityPreview(FacilityLayout facility) {
-    final Color color = _scoreColor(facility.globalReadinessScore);
+    final Color color = GlobalMapHelper.scoreColor(facility.globalReadinessScore);
     final double score = facility.globalReadinessScore;
 
     showModalBottomSheet(

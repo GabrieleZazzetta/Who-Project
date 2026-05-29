@@ -909,13 +909,15 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _step == 1 ? "Account Recovery" : "Reset Password",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
-                      letterSpacing: -0.5,
+                  Expanded(
+                    child: Text(
+                      _step == 1 ? "Account Recovery" : "Reset Password",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -997,13 +999,15 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
                       children: [
                         const Icon(Icons.calendar_today_outlined, color: Color(0xFF64748B)),
                         const SizedBox(width: 12),
-                        Text(
-                          _selectedDate == null
-                              ? "Date of Birth"
-                              : DateFormat('dd MMM yyyy').format(_selectedDate!),
-                          style: TextStyle(
-                            color: _selectedDate == null ? Colors.blueGrey.shade300 : Colors.black87,
-                            fontSize: 15,
+                        Expanded(
+                          child: Text(
+                            _selectedDate == null
+                                ? "Date of Birth"
+                                : DateFormat('dd MMM yyyy').format(_selectedDate!),
+                            style: TextStyle(
+                              color: _selectedDate == null ? Colors.blueGrey.shade300 : Colors.black87,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ],

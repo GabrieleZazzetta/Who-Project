@@ -246,56 +246,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ),
                     Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(40.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildLogo(isDark: true),
-                            const SizedBox(height: 40),
-                            Text(AppLocalizations.of(context)!.joinPlatform,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                height: 1.1,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              AppLocalizations.of(context)!
-                                  .createAccountDescGlobal,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Tablet)
-                            if (_isWhoStaff)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade400.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                      color:
-                                          Colors.red.shade200.withOpacity(0.3)),
-                                ),
-                                child: Text(AppLocalizations.of(context)!
-                                      .authorizedPersonnel,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                          ],
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildLogo(isDark: true),
+                              const SizedBox(height: 40),
+                              Text(AppLocalizations.of(context)!.joinPlatform,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  height: 1.2,
+                                )),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -596,7 +564,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       () => setState(() {
                             _isWhoStaff = true;
                             _emailController.clear();
-                          }))),
+                          }),
+                      key: const Key('toggle_who_staff'))),
               Expanded(
                   child: _buildModeToggle(
                       AppLocalizations.of(context)!.externalPartnerRole,
@@ -604,7 +573,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       () => setState(() {
                             _isWhoStaff = false;
                             _emailController.clear();
-                          }))),
+                          }),
+                      key: const Key('toggle_external_partner'))),
             ],
           ),
         ),
@@ -619,12 +589,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   Expanded(
                       child: _buildTextField(
+                          key: const Key('input_firstname'),
                           controller: _firstNameController,
                           hint: AppLocalizations.of(context)!.firstNameLabel,
                           icon: Icons.person_outline)),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildTextField(
+                          key: const Key('input_lastname'),
                           controller: _lastNameController,
                           hint: AppLocalizations.of(context)!.lastNameLabel,
                           icon: Icons.person_outline)),
@@ -650,8 +622,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   // METODI HELPER UI
-  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap) {
+  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap, {Key? key}) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -666,13 +639,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ]
               : [],
         ),
-        child: Center(
-            child: Text(title,
+        child: Row(
+          children: [
+            Icon(
+              title.contains("WHO") ? Icons.verified_user : Icons.public,
+              color: isActive ? Colors.white : Colors.grey.shade500,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                    color: isActive
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey.shade600))),
+                  color: isActive ? Colors.white : Colors.grey.shade600,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -699,15 +686,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           children: [
             Icon(Icons.calendar_today_outlined, color: const Color(0xFF64748B)),
             const SizedBox(width: 12),
-            Text(
-              _selectedDate == null
-                  ? AppLocalizations.of(context)!.dobLabel
-                  : DateFormat('dd MMM yyyy').format(_selectedDate!),
-              style: TextStyle(
-                  color: _selectedDate == null
-                      ? Colors.blueGrey.shade300
-                      : Colors.black87,
-                  fontSize: 15),
+            Expanded(
+              child: Text(
+                _selectedDate == null
+                    ? AppLocalizations.of(context)!.dobLabel
+                    : DateFormat('dd MMM yyyy').format(_selectedDate!),
+                style: TextStyle(
+                    color: _selectedDate == null
+                        ? Colors.blueGrey.shade300
+                        : Colors.black87,
+                    fontSize: 15),
+              ),
             ),
           ],
         ),
@@ -717,6 +706,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Widget _buildEmailField() {
     return TextFormField(
+      key: const Key('input_email'),
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
@@ -756,6 +746,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Widget _buildPasswordField() {
     return TextFormField(
+      key: const Key('input_password'),
       controller: _passwordController,
       obscureText: _obscurePassword,
       decoration: InputDecoration(
@@ -819,6 +810,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
+        key: const Key('btn_create_account'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
@@ -844,8 +836,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildLoginNavigation() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(AppLocalizations.of(context)!.alreadyHaveAccount,
             style: TextStyle(color: Colors.grey.shade600)),
@@ -861,10 +854,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildTextField(
-      {required TextEditingController controller,
+      {Key? key,
+      required TextEditingController controller,
       required String hint,
       required IconData icon}) {
     return TextFormField(
+      key: key,
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
@@ -892,11 +887,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         Icon(isMet ? Icons.check_circle : Icons.radio_button_unchecked,
             color: isMet ? Colors.green : Colors.grey.shade400, size: 16),
         const SizedBox(width: 6),
-        Text(text,
-            style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isMet ? Colors.green.shade700 : Colors.grey.shade600)),
+        Expanded(
+          child: Text(text,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isMet ? Colors.green.shade700 : Colors.grey.shade600)),
+        ),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,7 @@ void main() {
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
+    HttpOverrides.global = FakeHttpOverrides();
   });
 
   setUp(() async {
@@ -199,7 +201,18 @@ void main() {
     // GLOBAL MAP SCREEN 3D (widget_global_map_test.dart)
     // ==========================================
     group('GlobalMapScreen3D Tests', () {
-      testWidgets('renders map screen when data is loaded', skip: true, (tester) async {
+      testWidgets('renders map screen when data is loaded', (tester) async {
+        final facility = FacilityLayout()
+          ..facilityName = 'Map Test Hospital'
+          ..dateCreated = DateTime(2023, 1, 1)
+          ..generalInfo = (GeneralFacilityInfo()..city = 'Rome'..country = 'Italy');
+
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.put(facility);
+          });
+        });
+
         try {
           await tester.runAsync(() async {
             await tester.pumpWidget(createTestWidget(const GlobalMapScreen3D()));
@@ -209,10 +222,11 @@ void main() {
         } catch (e) {}
         
         expect(find.text('Global Assessment Map'), findsOneWidget);
-        // Mapbox widget crashes so FAB might not render in headless environment
+        // Mapbox widget crashes so FAB might not render in headless environment, 
+        // but we can check if it tries to load or shows map widget.
       });
 
-      testWidgets('FAB toggles map style', skip: true, (tester) async {
+      testWidgets('FAB toggles map style', (tester) async {
         try {
           await tester.runAsync(() async {
             await tester.pumpWidget(createTestWidget(const GlobalMapScreen3D()));
@@ -230,4 +244,82 @@ void main() {
     });
 
   });
+}
+
+class FakeHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return FakeHttpClient();
+  }
+}
+
+class FakeHttpClient extends Fake implements HttpClient {
+  @override
+  bool autoUncompress = false;
+
+  @override
+  Duration? connectionTimeout;
+
+  @override
+  Duration idleTimeout = const Duration(seconds: 15);
+
+  @override
+  int? maxConnectionsPerHost;
+
+  @override
+  String? userAgent;
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async {
+    return FakeHttpClientRequest(url);
+  }
+}
+
+class FakeHttpClientRequest extends Fake implements HttpClientRequest {
+  final Uri url;
+  FakeHttpClientRequest(this.url);
+
+  @override
+  final HttpHeaders headers = FakeHttpHeaders();
+
+  @override
+  Future<HttpClientResponse> close() async {
+    return FakeHttpClientResponse(url);
+  }
+}
+
+class FakeHttpHeaders extends Fake implements HttpHeaders {
+  @override
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {}
+  
+  @override
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {}
+}
+
+class FakeHttpClientResponse extends Fake implements HttpClientResponse {
+  final Uri url;
+  FakeHttpClientResponse(this.url);
+
+  @override
+  int get statusCode => 200;
+
+  @override
+  StreamSubscription<List<int>> listen(
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    String responseBody = '[]';
+    if (url.toString().contains('nominatim.openstreetmap.org')) {
+      responseBody = '[{"lat": "41.9028", "lon": "12.4964"}]';
+    }
+    final stream = Stream.value(responseBody.codeUnits);
+    return stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
 }

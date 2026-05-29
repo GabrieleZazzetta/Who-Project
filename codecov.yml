@@ -9,7 +9,7 @@ coverage:
   status:
     project:
       default:
-        # Il nostro obiettivo accademico di copertura
+        # Il nostro obiettivo di copertura
         target: 90%
         threshold: 2%
     patch:

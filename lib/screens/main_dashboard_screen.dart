@@ -584,22 +584,31 @@ class HomeContent extends StatelessWidget {
                               ? MainAxisAlignment.center
                               : MainAxisAlignment.start,
                           children: [
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: isTabletPortrait ? 1 : columns,
-                              childAspectRatio: isTabletPortrait
-                                  ? 3.2 // Leggermente ridotto per box più imponenti
-                                  : ((isTablet && isLandscape)
-                                      ? 2.4
-                                      : (isLandscape ? 2.8 : 2.2)),
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: isTabletPortrait ? 0 : 20),
-                              children: _buildCards(context),
-                            ),
+                            isTabletPortrait
+                                ? Column(
+                                    children: _buildCards(context)
+                                        .map((card) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 16),
+                                              child: card,
+                                            ))
+                                        .toList(),
+                                  )
+                                : GridView.count(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    crossAxisCount: columns,
+                                    childAspectRatio:
+                                        ((isTablet && isLandscape)
+                                            ? 2.4
+                                            : (isLandscape ? 2.8 : 2.2)),
+                                    crossAxisSpacing: 20,
+                                    mainAxisSpacing: 20,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 20),
+                                    children: _buildCards(context),
+                                  ),
                           ],
                         ),
                       );
@@ -784,26 +793,27 @@ class HomeContent extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // BARRA LATERALE COLORATA: Spessore ridotto a 4px per un design più sottile
-              Container(
-                width: 4,
-                color: borderColor,
-              ),
-              Expanded(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: isActive
-                        ? () => context.push('/facility-selection', extra: type)
-                        : () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(AppLocalizations.of(context)!
-                                    .moduleLocked))),
-                    child: Padding(
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              child: Container(color: borderColor),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isActive
+                      ? () => context.push('/facility-selection', extra: type)
+                      : () => ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(AppLocalizations.of(context)!
+                                  .moduleLocked))),
+                  child: Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: cardPadding,
                           vertical: isLandscape ? 12 : 28),
@@ -828,6 +838,7 @@ class HomeContent extends StatelessWidget {
                                 Row(
                                   children: [
                                     Flexible(
+                                      flex: 2,
                                       child: Text(
                                         title,
                                         maxLines: 1,
@@ -842,20 +853,25 @@ class HomeContent extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 8),
                                     // BADGE STATO: Design a pillola fedele all'originale
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: badgeBgColor,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        badgeText.toUpperCase(),
-                                        style: TextStyle(
-                                          color: badgeColor,
-                                          fontSize: badgeSize,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.5,
+                                    Flexible(
+                                      flex: 1,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: badgeBgColor,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          badgeText.toUpperCase(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: badgeColor,
+                                            fontSize: badgeSize,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -893,7 +909,6 @@ class HomeContent extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }

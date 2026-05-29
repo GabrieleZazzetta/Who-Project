@@ -607,8 +607,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           if (question.mediaPaths != null && question.mediaPaths!.isNotEmpty)
             _buildMediaGallery(question),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               TextButton.icon(
                 onPressed: () => _showMediaPickerSheet(question),
@@ -620,7 +622,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12)),
               ),
-              const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: () => _showNoteDialog(question),
                 icon: const Icon(Icons.edit_note, size: 22),

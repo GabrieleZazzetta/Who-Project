@@ -67,6 +67,36 @@ void main() {
 
         expect(testQuestion.note, 'Test note');
       });
+
+      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(850, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+        addTearDown(() => tester.view.resetDevicePixelRatio());
+        final zone = SpatialZone(id: 'z_1', name: 'Test Zone', checklist: [AssessmentQuestion(id: 'q_1', text: 'Q1')]);
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AssessmentScreen(zone: zone)
+        ));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.byType(AssessmentScreen), findsOneWidget);
+      });
+
+      testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+        addTearDown(() => tester.view.resetDevicePixelRatio());
+        final zone = SpatialZone(id: 'z_1', name: 'Test Zone', checklist: [AssessmentQuestion(id: 'q_1', text: 'Q1')]);
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AssessmentScreen(zone: zone)
+        ));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.byType(AssessmentScreen), findsOneWidget);
+      });
     });
 
     // ==========================================
@@ -132,6 +162,34 @@ void main() {
 
         expect(mapScreenVisited, isTrue);
         expect(find.text('Map Screen Placeholder'), findsOneWidget);
+      });
+
+      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(850, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+        addTearDown(() => tester.view.resetDevicePixelRatio());
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
+        ));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.byType(PreAssessmentScreen), findsOneWidget);
+      });
+
+      testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+        addTearDown(() => tester.view.resetDevicePixelRatio());
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
+        ));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.byType(PreAssessmentScreen), findsOneWidget);
       });
     });
 
