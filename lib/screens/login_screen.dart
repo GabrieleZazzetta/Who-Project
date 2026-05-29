@@ -182,43 +182,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildLogo(isDark: true),
-                            const SizedBox(height: 40),
-                            Text(
-                              AppLocalizations.of(context)!.appTitleMultiline,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                height: 1.1,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Tablet)
-                            if (_isWhoStaff)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade400.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildLogo(isDark: true),
+                              const SizedBox(height: 40),
+                              Text(
+                                AppLocalizations.of(context)!.appTitleMultiline,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  height: 1.1,
+                                  letterSpacing: -0.5,
                                 ),
-                                child: Text(
-                                  AppLocalizations.of(context)!.authorizedPersonnelOnly,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
+                              ),
+                              const SizedBox(height: 24),
+                              // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Tablet)
+                              if (_isWhoStaff)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade400.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.authorizedPersonnelOnly,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

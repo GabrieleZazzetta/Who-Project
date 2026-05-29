@@ -622,6 +622,66 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
       });
+
+      testWidgets('renders correctly on mobile (portrait and landscape)', (WidgetTester tester) async {
+        // Portrait
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        
+        await tester.pumpWidget(createProviderApp(const Scaffold(body: LoginScreen())));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        
+        expect(find.byType(SingleChildScrollView), findsWidgets);
+        
+        // Landscape
+        await tester.binding.setSurfaceSize(const Size(800, 400));
+        await tester.pumpWidget(createProviderApp(const Scaffold(body: LoginScreen())));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        
+        expect(find.byType(Row), findsWidgets);
+      });
+
+      testWidgets('shows snackbar on login error', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 1000));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        
+        final mockAuth = MockAuthService();
+        when(() => mockAuth.login(any(), any())).thenThrow(Exception('Invalid credentials'));
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            authServiceProvider.overrideWithValue(mockAuth),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+            databaseServiceProvider.overrideWithValue(DatabaseService.instance),
+          ],
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(body: LoginScreen()),
+          ),
+        ));
+
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        await tester.tap(find.byKey(const Key('toggle_external_partner')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        await tester.enterText(find.byKey(const Key('input_email')), "test@example.com");
+        await tester.enterText(find.byKey(const Key('input_password')), "validPass123!");
+        
+        await tester.tap(find.byKey(const Key('btn_authenticate')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.textContaining('Exception: Invalid credentials'), findsWidgets);
+      });
+
     });
 
   });
