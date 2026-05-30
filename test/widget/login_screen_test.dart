@@ -144,26 +144,41 @@ void main() {
     });
 
     testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(const Size(800, 1000));
+      await tester.binding.setSurfaceSize(const Size(1800, 3000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
-      await tester.pump();
+      await tester.pumpWidget(createProviderAppWithRouter(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(800, 1000)),
+          child: const Scaffold(body: LoginScreen()),
+        ),
+      ));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('input_email')), findsOneWidget);
     });
 
     testWidgets('renders tablet landscape layout', (WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await tester.binding.setSurfaceSize(const Size(3600, 2400));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
-      await tester.pump();
+      await tester.pumpWidget(createProviderAppWithRouter(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(1200, 800)),
+          child: const Scaffold(body: LoginScreen()),
+        ),
+      ));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('input_email')), findsOneWidget);
     });
 
     testWidgets('renders mobile landscape layout', (WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(const Size(800, 400));
+      await tester.binding.setSurfaceSize(const Size(2400, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
-      await tester.pump();
+      await tester.pumpWidget(createProviderAppWithRouter(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(800, 400)),
+          child: const Scaffold(body: LoginScreen()),
+        ),
+      ));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('input_email')), findsOneWidget);
     });
 
