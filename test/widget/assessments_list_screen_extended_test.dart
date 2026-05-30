@@ -207,5 +207,74 @@ void main() {
 
       expect(find.text('No assessments match your filters.'), findsOneWidget);
     });
+
+    testWidgets('Filter popup interactions and Geographical Overview', (tester) async {
+      await tester.runAsync(() async {
+        await testIsar.writeTxn(() async {
+          final facility = FacilityLayout(
+            facilityName: 'Clinic Africa',
+            mapImagePath: '',
+            emergencyType: EmergencyType.mpox,
+            zones: [
+              SpatialZone(
+                name: 'Zone 1',
+                checklist: [
+                  AssessmentQuestion(
+                    id: 'q1',
+                    category: AssessmentCategory.infectionPreventionControl,
+                    text: 'Q1',
+                    selectedCompliance: ComplianceLevel.meetsTarget,
+                  )
+                ],
+              )
+            ],
+            isDirty: false,
+          )
+            ..updatedAt = DateTime.now()
+            ..generalInfo = (GeneralFacilityInfo()..region = 'AFRO');
+          await testIsar.facilityLayouts.put(facility);
+        });
+      });
+
+      await tester.runAsync(() async {
+        await tester.pumpWidget(createTestWidget(SyncStatus.idle));
+        await Future.delayed(const Duration(milliseconds: 500));
+      });
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Should see Geographical Overview with AFRO
+      expect(find.text('Geographical Overview (Average Readiness)'), findsOneWidget);
+      expect(find.text('AFRO'), findsOneWidget);
+      expect(find.text('100%'), findsWidgets);
+
+      // Open filter popup
+      await tester.tap(find.byIcon(Icons.tune_rounded));
+      await tester.pumpAndSettle();
+
+      // Tap 'Highest Score'
+      await tester.tap(find.text('Highest Score').last, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      // Open filter popup again
+      await tester.tap(find.byIcon(Icons.tune_rounded), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+      // Tap 'Date Filter'
+      await tester.tap(find.byIcon(Icons.date_range_rounded).last, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+      // Select OK in date picker
+      await tester.tap(find.text('OK').last, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+      // Open filter popup again and clear date
+      await tester.tap(find.byIcon(Icons.tune_rounded), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+      await tester.tap(find.text('Clear Date Filter').last, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+    });
   });
 }

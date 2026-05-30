@@ -231,6 +231,67 @@ void main() {
         expect(find.text('No data to display.'), findsNothing);
         expect(find.byType(SingleChildScrollView), findsWidgets);
       });
+
+      testWidgets('renders single assessment state', (tester) async {
+        final f1 = FacilityLayout()..facilityName = 'H1'..dateCreated = DateTime(2023, 1, 1);
+        final zone1 = SpatialZone()..name = 'Z1';
+        final q1 = AssessmentQuestion()..id = 'q1'..category = AssessmentCategory.infectionPreventionControl..selectedCompliance = ComplianceLevel.meetsTarget;
+        zone1.checklist = List.from(zone1.checklist)..add(q1);
+        f1.zones = List.from(f1.zones)..add(zone1);
+
+        await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1])));
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        
+        expect(find.text('Add more assessments to unlock trend analysis.'), findsOneWidget);
+        expect(find.byType(SingleChildScrollView), findsWidgets);
+      });
+
+      testWidgets('renders tablet portrait layout', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(800, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final f1 = FacilityLayout()..facilityName = 'H1'..dateCreated = DateTime(2023, 1, 1);
+        await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1, f1])));
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(find.byType(SingleChildScrollView), findsWidgets);
+      });
+
+      testWidgets('renders mobile portrait layout', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final f1 = FacilityLayout()..facilityName = 'H1'..dateCreated = DateTime(2023, 1, 1);
+        
+        await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1, f1])));
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(find.byType(SingleChildScrollView), findsWidgets);
+      });
+
+      testWidgets('renders mobile landscape layout', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(550, 300));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final f1 = FacilityLayout()..facilityName = 'H1'..dateCreated = DateTime(2023, 1, 1);
+        
+        await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1, f1])));
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(find.byType(SingleChildScrollView), findsWidgets);
+      });
+
+      testWidgets('renders empty state when not enough valid historical data', (tester) async {
+        final f1 = FacilityLayout()..facilityName = 'H1'; // dateCreated is null
+        
+        await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1])));
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(find.text('Not enough historical data for trend analysis. At least 2 assessments needed.'), findsOneWidget);
+      });
     });
 
     // ==========================================

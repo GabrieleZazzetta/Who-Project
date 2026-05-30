@@ -28,5 +28,7 @@ ignore:
   - "lib/**/*.g.dart"
   - "lib/**/*.freezed.dart"
   - "lib/main.dart"
+  - "lib/l10n/**"
+  - "lib/firebase_options.dart"
   - "test/**/*"
   - "integration_test/**/*"

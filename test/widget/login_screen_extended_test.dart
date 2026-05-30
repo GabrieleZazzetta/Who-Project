@@ -8,15 +8,21 @@ import 'package:assessment_tool/services/auth_service.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:assessment_tool/services/sync_service.dart';
+import 'package:assessment_tool/models/user_model.dart';
+import 'package:assessment_tool/models/local_user_credential.dart';
+import 'package:mocktail/mocktail.dart';
 import '../helpers/mocks.dart';
 
 void main() {
   late MockAuthService mockAuth;
   late MockSyncNotifier mockSync;
+  late MockDatabaseService mockDb;
 
   setUp(() {
     mockAuth = MockAuthService();
     mockSync = MockSyncNotifier();
+    mockDb = MockDatabaseService();
+    registerFallbackValues();
   });
 
   Widget createTestWidget(Widget home) {
@@ -32,7 +38,7 @@ void main() {
 
     return ProviderScope(
       overrides: [
-        databaseServiceProvider.overrideWithValue(MockDatabaseService()),
+        databaseServiceProvider.overrideWithValue(mockDb),
         authServiceProvider.overrideWithValue(mockAuth),
         syncProvider.overrideWith(() => mockSync),
       ],
@@ -81,7 +87,15 @@ void main() {
       expect(find.byType(TextFormField), findsWidgets);
     });
 
-    testWidgets('Forgot Password modal submit and cancel buttons', (tester) async {
+    testWidgets('Forgot Password modal step 1 and step 2 navigation', (tester) async {
+      // Mock db response for _verifyIdentity
+      when(() => mockDb.getLocalCredential(any())).thenAnswer((_) async {
+        return LocalUserCredential()
+          ..email = 'test@who.int'
+          ..dateOfBirth = DateTime(2000)
+          ..passwordHash = 'hash';
+      });
+
       final mobileMediaQuery = const MediaQueryData(
         size: Size(400, 1200), // very tall to avoid scroll issues in modal
         devicePixelRatio: 1.0,
@@ -106,25 +120,38 @@ void main() {
 
       expect(find.text('Account Recovery'), findsOneWidget);
 
-      // Tap Verify & Continue to trigger email validation
+      // Enter email
+      final emailField = find.descendant(
+        of: find.byType(Container),
+        matching: find.byType(TextField),
+      ).first;
+      await tester.enterText(emailField, 'test@who.int');
+      
+      // Tap Date picker
+      final dobField = find.byIcon(Icons.calendar_today_outlined);
+      await tester.ensureVisible(dobField);
+      await tester.pumpAndSettle();
+      await tester.tap(dobField, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      
+      // Pick date
+      await tester.tap(find.text('OK'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      // Tap Verify & Continue to trigger _verifyIdentity()
       final verifyButton = find.text('Verify & Continue');
       await tester.ensureVisible(verifyButton);
       await tester.tap(verifyButton, warnIfMissed: false);
-      await tester.pump(const Duration(milliseconds: 300));
+      
+      // Pump to let async mock resolve
+      await tester.pump();
+      // Pump to let the widget rebuild (switching to step 2)
+      await tester.pump(const Duration(milliseconds: 500)); 
 
-      // Enter email
-      await tester.enterText(find.byType(TextFormField).last, 'test@who.int');
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Tap Verify & Continue to trigger DOB validation
-      await tester.tap(verifyButton, warnIfMissed: false);
-      await tester.pump(const Duration(milliseconds: 300)); 
-
-      // Close it using the close icon
-      final closeButton = find.byIcon(Icons.close);
-      await tester.ensureVisible(closeButton);
-      await tester.tap(closeButton, warnIfMissed: false);
-      await tester.pump(const Duration(milliseconds: 500)); // wait for bottom sheet close
+      // Should now see the new password input (Step 2)
+      expect(find.text('New WIMS Password'), findsOneWidget);
+      expect(find.text('Password must contain:'), findsOneWidget);
+      expect(find.text('Reset Password'), findsWidgets); // Either app bar or button
     });
   });
 }
