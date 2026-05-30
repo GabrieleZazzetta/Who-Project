@@ -245,7 +245,9 @@ void main() {
       await tester.pump();
 
       // Switch to External Partner
-      await tester.tap(find.byKey(const Key('toggle_external_partner')));
+      final toggleFinder = find.byKey(const Key('toggle_external_partner'));
+      await tester.ensureVisible(toggleFinder);
+      await tester.tap(toggleFinder);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -263,7 +265,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       // Switch to External Partner
-      await tester.tap(find.byKey(const Key('toggle_external_partner')));
+      final toggleFinder = find.byKey(const Key('toggle_external_partner'));
+      await tester.ensureVisible(toggleFinder);
+      await tester.tap(toggleFinder);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

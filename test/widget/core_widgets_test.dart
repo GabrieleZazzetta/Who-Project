@@ -552,7 +552,11 @@ void main() {
       testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(850, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.byType(AssessmentsListScreen), findsOneWidget);
       });
@@ -560,7 +564,11 @@ void main() {
       testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-        await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.byType(AssessmentsListScreen), findsOneWidget);
       });
