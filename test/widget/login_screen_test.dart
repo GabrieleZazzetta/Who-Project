@@ -76,6 +76,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('input_email')), 'test@gmail.com');
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -98,6 +99,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('input_email')), 'partner@gmail.com');
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -133,6 +135,7 @@ void main() {
 
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -179,6 +182,7 @@ void main() {
       
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       
       await tester.pump(); // form validate & setState isLoading = true
@@ -201,6 +205,7 @@ void main() {
       
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       
       await tester.pump(); // form validate & setState isLoading = true
@@ -277,6 +282,7 @@ void main() {
       
       final btn = find.byKey(const Key('btn_authenticate'));
       await tester.ensureVisible(btn);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
