@@ -1,0 +1,288 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:assessment_tool/screens/settings_screen.dart';
+import 'package:assessment_tool/providers/locale_provider.dart';
+import 'package:assessment_tool/l10n/app_localizations.dart';
+import 'package:assessment_tool/services/database_service.dart';
+import 'package:assessment_tool/services/auth_service.dart';
+import 'package:assessment_tool/services/sync_service.dart';
+import 'package:assessment_tool/providers/database_provider.dart';
+import 'package:assessment_tool/models/user_model.dart';
+import 'package:assessment_tool/models/assessment_models.dart';
+import 'package:assessment_tool/repositories/sync_repository.dart';
+import 'package:assessment_tool/providers/locale_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:mocktail/mocktail.dart';
+import 'package:go_router/go_router.dart';
+
+class MockDatabaseService extends Mock implements DatabaseService {}
+class MockAuthService extends Mock implements AuthService {}
+class MockSyncService extends AsyncNotifier<SyncState> implements SyncNotifier {
+  final SyncState initialState;
+  MockSyncService(this.initialState);
+  
+  @override
+  Future<SyncState> build() async => initialState;
+
+  @override
+  Future<void> syncAll({int attempt = 0, bool forcePullAll = false}) async {}
+
+  @override
+  Future<void> pushPendingData() async {}
+  
+  @override
+  set repository(SyncRepository repo) {}
+}
+
+void main() {
+  late MockDatabaseService mockDb;
+  late MockAuthService mockAuth;
+  late MockSyncService mockSync;
+  late SharedPreferences mockPrefs;
+
+  setUp(() {
+    mockDb = MockDatabaseService();
+    mockAuth = MockAuthService();
+    mockSync = MockSyncService(SyncState(status: SyncStatus.idle));
+    SharedPreferences.setMockInitialValues({'locale': 'en'});
+
+    when(() => mockDb.getCurrentSession()).thenAnswer((_) async => UserSession()
+      ..email = 'test@who.int'
+      ..displayName = 'Test User'
+      ..isWhoStaff = true);
+    
+    when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
+    when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async => []);
+  });
+
+  SyncState currentSyncState = SyncState(status: SyncStatus.idle);
+
+  Widget createTestApp(Widget child) {
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const CircularProgressIndicator();
+        
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => child,
+            ),
+            GoRoute(
+              path: '/login',
+              builder: (context, state) => const Scaffold(body: Text('Login Screen')),
+            ),
+          ],
+        );
+
+        return ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(snapshot.data!),
+            databaseServiceProvider.overrideWithValue(mockDb),
+            authServiceProvider.overrideWithValue(mockAuth),
+            syncProvider.overrideWith(() => MockSyncService(currentSyncState)),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        );
+      }
+    );
+  }
+
+  group('SettingsScreen Tests', () {
+    testWidgets('renders tablet layout and changes language', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      // Find language tile
+      final languageTile = find.text('Language');
+      expect(languageTile, findsOneWidget);
+
+      await tester.tap(languageTile);
+      await tester.pumpAndSettle();
+
+      // Find Italiano option
+      final italianoOption = find.text('Italiano');
+      expect(italianoOption, findsOneWidget);
+
+      await tester.tap(italianoOption);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('renders mobile layout and changes language', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createTestApp(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(400, 800)),
+          child: const SettingsScreen(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final languageTile = find.text('Language');
+      await tester.dragFrom(const Offset(200, 400), const Offset(0, -400));
+      await tester.pumpAndSettle();
+      
+      await tester.tap(languageTile);
+      await tester.pumpAndSettle();
+
+      final espanolOption = find.text('Español');
+      expect(espanolOption, findsOneWidget);
+
+      await tester.tap(espanolOption);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('opens user profile modal', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() => tester.view.resetDevicePixelRatio());
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      // Find User Profile tile and tap it
+      final profileTile = find.text('User Profile');
+      await tester.tap(profileTile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Test User'), findsWidgets);
+      expect(find.text('test@who.int'), findsWidgets);
+
+      // Scroll to save button and tap
+      final saveBtn = find.text('Save Changes');
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('logout without dirty data proceeds directly', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      when(() => mockAuth.logout()).thenAnswer((_) async => null);
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.dragFrom(const Offset(200, 400), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      final logoutBtn = find.text('Log Out');
+      await tester.tap(logoutBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Login Screen'), findsOneWidget);
+    });
+
+    testWidgets('logout with dirty data shows warning dialog and cancels', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async => [
+        FacilityLayout()..isDirty = true
+      ]);
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.dragFrom(const Offset(200, 400), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      final logoutBtn = find.text('Log Out');
+      await tester.tap(logoutBtn);
+      await tester.pumpAndSettle();
+
+      // Dialog should appear
+      expect(find.byType(AlertDialog), findsOneWidget);
+      
+      // Tap cancel
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      
+      // Still on settings screen
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Login Screen'), findsNothing);
+    });
+    
+    testWidgets('logout with dirty data shows warning dialog and confirms', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async => [
+        FacilityLayout()..isDirty = true
+      ]);
+      when(() => mockAuth.logout()).thenAnswer((_) async => null);
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.dragFrom(const Offset(200, 400), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      final logoutBtn = find.text('Log Out');
+      await tester.tap(logoutBtn);
+      await tester.pumpAndSettle();
+
+      // Dialog should appear
+      expect(find.byType(AlertDialog), findsOneWidget);
+      
+      // Tap confirm (Log out & Lose Data)
+      await tester.tap(find.text('Logout & Lose Data'));
+      await tester.pumpAndSettle();
+      
+      // Should navigate to login screen
+      expect(find.text('Login Screen'), findsOneWidget);
+    });
+    
+    testWidgets('sync string displays correctly when syncing', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final syncingState = SyncState(status: SyncStatus.syncing);
+      currentSyncState = syncingState;
+
+      when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [
+        FacilityLayout()..isDirty = true
+      ]);
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pump(const Duration(milliseconds: 100)); // Resolve FutureBuilder
+      await tester.pump(const Duration(milliseconds: 100)); // Resolve next frame
+      await tester.pump(const Duration(seconds: 1)); // Advance animations
+
+      expect(find.text('Synchronizing data...'), findsOneWidget);
+    });
+    
+    testWidgets('sync string displays correctly when error', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final errorState = SyncState(status: SyncStatus.error);
+      currentSyncState = errorState;
+
+      when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [
+        FacilityLayout()..isDirty = true
+      ]);
+
+      await tester.pumpWidget(createTestApp(const SettingsScreen()));
+      await tester.pump(const Duration(milliseconds: 100)); // Resolve FutureBuilder
+      await tester.pump(const Duration(milliseconds: 100)); // Resolve next frame
+      await tester.pump(const Duration(seconds: 1)); // Advance animations
+
+      expect(find.text('Sync failed. Tap to retry.'), findsOneWidget);
+    });
+  });
+}

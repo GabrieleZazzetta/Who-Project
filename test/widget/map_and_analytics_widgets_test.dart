@@ -176,7 +176,7 @@ void main() {
            final gotItBtn = find.text('Got it').last;
            await tester.ensureVisible(gotItBtn);
            await tester.pump(const Duration(milliseconds: 100));
-           await tester.tap(gotItBtn);
+           await tester.tap(gotItBtn, warnIfMissed: false);
            await tester.pump(const Duration(milliseconds: 500));
         }
 

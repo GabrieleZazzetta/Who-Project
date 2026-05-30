@@ -930,7 +930,29 @@ void main() {
 
         // Check that the clinic exists
         expect(find.text('Delete Me Clinic'), findsAtLeastNWidgets(1));
+
+        // Tap Delete
+        final deleteIcon = find.byIcon(Icons.delete_outline).first;
+        await tester.tap(deleteIcon);
+        await tester.pump(const Duration(milliseconds: 1000)); // wait for dialog animation
+
+        expect(find.text('Delete Assessment'), findsOneWidget);
+
+        // Tap Confirm Delete
+        await tester.tap(find.byType(ElevatedButton).last);
+        await tester.pump(const Duration(milliseconds: 1000));
+        await tester.pump(const Duration(milliseconds: 1000));
+        
+        // We do not wait for the async _loadAssessments to finish to avoid flakes
+        // BUT we MUST yield to the real event loop so Isar can finish its read!
+        await tester.runAsync(() async {
+          await Future.delayed(const Duration(milliseconds: 200));
+        });
       });
+
+
+
+
 
       testWidgets('tablet landscape shows split detail view', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));

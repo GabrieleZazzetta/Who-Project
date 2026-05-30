@@ -323,7 +323,12 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(380, 700));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(createProviderAppWithRouter(const Scaffold(body: LoginScreen())));
+      await tester.pumpWidget(createProviderAppWithRouter(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(380, 700)),
+          child: const Scaffold(body: LoginScreen()),
+        ),
+      ));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -332,5 +337,55 @@ void main() {
       expect(find.byKey(const Key('input_password')), findsOneWidget);
       expect(find.byKey(const Key('btn_authenticate')), findsOneWidget);
     });
-  });
+
+    testWidgets('forgot password modal shows errors for empty fields', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        MediaQuery(
+          data: const MediaQueryData(size: Size(400, 800)),
+          child: const Scaffold(body: LoginScreen()),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Open Forgot Password modal
+      final forgotPassBtn = find.text('Forgot Password?');
+      await tester.ensureVisible(forgotPassBtn);
+      await tester.tap(forgotPassBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Account Recovery'), findsOneWidget);
+
+      // Tap Verify & Continue without email
+      final verifyBtn = find.text('Verify & Continue');
+      await tester.ensureVisible(verifyBtn);
+      await tester.tap(verifyBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Please enter your email.'), findsOneWidget);
+
+      // Enter email but no date
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.last, 'test@who.int');
+      
+      await tester.tap(verifyBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Please select your date of birth.'), findsOneWidget);
+      
+      // Close modal
+      final closeBtn = find.byIcon(Icons.close);
+      await tester.tap(closeBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Account Recovery'), findsNothing);
+    });
+
+      });
 }

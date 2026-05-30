@@ -9,10 +9,14 @@ import 'package:go_router/go_router.dart';
 void main() {
   Widget createProviderAppWithRouter(Widget home) {
     final router = GoRouter(
-      initialLocation: '/',
+      initialLocation: '/home',
       routes: [
         GoRoute(
           path: '/',
+          builder: (context, state) => const Scaffold(body: Text('Root')),
+        ),
+        GoRoute(
+          path: '/home',
           builder: (context, state) => home,
         ),
         GoRoute(
@@ -57,7 +61,7 @@ void main() {
       
       final nextButton = find.text('Next').hitTestable();
       await tester.tap(nextButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Step 2
       expect(find.text('Geographical Location'), findsWidgets);
@@ -67,9 +71,18 @@ void main() {
       await tester.enterText(textFieldsStep2.at(2), 'District');
       await tester.enterText(textFieldsStep2.at(3), 'City');
       await tester.enterText(textFieldsStep2.at(4), 'Address');
+      
+      // Select Location Record dropdown
+      final dropdownsStep2 = find.byType(DropdownButtonFormField<String>);
+      if (dropdownsStep2.evaluate().isNotEmpty) {
+        await tester.tap(dropdownsStep2.first);
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Urban').last);
+        await tester.pump(const Duration(milliseconds: 300));
+      }
 
       await tester.tap(nextButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Step 3
       expect(find.text('Facility Identification'), findsWidgets);
@@ -83,29 +96,68 @@ void main() {
       await tester.enterText(textFieldsStep3.at(6), 'Resp Position');
       
       await tester.tap(nextButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Step 4
       expect(find.text('Existing Healthcare Services'), findsWidgets);
-      // Here we have DropdownButtonFormField.
-      // Offers inpatient? We need to tap it to Yes so we can fill beds.
-      // There are multiple dropdowns, let's just submit directly or interact with one.
+      
+      // Select Dropdowns in Step 4
+      final dropdownsStep4 = find.byType(DropdownButtonFormField<String>);
+      
+      // Outpatient
+      if (dropdownsStep4.evaluate().isNotEmpty) {
+        await tester.tap(dropdownsStep4.at(0));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Yes').last);
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+      
+      // Inpatient Yes
+      if (dropdownsStep4.evaluate().length > 1) {
+        await tester.tap(dropdownsStep4.at(1));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Yes').last);
+        await tester.pump(const Duration(milliseconds: 300));
+        
+        // Fill inpatient fields
+        final numberFields = find.byType(TextFormField);
+        await tester.enterText(numberFields.at(0), '100'); // total beds
+        await tester.enterText(numberFields.at(1), '20'); // icu beds
+        
+        final conditionalDropdowns = find.byType(DropdownButtonFormField<String>);
+        if (conditionalDropdowns.evaluate().length > 2) {
+          // Has 24h emergency
+          await tester.tap(conditionalDropdowns.at(2));
+          await tester.pump(const Duration(milliseconds: 300));
+          await tester.tap(find.text('Yes').last);
+          await tester.pump(const Duration(milliseconds: 300));
+        }
+        
+        // Inpatient No (to trigger clearing logic)
+        await tester.tap(dropdownsStep4.at(1));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('No').last);
+        await tester.pump(const Duration(milliseconds: 300));
+      }
       
       // Let's test the Back button first
       final backButton = find.text('Back').hitTestable();
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Facility Identification'), findsWidgets);
       
       // Go next again
       await tester.tap(nextButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Existing Healthcare Services'), findsWidgets);
 
       // We are at step 4. Submit
       final submitButton = find.text('Start Assessment').hitTestable();
       await tester.tap(submitButton);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Should have navigated to map
       expect(find.text('Map Screen'), findsOneWidget);
@@ -129,10 +181,10 @@ void main() {
       expect(find.byType(AnimatedContainer), findsWidgets);
       
       // Tap collapse menu
-      final menuBtn = find.byIcon(Icons.menu_open_rounded);
-      if (menuBtn.evaluate().isNotEmpty) {
-        await tester.tap(menuBtn);
-        await tester.pumpAndSettle();
+      final collapseBtn = find.byIcon(Icons.menu_open_rounded);
+      if (collapseBtn.evaluate().isNotEmpty) {
+        await tester.tap(collapseBtn);
+        await tester.pump(const Duration(milliseconds: 300));
       }
     });
 
