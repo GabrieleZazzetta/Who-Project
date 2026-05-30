@@ -245,6 +245,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
           shape: BoxShape.circle,
         ),
         child: IconButton(
+          key: const Key('btn_general_assessment'),
           icon: Icon(Icons.domain_verification,
               color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
           tooltip: AppLocalizations.of(context)!.generalAssessment,
@@ -400,6 +401,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       width: zone.touchArea.width * scale,
       height: zone.touchArea.height * scale,
       child: GestureDetector(
+        key: Key('zone_${zone.id}'),
         behavior: HitTestBehavior.opaque,
         onTap: () async {
           if (_isNavigating) return;

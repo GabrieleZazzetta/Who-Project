@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -132,6 +133,71 @@ void main() {
         expect(find.text('No reports available for this selection.'), findsNothing);
         expect(find.byType(CustomScrollView), findsWidgets);
       });
+
+      testWidgets('interacts with dropdowns and info modal', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 2400));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        final facility = FacilityLayout()
+          ..facilityName = 'Test Hospital'
+          ..dateCreated = DateTime(2023, 1, 1)
+          ..generalInfo = (GeneralFacilityInfo()..country = 'Italy');
+          
+        final zone = SpatialZone()..name = 'Zone 1';
+        final question = AssessmentQuestion()
+          ..id = 'q1'
+          ..category = AssessmentCategory.infectionPreventionControl
+          ..selectedCompliance = ComplianceLevel.meetsTarget;
+          
+        zone.checklist = List.from(zone.checklist)..add(question);
+        facility.zones = List.from(facility.zones)..add(zone);
+
+        await tester.runAsync(() async {
+          await testIsar.writeTxn(() async {
+            await testIsar.facilityLayouts.put(facility);
+          });
+        });
+
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        
+        // Tap info icon
+        final infoIcon = find.byIcon(Icons.info_outline_rounded).first;
+        if (infoIcon.evaluate().isNotEmpty) {
+           await tester.ensureVisible(infoIcon);
+           await tester.pump(const Duration(milliseconds: 100));
+           await tester.tap(infoIcon);
+           await tester.pump(const Duration(milliseconds: 500));
+           
+           final gotItBtn = find.text('Got it').last;
+           await tester.ensureVisible(gotItBtn);
+           await tester.pump(const Duration(milliseconds: 100));
+           await tester.tap(gotItBtn);
+           await tester.pump(const Duration(milliseconds: 500));
+        }
+
+        // Tap country dropdown
+        final dropdownFinder = find.byType(DropdownButton<String>).first;
+        if (dropdownFinder.evaluate().isNotEmpty) {
+           await tester.ensureVisible(dropdownFinder);
+           await tester.pump(const Duration(milliseconds: 100));
+           await tester.tap(dropdownFinder, warnIfMissed: false);
+           await tester.pump(const Duration(milliseconds: 500));
+        }
+        
+        // Select 'Italy'
+        final italyItem = find.text('Italy').last;
+        if (italyItem.evaluate().isNotEmpty) {
+           await tester.ensureVisible(italyItem);
+           await tester.pump(const Duration(milliseconds: 100));
+           await tester.tap(italyItem, warnIfMissed: false);
+           await tester.pump(const Duration(milliseconds: 500));
+        }
+      });
     });
 
     // ==========================================
@@ -195,6 +261,61 @@ void main() {
         expect(find.byIcon(Icons.assignment_outlined), findsOneWidget);
         expect(find.byIcon(Icons.domain_verification), findsOneWidget);
       });
+
+      Widget createMapWidgetWithRouter(Widget screen) {
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => screen),
+            GoRoute(path: '/assessment', builder: (context, state) => const Scaffold(body: Text('Assessment'))),
+          ],
+        );
+        return ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(DatabaseService.instance),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', '')],
+          ),
+        );
+      }
+
+      testWidgets('taps general assessment button', (tester) async {
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createMapWidgetWithRouter(const InteractiveMapScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.standAloneCenter)));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        
+        final btn = find.byKey(const Key('btn_general_assessment'));
+        await tester.ensureVisible(btn);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.tap(btn);
+        await tester.pump(const Duration(milliseconds: 500));
+      });
+
+      testWidgets('taps a specific zone on the map', (tester) async {
+        await tester.runAsync(() async {
+          await tester.pumpWidget(createMapWidgetWithRouter(const InteractiveMapScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.standAloneCenter)));
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        
+        final zoneKey = find.byKey(const Key('zone_triage_area'));
+        if (zoneKey.evaluate().isNotEmpty) {
+           await tester.tap(zoneKey);
+           await tester.pump(const Duration(milliseconds: 500));
+        }
+      });
     });
 
     // ==========================================
@@ -218,7 +339,8 @@ void main() {
             await tester.pumpWidget(createTestWidget(const GlobalMapScreen3D()));
             await Future.delayed(const Duration(milliseconds: 500));
           });
-          await tester.pumpAndSettle();
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 500));
         } catch (e) {}
         
         expect(find.text('Global Assessment Map'), findsOneWidget);
@@ -232,12 +354,14 @@ void main() {
             await tester.pumpWidget(createTestWidget(const GlobalMapScreen3D()));
             await Future.delayed(const Duration(milliseconds: 500));
           });
-          await tester.pumpAndSettle();
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 500));
           
           final fab = find.byType(FloatingActionButton);
           if (fab.evaluate().isNotEmpty) {
             await tester.tap(fab);
-            await tester.pumpAndSettle();
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 500));
           }
         } catch (e) {}
       });
