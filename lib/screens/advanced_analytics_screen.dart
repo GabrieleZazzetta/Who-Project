@@ -18,6 +18,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   // LOGICA DI COSTRUZIONE DELL'INTERFACCIA CON SUPPORTO ADATTIVO
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     // Ordinamento cronologico per l'analisi temporale dei trend
@@ -33,7 +34,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.advancedAnalytics,
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: _slateDark, fontSize: 18)),
+                fontWeight: FontWeight.w800, color: _slateDark, fontSize: isTablet ? 24 : 18)),
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: IconThemeData(color: _slateDark),
@@ -93,35 +94,49 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
 
   // LAYOUT ADATTIVO PER TABLET E DESKTOP
   Widget _buildTabletLayout(BuildContext context, List<FacilityLayout> sortedData) {
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
-                    _buildLineChartCard(context, sortedData),
-                  ],
+          if (isLandscape)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                      _buildLineChartCard(context, sortedData, isTabletPortrait: false),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
-                    _buildRadarChartCard(context, data),
-                  ],
+                const SizedBox(width: 32),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                      _buildRadarChartCard(context, data, isTabletPortrait: false),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                _buildLineChartCard(context, sortedData, isTabletPortrait: true),
+                const SizedBox(height: 48),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                _buildRadarChartCard(context, data, isTabletPortrait: true),
+              ],
+            ),
           const SizedBox(height: 40),
         ],
       ),
@@ -152,7 +167,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
 
   // COMPONENTI DEI GRAFICI
   // Grafico a linee per la visualizzazione del trend di readiness
-  Widget _buildLineChartCard(BuildContext context, List<FacilityLayout> sortedData, {bool isLandscape = false}) {
+  Widget _buildLineChartCard(BuildContext context, List<FacilityLayout> sortedData, {bool isLandscape = false, bool isTabletPortrait = false}) {
     final validData = sortedData.where((d) => d.dateCreated != null).toList();
 
     // Caso con un solo assessment: mostriamo un riepilogo testuale invece di un grafico vuoto
@@ -211,7 +226,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       children: [
         // ── Grafico ──────────────────────────────────────────────────
         Container(
-          height: isLandscape ? 260 : 380,
+          height: isLandscape ? 260 : (isTabletPortrait ? 400 : 380),
           padding: const EdgeInsets.fromLTRB(8, 24, 16, 16),
           decoration: _cardDecoration(),
           child: LineChart(
@@ -352,7 +367,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
   }
 
   // Grafico a ragnatela per il confronto tra le diverse categorie tecniche
-  Widget _buildRadarChartCard(BuildContext context, List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false}) {
+  Widget _buildRadarChartCard(BuildContext context, List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false, bool isTabletPortrait = false}) {
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -383,7 +398,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     double logistics = getPct(AssessmentCategory.logistics);
 
     return Container(
-      height: isLandscape ? 280 : (isSmartphonePortrait ? 420 : 350),
+      height: isLandscape ? 280 : (isTabletPortrait ? 500 : (isSmartphonePortrait ? 420 : 350)),
       padding: const EdgeInsets.fromLTRB(52, 24, 52, 24),
       decoration: _cardDecoration(),
       child: Column(

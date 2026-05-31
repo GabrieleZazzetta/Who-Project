@@ -154,7 +154,13 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded,
                 color: const Color(0xFF003D73), size: isTablet ? 28 : 20),
-            onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/home'); } },
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
           ),
 
           // Titolo: centrato e più grande solo su tablet/mobile portrait
@@ -279,7 +285,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                             ? 16
                                             : 32),
                                 Text(
-                                  AppLocalizations.of(context)!.selectFacilityType,
+                                  AppLocalizations.of(context)!
+                                      .selectFacilityType,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize:
@@ -294,7 +301,9 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  AppLocalizations.of(context)!.facilitySelectionDescription(_emergencyName),
+                                  AppLocalizations.of(context)!
+                                      .facilitySelectionDescription(
+                                          _emergencyName),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize:
@@ -359,7 +368,13 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white, size: 22),
-                    onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/home'); } },
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/home');
+                      }
+                    },
                     tooltip: AppLocalizations.of(context)!.back,
                   ),
                 ),
@@ -415,7 +430,9 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     final bool isIpadLandscape = isTabletGrid && !isPortraitGrid;
 
     // BINARIO ISOLATO PER IPAD LANDSCAPE E TELEFONO ORIZZONTALE
-    final double gridAspectRatio = isIpadLandscape ? 1.9 : ((!isPortraitGrid && !isTabletGrid) ? 2.0 : 2.5);
+    final double gridAspectRatio = isIpadLandscape
+        ? 1.9
+        : ((!isPortraitGrid && !isTabletGrid) ? 2.0 : 2.5);
     final double spacing = isIpadLandscape ? 32.0 : 16.0;
 
     return GridView.count(
@@ -426,7 +443,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
       crossAxisSpacing: spacing,
       mainAxisSpacing: spacing,
       padding: EdgeInsets.symmetric(
-          horizontal: isIpadLandscape ? 48.0 : 24.0, 
+          horizontal: isIpadLandscape ? 48.0 : 24.0,
           vertical: isIpadLandscape ? 0 : 8.0),
       children: items,
     );
@@ -488,7 +505,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
               }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(AppLocalizations.of(context)!.moduleLockedDevelopment)));
+                  content: Text(
+                      AppLocalizations.of(context)!.moduleLockedDevelopment)));
             }
           },
           child: Padding(
@@ -609,4 +627,3 @@ class _FacilityData {
     required this.color,
   });
 }
-

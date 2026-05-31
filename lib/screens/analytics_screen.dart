@@ -307,14 +307,24 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             delegate: SliverChildListDelegate([
               _buildKpiRow(data.length, avgReadiness, criticalFailsCount),
               const SizedBox(height: 32),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct)),
-                  const SizedBox(width: 32),
-                  Expanded(child: _buildCategorySection(categoryScores)),
-                ],
-              ),
+              if (MediaQuery.of(context).orientation == Orientation.landscape)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct)),
+                    const SizedBox(width: 32),
+                    Expanded(child: _buildCategorySection(categoryScores)),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildComplianceSection(totalQuestionsAnswered, meetsTargetCount, meetsPct, partialCount, partialPct, doesNotMeetCount, failsPct),
+                    const SizedBox(height: 48),
+                    _buildCategorySection(categoryScores),
+                  ],
+                ),
               const SizedBox(height: 32),
               _buildRankingSection(),
               const SizedBox(height: 40),

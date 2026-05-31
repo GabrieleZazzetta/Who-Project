@@ -633,32 +633,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           boxShadow: isActive
-              ? [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.05), blurRadius: 4)
-                ]
+              ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)]
               : [],
         ),
-        child: Row(
-          children: [
-            Icon(
-              title.contains("WHO") ? Icons.verified_user : Icons.public,
-              color: isActive ? Colors.white : Colors.grey.shade500,
-              size: 24,
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey.shade600,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isActive ? Colors.white : Colors.grey.shade600,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -836,7 +821,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildLoginNavigation() {
-    return Wrap(
+    final mediaQuery = MediaQuery.of(context);
+    final bool isTablet = mediaQuery.size.shortestSide >= 600;
+    final bool isMobile = !isTablet;
+
+    Widget content = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -850,6 +839,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   color: Theme.of(context).colorScheme.primary)),
         ),
       ],
+    );
+
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.center,
+      child: content,
     );
   }
 

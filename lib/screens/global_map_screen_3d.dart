@@ -15,8 +15,9 @@ import '../helpers/global_map_helper.dart';
 import 'interactive_map_screen.dart';
 import '../l10n/app_localizations.dart';
 
-const String _mapboxPublicToken =
-    String.fromEnvironment('MAPBOX_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN_HERE');
+const String _mapboxPublicToken = String.fromEnvironment('MAPBOX_TOKEN',
+    defaultValue:
+        'pk.eyJ1IjoiemF6em8zMyIsImEiOiJjbW9xdmQ0b2wxeTEzMnBwaHhzamVwaHF1In0.7cm8WazVMzTogDvB8A6WMA');
 
 class GlobalMapScreen3D extends ConsumerStatefulWidget {
   const GlobalMapScreen3D({super.key});
@@ -58,7 +59,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     _pinAmber = await _generatePinImage(Colors.amber.shade500);
     _pinGreen = await _generatePinImage(Colors.green.shade500);
 
-    final assessments = await ref.read(databaseServiceProvider).getAllAssessments();
+    final assessments =
+        await ref.read(databaseServiceProvider).getAllAssessments();
     final List<FacilityLayout> facilities = [];
     final List<Point> coords = [];
 
@@ -124,7 +126,9 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
         ..strokeWidth = size * 0.07,
     );
 
-    final image = await recorder.endRecording().toImage(canvasSize.toInt(), canvasSize.toInt());
+    final image = await recorder
+        .endRecording()
+        .toImage(canvasSize.toInt(), canvasSize.toInt());
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
@@ -142,8 +146,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     _mapboxMap = mapboxMap;
 
     try {
-      await _mapboxMap?.style.setProjection(
-          StyleProjection(name: StyleProjectionName.globe));
+      await _mapboxMap?.style
+          .setProjection(StyleProjection(name: StyleProjectionName.globe));
     } catch (_) {}
 
     if (_allCoordinates.isEmpty) return;
@@ -153,8 +157,10 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
 
     final pins = List.generate(_loadedFacilities.length, (i) {
       final f = _loadedFacilities[i];
-      bool hasCritical = f.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
-      final image = hasCritical ? _pinRed! : _pinForScore(f.globalReadinessScore);
+      bool hasCritical =
+          f.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
+      final image =
+          hasCritical ? _pinRed! : _pinForScore(f.globalReadinessScore);
       return PointAnnotationOptions(
         geometry: _allCoordinates[i],
         image: image,
@@ -192,7 +198,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   // ANTEPRIMA STRUTTURA
   // BottomSheet con header informativo e sezione score + navigazione ai dettagli
   void _showFacilityPreview(FacilityLayout facility) {
-    final Color color = GlobalMapHelper.scoreColor(facility.globalReadinessScore);
+    final Color color =
+        GlobalMapHelper.scoreColor(facility.globalReadinessScore);
     final double score = facility.globalReadinessScore;
 
     showModalBottomSheet(
@@ -253,37 +260,40 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
                     color: Colors.white),
               ),
               const SizedBox(height: 6),
-              Builder(
-                builder: (context) {
-                  final bool isSmartphone = MediaQuery.of(context).size.width < 600;
-                  final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-                  final bool isSmartphonePortrait = isSmartphone && isPortrait;
-                  
-                  final locationText = Text(
-                    "${facility.generalInfo?.city ?? 'Unknown'}, "
-                    "${facility.generalInfo?.country ?? 'Unknown'}",
-                    style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                  );
+              Builder(builder: (context) {
+                final bool isSmartphone =
+                    MediaQuery.of(context).size.width < 600;
+                final bool isPortrait =
+                    MediaQuery.of(context).orientation == Orientation.portrait;
+                final bool isSmartphonePortrait = isSmartphone && isPortrait;
 
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-                        child: Icon(Icons.location_on, size: 14, color: Colors.grey.shade400),
-                      ),
-                      const SizedBox(width: 4),
-                      if (isSmartphonePortrait)
-                        Expanded(child: locationText)
-                      else
-                        locationText,
-                    ],
-                  );
-                }
-              ),
+                final locationText = Text(
+                  "${facility.generalInfo?.city ?? 'Unknown'}, "
+                  "${facility.generalInfo?.country ?? 'Unknown'}",
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                );
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Icon(Icons.location_on,
+                          size: 14, color: Colors.grey.shade400),
+                    ),
+                    const SizedBox(width: 4),
+                    if (isSmartphonePortrait)
+                      Expanded(child: locationText)
+                    else
+                      locationText,
+                  ],
+                );
+              }),
               const SizedBox(height: 4),
               Text(
-                AppLocalizations.of(context)!.assessedOn(DateFormat('dd MMM yyyy').format(facility.dateCreated ?? DateTime.now())),
+                AppLocalizations.of(context)!.assessedOn(
+                    DateFormat('dd MMM yyyy')
+                        .format(facility.dateCreated ?? DateTime.now())),
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
               ),
             ],
@@ -342,8 +352,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
               backgroundColor: const Color(0xFF38BDF8),
               foregroundColor: const Color(0xFF0F172A),
               elevation: 4,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
             ),
@@ -417,11 +426,14 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
           infiniteBounds: true,
         ),
         MbxEdgeInsets(top: 100.0, left: 100.0, bottom: 100.0, right: 100.0),
-        null, null, null, null,
+        null,
+        null,
+        null,
+        null,
       );
 
-      await _mapboxMap!.flyTo(
-          camera, MapAnimationOptions(duration: 3000, startDelay: 0));
+      await _mapboxMap!
+          .flyTo(camera, MapAnimationOptions(duration: 3000, startDelay: 0));
     } catch (e) {
       debugPrint("FlyTo error: $e");
     }
@@ -434,8 +446,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.globalAssessmentMap,
-            style:
-                TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -462,8 +473,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
                 zoom: 1.0,
                 pitch: 0.0,
               ),
-              styleUri:
-                  'mapbox://styles/zazzo33/cmor4cj6f005s01sab89uh960',
+              styleUri: 'mapbox://styles/zazzo33/cmor4cj6f005s01sab89uh960',
               onMapCreated: _onMapCreated,
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,

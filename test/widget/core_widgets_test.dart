@@ -377,14 +377,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final profileTile = find.text('User Profile');
-        await tester.scrollUntilVisible(profileTile, 200.0, scrollable: find.byType(Scrollable).first);
-        await tester.tap(profileTile);
-        await tester.pumpAndSettle();
+        final profileText = find.text('User Profile');
+        await tester.scrollUntilVisible(profileText, 200.0, scrollable: find.byType(Scrollable).first);
+        await tester.tap(profileText);
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
 
-        expect(find.text('Save Changes'), findsOneWidget);
+        final saveChangesBtn = find.text('Save Changes');
+        expect(saveChangesBtn, findsOneWidget);
         
-        await tester.tap(find.text('Save Changes'));
+        await tester.tap(saveChangesBtn);
         await tester.pumpAndSettle();
         
         expect(find.text('Profile updated successfully'), findsOneWidget);
@@ -593,7 +595,7 @@ void main() {
         expect(find.text("Date of Birth"), findsOneWidget);
       });
 
-      testWidgets('password requirements checkmark state updates dynamically', skip: true,
+      testWidgets('password requirements checkmark state updates dynamically',
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800)); // Usiamo Mobile Portrait per evitare layout multipli e semplificare la ricerca
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -604,6 +606,7 @@ void main() {
         final passwordFieldFinder = find.byType(TextFormField).last;
         expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
 
+        await tester.ensureVisible(passwordFieldFinder);
         await tester.enterText(passwordFieldFinder, "abc");
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
@@ -614,7 +617,7 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
       });
 
-      testWidgets('shows validation errors for invalid email formats and missing date/password', skip: true, (WidgetTester tester) async {
+      testWidgets('shows validation errors for invalid email formats and missing date/password', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800)); // Mobile Portrait
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -625,34 +628,42 @@ void main() {
         final submitButton = find.byType(ElevatedButton).last;
 
         // WHO Staff - invalid email
+        await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "test@gmail.com");
+        await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
         expect(find.text("WHO Staff must use a @who.int email"), findsOneWidget);
 
         // Cambia a External Partner
+        await tester.ensureVisible(find.text("External Partner"));
         await tester.tap(find.text("External Partner"));
         await tester.pumpAndSettle();
 
         // External Partner - invalid email
+        await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "invalid-email");
+        await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
         expect(find.text("Please enter a valid email address"), findsOneWidget);
 
         // Fix email ma data mancante
+        await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "test@example.com");
+        await tester.ensureVisible(find.byType(TextFormField).at(0));
         await tester.enterText(find.byType(TextFormField).at(0), "John");
+        await tester.ensureVisible(find.byType(TextFormField).at(1));
         await tester.enterText(find.byType(TextFormField).at(1), "Doe");
         // Simulate a tap on Submit to trigger form validation
-        await tester.scrollUntilVisible(submitButton, 200.0);
+        await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
         
         // Form is valid but Date of birth is null (trigger SnackBar)
         expect(find.byType(SnackBar), findsOneWidget);
         // The snackbar should say the date error
-        expect(find.textContaining('Date of birth is required'), findsWidgets);
+        expect(find.textContaining('Please select your Date of Birth'), findsWidgets);
       });
     });
 

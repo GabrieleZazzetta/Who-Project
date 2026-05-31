@@ -17,6 +17,14 @@ class SettingsScreen extends ConsumerWidget {
   void _showLanguageSelector(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final currentLocale = ref.read(localeProvider);
     final bool isTablet = MediaQuery.of(context).size.width >= 800;
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    Widget _wrapWithScrollIfNeeded(Widget child) {
+      if (isLandscape) {
+        return SingleChildScrollView(child: child);
+      }
+      return child;
+    }
 
     if (isTablet) {
       showDialog(
@@ -39,48 +47,50 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF005DA8).withOpacity(0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.language_rounded, size: 40, color: Color(0xFF005DA8)),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.chooseLanguage,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Select your preferred language",
-                    style: TextStyle(fontSize: 15, color: Colors.blueGrey.shade400),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildLanguageOptionPremium(context, ref, 'English', const Locale('en'), currentLocale),
-                  const SizedBox(height: 12),
-                  _buildLanguageOptionPremium(context, ref, 'Italiano', const Locale('it'), currentLocale),
-                  const SizedBox(height: 12),
-                  _buildLanguageOptionPremium(context, ref, 'Español', const Locale('es'), currentLocale),
-                  const SizedBox(height: 12),
-                  _buildLanguageOptionPremium(context, ref, 'Français', const Locale('fr'), currentLocale),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: _wrapWithScrollIfNeeded(
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF005DA8).withOpacity(0.08),
+                        shape: BoxShape.circle,
                       ),
-                      child: Text("Cancel", style: TextStyle(color: Colors.blueGrey.shade400, fontWeight: FontWeight.w700, fontSize: 16)),
+                      child: const Icon(Icons.language_rounded, size: 40, color: Color(0xFF005DA8)),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.chooseLanguage,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Select your preferred language",
+                      style: TextStyle(fontSize: 15, color: Colors.blueGrey.shade400),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildLanguageOptionPremium(context, ref, 'English', const Locale('en'), currentLocale),
+                    const SizedBox(height: 12),
+                    _buildLanguageOptionPremium(context, ref, 'Italiano', const Locale('it'), currentLocale),
+                    const SizedBox(height: 12),
+                    _buildLanguageOptionPremium(context, ref, 'Español', const Locale('es'), currentLocale),
+                    const SizedBox(height: 12),
+                    _buildLanguageOptionPremium(context, ref, 'Français', const Locale('fr'), currentLocale),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: Text("Cancel", style: TextStyle(color: Colors.blueGrey.shade400, fontWeight: FontWeight.w700, fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -96,19 +106,21 @@ class SettingsScreen extends ConsumerWidget {
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.chooseLanguage,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildLanguageOption(context, ref, 'English', const Locale('en'), currentLocale),
-                  _buildLanguageOption(context, ref, 'Italiano', const Locale('it'), currentLocale),
-                  _buildLanguageOption(context, ref, 'Español', const Locale('es'), currentLocale),
-                  _buildLanguageOption(context, ref, 'Français', const Locale('fr'), currentLocale),
-                ],
+              child: _wrapWithScrollIfNeeded(
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.chooseLanguage,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildLanguageOption(context, ref, 'English', const Locale('en'), currentLocale),
+                    _buildLanguageOption(context, ref, 'Italiano', const Locale('it'), currentLocale),
+                    _buildLanguageOption(context, ref, 'Español', const Locale('es'), currentLocale),
+                    _buildLanguageOption(context, ref, 'Français', const Locale('fr'), currentLocale),
+                  ],
+                ),
               ),
             ),
           );
@@ -181,20 +193,16 @@ class SettingsScreen extends ConsumerWidget {
   // LOGICA DI STATO E SINCRONIZZAZIONE
   // FUNZIONALITÀ PROFILO UTENTE PREMIUM
   void _showUserProfile(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(32), topRight: Radius.circular(32)),
-        ),
-        child: Column(
-          children: [
-            // Handle per il drag
+    final mediaQuery = MediaQuery.of(context);
+    final isTablet = mediaQuery.size.shortestSide >= 600;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final useDialog = isTablet || isLandscape;
+
+    Widget buildContent(bool isDialog) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isDialog) ...[
             const SizedBox(height: 12),
             Container(
               width: 40,
@@ -204,92 +212,151 @@ class SettingsScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(2)),
             ),
             const SizedBox(height: 24),
-            Text("User Profile",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.blueGrey.shade900)),
-            const SizedBox(height: 32),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                children: [
-                  // Avatar Premium
-                  Center(
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF005DA8).withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.person,
-                          size: 50, color: Color(0xFF005DA8)),
+          ],
+          if (isDialog) const SizedBox(height: 32),
+          Text("User Profile",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.blueGrey.shade900)),
+          const SizedBox(height: 24),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.symmetric(horizontal: isDialog ? 40 : 32, vertical: 8),
+              children: [
+                // Avatar Premium
+                Center(
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF005DA8).withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
+                    child: const Icon(Icons.person,
+                        size: 50, color: Color(0xFF005DA8)),
                   ),
-                  const SizedBox(height: 40),
-                  FutureBuilder<UserSession?>(
-                    future: ref.read(databaseServiceProvider).getCurrentSession(),
-                    builder: (context, snapshot) {
-                      final session = snapshot.data;
-                      // Se la sessione è ancora in caricamento, mostriamo un indicatore minimo
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
-                      }
+                ),
+                const SizedBox(height: 40),
+                FutureBuilder<UserSession?>(
+                  future: ref.read(databaseServiceProvider).getCurrentSession(),
+                  builder: (context, snapshot) {
+                    final session = snapshot.data;
+                    // Se la sessione è ancora in caricamento, mostriamo un indicatore minimo
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                          child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: CircularProgressIndicator()));
+                    }
 
-                      return Column(
-                        children: [
-                          _buildProfileField("Full Name", session?.displayName ?? "Authorized User"),
-                          const SizedBox(height: 20),
-                          _buildProfileField("Email Address", session?.email ?? "Email not found"),
-                          const SizedBox(height: 20),
-                          _buildProfileField("Role / Position", session?.isWhoStaff == true ? "WHO Staff" : "External Partner"),
-                          const SizedBox(height: 20),
-                          _buildProfileField(
-                              "Organization", session?.isWhoStaff == true ? "WHO - World Health Organization" : "Partner Organization"),
-                        ],
-                      );
-                    },
+                    return Column(
+                      children: [
+                        _buildProfileField("Full Name", session?.displayName ?? "Authorized User"),
+                        const SizedBox(height: 20),
+                        _buildProfileField("Email Address", session?.email ?? "Email not found"),
+                        const SizedBox(height: 20),
+                        _buildProfileField(
+                            "Role / Position",
+                            session?.isWhoStaff == true ? "WHO Staff" : "External Partner"),
+                        const SizedBox(height: 20),
+                        _buildProfileField(
+                            "Organization",
+                            session?.isWhoStaff == true
+                                ? "WHO - World Health Organization"
+                                : "Partner Organization"),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF005DA8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
                   ),
-                  const SizedBox(height: 48),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF005DA8),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Profile updated successfully"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                    child: const Text("Save Changes",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text("Cancel",
-                        style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w600)),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Profile updated successfully"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                  child: const Text("Save Changes",
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancel",
+                      style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (useDialog) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              width: 500,
+              constraints: BoxConstraints(
+                  maxHeight: mediaQuery.size.height * 0.9),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 50,
+                    offset: const Offset(0, 15),
                   ),
                 ],
               ),
+              child: buildContent(true),
             ),
-          ],
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            constraints: BoxConstraints(
+                maxHeight: mediaQuery.size.height * 0.85),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32), topRight: Radius.circular(32)),
+            ),
+            child: buildContent(false),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildProfileField(String label, String value) {

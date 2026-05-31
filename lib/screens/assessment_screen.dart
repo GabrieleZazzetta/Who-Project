@@ -526,36 +526,38 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     final double questionFontSize =
         (isTablet && isPortrait) ? 20.0 : (isTablet ? 17.0 : 15.0);
 
-    // Blocco bottoni compliance riutilizzato e scalato per tablet
-    final complianceRow = Row(
-      children: [
-        _buildComplianceSelector(
-          question: question,
-          level: ComplianceLevel.meetsTarget,
-          label: AppLocalizations.of(context)!.meetsTarget,
-          color: Colors.green.shade600,
-          icon: Icons.check_circle,
-          isTablet: isTablet,
-        ),
-        const SizedBox(width: 12),
-        _buildComplianceSelector(
-          question: question,
-          level: ComplianceLevel.partiallyMeets,
-          label: AppLocalizations.of(context)!.partiallyMeets,
-          color: Colors.orange.shade500,
-          icon: Icons.warning_amber_rounded,
-          isTablet: isTablet,
-        ),
-        const SizedBox(width: 12),
-        _buildComplianceSelector(
-          question: question,
-          level: ComplianceLevel.doesNotMeet,
-          label: AppLocalizations.of(context)!.doesNotMeet,
-          color: Colors.red.shade600,
-          icon: Icons.error_outline,
-          isTablet: isTablet,
-        ),
-      ],
+    final complianceRow = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildComplianceSelector(
+            question: question,
+            level: ComplianceLevel.meetsTarget,
+            label: AppLocalizations.of(context)!.meetsTarget,
+            color: Colors.green.shade600,
+            icon: Icons.check_circle,
+            isTablet: isTablet,
+          ),
+          const SizedBox(width: 12),
+          _buildComplianceSelector(
+            question: question,
+            level: ComplianceLevel.partiallyMeets,
+            label: AppLocalizations.of(context)!.partiallyMeets,
+            color: Colors.orange.shade500,
+            icon: Icons.warning_amber_rounded,
+            isTablet: isTablet,
+          ),
+          const SizedBox(width: 12),
+          _buildComplianceSelector(
+            question: question,
+            level: ComplianceLevel.doesNotMeet,
+            label: AppLocalizations.of(context)!.doesNotMeet,
+            color: Colors.red.shade600,
+            icon: Icons.error_outline,
+            isTablet: isTablet,
+          ),
+        ],
+      ),
     );
 
     return Container(
@@ -607,32 +609,35 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           if (question.mediaPaths != null && question.mediaPaths!.isNotEmpty)
             _buildMediaGallery(question),
           const SizedBox(height: 24),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton.icon(
-                onPressed: () => _showMediaPickerSheet(question),
-                icon: const Icon(Icons.add_a_photo_outlined, size: 22),
-                label: Text(AppLocalizations.of(context)!.addPhoto,
-                    style: TextStyle(fontSize: isTablet ? 15 : 14)),
-                style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey.shade700,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12)),
-              ),
-              TextButton.icon(
-                onPressed: () => _showNoteDialog(question),
-                icon: const Icon(Icons.edit_note, size: 22),
-                label: Text(question.note == null ? AppLocalizations.of(context)!.addNote : "Edit Note",
-                    style: TextStyle(fontSize: isTablet ? 15 : 14)),
-                style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey.shade700,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12)),
-              ),
-            ],
+          Align(
+            alignment: isLandscape ? Alignment.centerLeft : Alignment.centerRight,
+            child: Wrap(
+              alignment: isLandscape ? WrapAlignment.start : WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton.icon(
+                  onPressed: () => _showMediaPickerSheet(question),
+                  icon: const Icon(Icons.add_a_photo_outlined, size: 22),
+                  label: Text(AppLocalizations.of(context)!.addPhoto,
+                      style: TextStyle(fontSize: isTablet ? 15 : 14)),
+                  style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12)),
+                ),
+                TextButton.icon(
+                  onPressed: () => _showNoteDialog(question),
+                  icon: const Icon(Icons.edit_note, size: 22),
+                  label: Text(question.note == null ? AppLocalizations.of(context)!.addNote : "Edit Note",
+                      style: TextStyle(fontSize: isTablet ? 15 : 14)),
+                  style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12)),
+                ),
+              ],
+            ),
           )
         ],
       ),

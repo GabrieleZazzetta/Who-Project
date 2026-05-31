@@ -721,15 +721,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ],
     );
 
-    if (!isTablet) {
-      return Container(
-        width: double.infinity,
-        alignment: Alignment.center,
-        child: content,
-      );
-    }
-
-    return content;
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.center,
+      child: content,
+    );
   }
 }
 

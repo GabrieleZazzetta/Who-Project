@@ -568,28 +568,27 @@ class HomeContent extends StatelessWidget {
                       ),
                     ),
                   )
-                // BINARIO 2: TABLET E LANDSCAPE (INTATTI)
+                // BINARIO 2: TABLET E LANDSCAPE
                 : Center(
                     child: LayoutBuilder(builder: (context, constraints) {
-                      final bool isTabletPortrait = isTablet && !isLandscape;
                       return ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: 1200,
-                          minHeight: isTabletPortrait
+                          maxWidth: 900, // Premium max width for cards
+                          minHeight: isTablet
                               ? constraints.maxHeight
-                              : 0, // Forza la centratura verticale su tablet portrait
+                              : 0, // Forza la centratura verticale su tablet
                         ),
                         child: Column(
-                          mainAxisAlignment: isTabletPortrait
+                          mainAxisAlignment: isTablet
                               ? MainAxisAlignment.center
                               : MainAxisAlignment.start,
                           children: [
-                            isTabletPortrait
+                            isTablet
                                 ? Column(
                                     children: _buildCards(context)
                                         .map((card) => Padding(
                                               padding: const EdgeInsets.only(
-                                                  bottom: 16),
+                                                  bottom: 24),
                                               child: card,
                                             ))
                                         .toList(),
@@ -599,10 +598,7 @@ class HomeContent extends StatelessWidget {
                                     physics:
                                         const NeverScrollableScrollPhysics(),
                                     crossAxisCount: columns,
-                                    childAspectRatio:
-                                        ((isTablet && isLandscape)
-                                            ? 2.4
-                                            : (isLandscape ? 2.8 : 2.2)),
+                                    childAspectRatio: (isLandscape ? 2.8 : 2.2),
                                     crossAxisSpacing: 20,
                                     mainAxisSpacing: 20,
                                     padding: const EdgeInsets.symmetric(
