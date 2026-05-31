@@ -100,6 +100,29 @@ void main() {
         expect(retrievedCred!.passwordHash == hashValido, isTrue);
       });
 
+      test('clearSession removes user sessions', () async {
+        final session = UserSession()..isLoggedIn = true;
+        await DatabaseService.instance.saveSession(session);
+        var current = await DatabaseService.instance.getCurrentSession();
+        expect(current, isNotNull);
+
+        await DatabaseService.instance.clearSession();
+        current = await DatabaseService.instance.getCurrentSession();
+        expect(current, isNull);
+      });
+
+      test('getPendingPasswordSyncs retrieves correctly', () async {
+        final cred1 = LocalUserCredential()..email = 'sync1@who.int'..passwordNeedsSync = true;
+        final cred2 = LocalUserCredential()..email = 'sync2@who.int'..passwordNeedsSync = false;
+        
+        await DatabaseService.instance.saveLocalCredential(cred1);
+        await DatabaseService.instance.saveLocalCredential(cred2);
+
+        final pending = await DatabaseService.instance.getPendingPasswordSyncs();
+        expect(pending.length, equals(1));
+        expect(pending.first.email, equals('sync1@who.int'));
+      });
+
       test('clearAllLocalData wipes UserSessions but preserves LocalUserCredential (logout_flaw_test)', () async {
         final cred = LocalUserCredential()
           ..email = 'test@who.int'
