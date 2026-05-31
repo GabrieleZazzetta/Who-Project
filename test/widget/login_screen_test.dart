@@ -1,3 +1,5 @@
+import 'package:assessment_tool/models/user_model.dart';
+import 'package:assessment_tool/models/local_user_credential.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +15,10 @@ import '../helpers/mocks.dart';
 import 'package:mocktail/mocktail.dart';
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(LocalUserCredential());
+    registerFallbackValue(UserSession());
+  });
   late Directory tempDir;
   late MockAuthService mockAuth;
   late MockSyncNotifier mockSync;
@@ -22,7 +28,7 @@ void main() {
     mockSync = MockSyncNotifier();
   });
 
-  Widget createProviderAppWithRouter(Widget home) {
+  Widget createProviderAppWithRouter(Widget home, {DatabaseService? mockDb}) {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -38,7 +44,7 @@ void main() {
         authServiceProvider.overrideWithValue(mockAuth),
         syncProvider.overrideWith(() => mockSync),
         // We mock database so we don't need Isar
-        databaseServiceProvider.overrideWithValue(MockDatabaseService()),
+        databaseServiceProvider.overrideWithValue(mockDb ?? MockDatabaseService()),
       ],
       child: MaterialApp.router(
         locale: const Locale('en'),
@@ -354,7 +360,7 @@ void main() {
       // Open Forgot Password modal
       final forgotPassBtn = find.text('Forgot Password?');
       await tester.ensureVisible(forgotPassBtn);
-      await tester.tap(forgotPassBtn);
+      await tester.ensureVisible(forgotPassBtn); await tester.pumpAndSettle(); await tester.tap(forgotPassBtn, warnIfMissed: false);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -387,5 +393,139 @@ void main() {
       expect(find.text('Account Recovery'), findsNothing);
     });
 
-      });
+    testWidgets('forgot password handles missing email in local db', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      
+      final mockDb = MockDatabaseService();
+      when(() => mockDb.getLocalCredential(any())).thenAnswer((_) async => null);
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        const Scaffold(body: LoginScreen()),
+        mockDb: mockDb,
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final forgotPassBtn = find.text('Forgot Password?');
+      await tester.ensureVisible(forgotPassBtn);
+      await tester.ensureVisible(forgotPassBtn); await tester.pumpAndSettle(); await tester.tap(forgotPassBtn, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).first, 'test@example.com');
+      
+      // select any date
+      await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Verify & Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No matching registered account found locally.'), findsOneWidget);
+    });
+
+    testWidgets('forgot password handles incorrect date of birth', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      
+      final mockDb = MockDatabaseService();
+      final mockCred = LocalUserCredential()
+        ..email = 'test@example.com'
+        ..dateOfBirth = DateTime(1990, 1, 1);
+      when(() => mockDb.getLocalCredential(any())).thenAnswer((_) async => mockCred);
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        const Scaffold(body: LoginScreen()),
+        mockDb: mockDb,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Forgot Password?')); await tester.pumpAndSettle(); await tester.tap(find.text('Forgot Password?'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).first, 'test@example.com');
+      
+      // select wrong date (today)
+      await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Verify & Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Incorrect Date of Birth for this email.'), findsOneWidget);
+    });
+
+    testWidgets('forgot password completes reset flow successfully', (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      
+      final mockDb = MockDatabaseService();
+      final mockCred = LocalUserCredential()
+        ..id = 1
+        ..email = 'test@example.com'
+        ..dateOfBirth = DateTime(2000)
+        ..displayName = 'Tester'
+        ..isWhoStaff = false;
+        
+      when(() => mockDb.getLocalCredential(any())).thenAnswer((_) async => mockCred);
+      when(() => mockDb.saveLocalCredential(any())).thenAnswer((_) async => 1);
+      when(() => mockDb.saveSession(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        const Scaffold(body: LoginScreen()),
+        mockDb: mockDb,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Forgot Password?')); await tester.pumpAndSettle(); await tester.tap(find.text('Forgot Password?'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).first, 'test@example.com');
+      
+      await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Verify & Continue'));
+      await tester.pumpAndSettle();
+
+      // We should be on step 2 now
+      expect(find.text('Reset Password'), findsOneWidget);
+
+      // Enter invalid password
+      final passField = find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).last;
+      await tester.enterText(passField, 'weak');
+      await tester.tap(find.text('Save & Reset Password'));
+      await tester.pumpAndSettle();
+      expect(find.text('Please meet all password requirements.'), findsOneWidget);
+
+      // Enter valid password
+      await tester.enterText(passField, 'Strong!123');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save & Reset Password'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Password reset offline successful! Logged in.'), findsOneWidget);
+    });
+
+  });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

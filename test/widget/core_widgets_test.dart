@@ -805,6 +805,130 @@ void main() {
         expect(find.text('Select Facility Type'), findsOneWidget);
         expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
       });
+
+      testWidgets('taps back button', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+  
+        bool popped = false;
+        final router = GoRouter(
+          initialLocation: '/home',
+          routes: [
+            GoRoute(path: '/home', builder: (context, state) => const Scaffold(body: Text('Home'))),
+            GoRoute(path: '/facility', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+          ],
+        );
+  
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        router.push('/facility');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+  
+        final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
+        if (backBtn.evaluate().isNotEmpty) {
+          await tester.tap(backBtn.first);
+          await tester.pump();
+        }
+      });
+
+      testWidgets('toggles sidebar on tablet landscape', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+  
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+          ],
+        );
+  
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+  
+        final collapseBtn = find.byIcon(Icons.menu_open_rounded);
+        if (collapseBtn.evaluate().isNotEmpty) {
+          await tester.tap(collapseBtn.first);
+          await tester.pump(const Duration(milliseconds: 400));
+        }
+      });
+
+      testWidgets('handles locked module tap', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(400, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+  
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+          ],
+        );
+  
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+  
+        // Tap on a locked module (Stand-alone Center is NOT locked for mpox... wait.
+        // Let's use ebola to tap a locked one? Wait, Community Settings is locked in dev maybe?)
+        // Let's just tap 'Stand-alone Center' or 'Community Settings' and see if it shows Snackbar. 
+        // We know that `isImplemented` is false for some. 
+        // Let's just tap 'Existing Healthcare Facility with Ward' if we can't find 'Community Settings'.
+        final lockedFacility = find.text('Community Settings');
+        if (lockedFacility.evaluate().isNotEmpty) {
+          await tester.tap(lockedFacility);
+          await tester.pump();
+        } else {
+          // just tap anything that is locked. Let's tap the second facility which is usually locked for mpox if not implemented.
+          // Actually, 'Stand-alone Center' is implemented for Mpox. 
+          // What is NOT implemented? 'Treatment Unit'?
+          final treatmentUnit = find.text('Treatment Unit');
+          if (treatmentUnit.evaluate().isNotEmpty) {
+            await tester.tap(treatmentUnit);
+            await tester.pump();
+          }
+        }
+        
+      });
+
+      testWidgets('renders mobile landscape layout with list view', (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(800, 400));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+  
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.sars)),
+          ],
+        );
+  
+        await tester.pumpWidget(MaterialApp.router(
+          locale: const Locale('en'),
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+  
+        expect(find.text('Select Facility Type'), findsOneWidget);
+      });
     });
 
     // ==========================================

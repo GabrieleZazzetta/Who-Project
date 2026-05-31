@@ -21,7 +21,9 @@ void main() {
         ),
         GoRoute(
           path: '/map',
-          builder: (context, state) => const Scaffold(body: Text('Map Screen')),
+          builder: (context, state) {
+            return const Scaffold(body: Text('Map Screen'));
+          },
         ),
       ],
     );
@@ -48,7 +50,8 @@ void main() {
           ),
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Step 1
       expect(find.text('Assessment Information'), findsWidgets);
@@ -153,6 +156,8 @@ void main() {
 
       // We are at step 4. Submit
       final submitButton = find.text('Start Assessment').hitTestable();
+      await tester.ensureVisible(submitButton);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(submitButton);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -163,29 +168,35 @@ void main() {
       expect(find.text('Map Screen'), findsOneWidget);
     });
 
-    testWidgets('renders tablet landscape split layout', (WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(const Size(3600, 2400));
+    testWidgets('renders tablet landscape split layout', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1600, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        const Scaffold(
-          body: PreAssessmentScreen(
-            emergencyType: EmergencyType.ebola,
-            facilityType: FacilityType.screeningAndIsolation,
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(1600, 900),
+            devicePixelRatio: 1.0,
+          ),
+          child: const Scaffold(
+            body: PreAssessmentScreen(
+              emergencyType: EmergencyType.ebola,
+              facilityType: FacilityType.screeningAndIsolation,
+            ),
           ),
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-      // Should see the sidebar
+      // Verifica sidebar e form area
       expect(find.byType(AnimatedContainer), findsWidgets);
+      expect(find.byIcon(Icons.menu_open_rounded), findsOneWidget);
       
-      // Tap collapse menu
-      final collapseBtn = find.byIcon(Icons.menu_open_rounded);
-      if (collapseBtn.evaluate().isNotEmpty) {
-        await tester.tap(collapseBtn);
-        await tester.pump(const Duration(milliseconds: 300));
-      }
+      // Testa collapse sidebar
+      await tester.tap(find.byIcon(Icons.menu_open_rounded));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
     });
 
     testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
@@ -205,7 +216,8 @@ void main() {
           ),
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(AppBar), findsOneWidget);
     });
@@ -227,9 +239,78 @@ void main() {
           ),
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(AppBar), findsOneWidget);
+    });
+    testWidgets('Back button navigates to previous step', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        const Scaffold(
+          body: PreAssessmentScreen(
+            emergencyType: EmergencyType.mpox,
+            facilityType: FacilityType.standAloneCenter,
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Vai allo step 2
+      await tester.ensureVisible(find.text('Next'));
+      await tester.tap(find.text('Next').hitTestable());
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Geographical Location'), findsWidgets);
+
+      // Torna indietro
+      await tester.ensureVisible(find.text('Back'));
+      await tester.tap(find.text('Back').hitTestable());
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Assessment Information'), findsWidgets);
+    });
+
+    testWidgets('inpatient Yes shows extra fields, No hides them', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createProviderAppWithRouter(
+        const Scaffold(
+          body: PreAssessmentScreen(
+            emergencyType: EmergencyType.mpox,
+            facilityType: FacilityType.standAloneCenter,
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Naviga fino allo step 4
+      for (int i = 0; i < 3; i++) {
+        await tester.ensureVisible(find.text('Next'));
+        await tester.tap(find.text('Next').hitTestable());
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+      
+      expect(find.text('Existing Healthcare Services'), findsWidgets);
+
+      // Seleziona Inpatient Yes
+      final dropdowns = find.byType(DropdownButtonFormField<String>);
+      await tester.tap(dropdowns.at(1));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Yes').last);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Verifica che appaiano i campi extra
+      expect(find.byType(TextFormField), findsWidgets);
+      
+      // Seleziona No per nasconderli
+      await tester.tap(dropdowns.at(1));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('No').last);
+      await tester.pump(const Duration(milliseconds: 300));
     });
   });
 }

@@ -1133,15 +1133,10 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
           size: 14,
         ),
         const SizedBox(width: 6),
-        Text(
-          text,
-          style: TextStyle(
+        Expanded(child: Text(text, style: TextStyle(
             fontSize: 12,
             color: met ? Colors.green.shade700 : Colors.grey.shade600,
-            fontWeight: met ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
+            fontWeight: met ? FontWeight.bold : FontWeight.normal, ), ), ), ], );
   }
 }
+
