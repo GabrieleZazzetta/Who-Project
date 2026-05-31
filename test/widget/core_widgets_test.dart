@@ -1038,61 +1038,60 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.runAsync(() async {
-          await testIsar.writeTxn(() async {
-            await testIsar.facilityLayouts.clear();
-          });
-          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Delete Me Clinic'));
-        });
-        await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
+        final mockDb = MockDatabaseService();
+        final f = FacilityLayout(facilityName: 'Delete Me Clinic')..id = 1;
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [f]);
+        when(() => mockDb.deleteAssessment(any())).thenAnswer((_) async {});
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(mockDb),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const AssessmentsListScreen(),
+          ),
+        ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Check that the clinic exists
         expect(find.text('Delete Me Clinic'), findsAtLeastNWidgets(1));
 
-        // Tap Delete
         final deleteIcon = find.byIcon(Icons.delete_outline).first;
         await tester.tap(deleteIcon);
-        await tester.pump(const Duration(milliseconds: 1000)); // wait for dialog animation
+        await tester.pump(const Duration(milliseconds: 1000)); 
 
         expect(find.text('Delete Assessment'), findsOneWidget);
 
-        // Tap Confirm Delete
         await tester.tap(find.byType(ElevatedButton).last);
         await tester.pump(const Duration(milliseconds: 1000));
         await tester.pump(const Duration(milliseconds: 1000));
-        
-        // We do not wait for the async _loadAssessments to finish to avoid flakes
-        // BUT we MUST yield to the real event loop so Isar can finish its read!
-        await tester.runAsync(() async {
-          await Future.delayed(const Duration(milliseconds: 200));
-        });
       });
-
-
-
-
 
       testWidgets('tablet landscape shows split detail view', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.runAsync(() async {
-          await testIsar.writeTxn(() async {
-            await testIsar.facilityLayouts.clear();
-          });
-          final f1 = FacilityLayout(facilityName: 'Landscape Clinic')..dateCreated = DateTime(2024, 1, 1);
-          await DatabaseService.instance.saveAssessment(f1);
-        });
-        await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
+        final mockDb = MockDatabaseService();
+        final f1 = FacilityLayout(facilityName: 'Landscape Clinic')..dateCreated = DateTime(2024, 1, 1);
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [f1]);
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(mockDb),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const AssessmentsListScreen(),
+          ),
+        ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
@@ -1104,24 +1103,27 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.runAsync(() async {
-          await testIsar.writeTxn(() async {
-            await testIsar.facilityLayouts.clear();
-          });
-          final f1 = FacilityLayout(facilityName: 'High Score')..dateCreated = DateTime(2024, 1, 1);
-          final f2 = FacilityLayout(facilityName: 'Low Score')..dateCreated = DateTime(2024, 2, 1);
-          await DatabaseService.instance.saveAssessment(f1);
-          await DatabaseService.instance.saveAssessment(f2);
-        });
-        await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
+        final mockDb = MockDatabaseService();
+        final f1 = FacilityLayout(facilityName: 'High Score')..dateCreated = DateTime(2024, 1, 1);
+        final f2 = FacilityLayout(facilityName: 'Low Score')..dateCreated = DateTime(2024, 2, 1);
+        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [f1, f2]);
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            databaseServiceProvider.overrideWithValue(mockDb),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            syncProvider.overrideWith(() => MockSyncNotifier()),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const AssessmentsListScreen(),
+          ),
+        ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Find sort dropdown and change
         final sortButton = find.byIcon(Icons.sort);
         if (sortButton.evaluate().isNotEmpty) {
           await tester.tap(sortButton.first);

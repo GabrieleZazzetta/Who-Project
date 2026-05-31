@@ -154,7 +154,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded,
                 color: const Color(0xFF003D73), size: isTablet ? 28 : 20),
-            onPressed: () => context.pop(),
+            onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/home'); } },
           ),
 
           // Titolo: centrato e più grande solo su tablet/mobile portrait
@@ -359,7 +359,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white, size: 22),
-                    onPressed: () => context.pop(),
+                    onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/home'); } },
                     tooltip: AppLocalizations.of(context)!.back,
                   ),
                 ),
@@ -609,3 +609,4 @@ class _FacilityData {
     required this.color,
   });
 }
+
