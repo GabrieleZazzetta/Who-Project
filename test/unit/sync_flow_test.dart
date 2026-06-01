@@ -51,7 +51,7 @@ class FakeSyncRepository extends SyncRepository {
       throw Exception('Fake network failure');
     }
     pushedAssessments.add(facility);
-    return facility.remoteId ?? 'remote_${DateTime.now().millisecondsSinceEpoch}';
+    return facility.remoteId ?? 'remote_${facility.id ?? DateTime.now().millisecondsSinceEpoch}';
   }
 
   @override
@@ -65,7 +65,7 @@ class MockSyncRepository extends SyncRepository {
   @override
   Future<String?> pushAssessment(FacilityLayout facility) async {
     final data = {
-      'remoteId': facility.remoteId ?? 'remote_${DateTime.now().millisecondsSinceEpoch}',
+      'remoteId': facility.remoteId ?? 'remote_${facility.id ?? DateTime.now().millisecondsSinceEpoch}',
       'facilityName': facility.facilityName,
       'emergencyType': facility.emergencyType.name,
       'updatedAt': (facility.updatedAt ?? DateTime.now().toUtc()).toIso8601String(),
