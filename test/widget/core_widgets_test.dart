@@ -39,7 +39,7 @@ void main() {
       directory: tempDir.path,
     );
     DatabaseService.instance.setTestIsar(testIsar);
-    
+
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
 
@@ -52,7 +52,11 @@ void main() {
 
   tearDownAll(() async {
     testIsar.close();
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if (tempDir.existsSync()) {
+      try {
+        tempDir.deleteSync(recursive: true);
+      } catch (e) {}
+    }
   });
 
   setUp(() async {
@@ -67,7 +71,7 @@ void main() {
     final mockAuth = MockAuthService();
     when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
     when(() => mockAuth.logout()).thenAnswer((_) async {});
-    
+
     return ProviderScope(
       overrides: [
         authServiceProvider.overrideWithValue(mockAuth),
@@ -122,12 +126,12 @@ void main() {
   }
 
   group('Core Widgets Tests', () {
-
     // ==========================================
     // MAIN DASHBOARD (widget_main_dashboard_test.dart)
     // ==========================================
     group('MainDashboardScreen Tests', () {
-      testWidgets('renders home content with outbreak cards', (WidgetTester tester) async {
+      testWidgets('renders home content with outbreak cards',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(400, 800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
@@ -144,7 +148,8 @@ void main() {
         expect(find.text('SOON'), findsWidgets);
       });
 
-      testWidgets('info dialog opens on info button tap', (WidgetTester tester) async {
+      testWidgets('info dialog opens on info button tap',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(400, 800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
@@ -158,14 +163,15 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('WHO Assessment Tool'), findsOneWidget);
-        
+
         await tester.tap(find.text('Close'));
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('WHO Assessment Tool'), findsNothing);
       });
 
-      testWidgets('bottom navigation changes tabs', (WidgetTester tester) async {
+      testWidgets('bottom navigation changes tabs',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(400, 800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
@@ -183,15 +189,16 @@ void main() {
 
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.text('Mpox Outbreak'), findsNothing);
-        
+
         await tester.tap(find.byIcon(Icons.home_filled));
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
-        
+
         expect(find.text('Mpox Outbreak'), findsOneWidget);
       });
 
-      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+      testWidgets('renders tablet portrait layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(950, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
@@ -199,7 +206,8 @@ void main() {
         expect(find.byType(MainDashboardScreen), findsOneWidget);
       });
 
-      testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
+      testWidgets('renders mobile portrait layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.pumpWidget(createProviderApp(const MainDashboardScreen()));
@@ -259,7 +267,8 @@ void main() {
 
         // Crea router app mockando esplicitamente il db
         final mockAuth = MockAuthService();
-        when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
+        when(() => mockAuth.syncPendingPasswordChanges())
+            .thenAnswer((_) async {});
         when(() => mockAuth.logout()).thenAnswer((_) async {});
 
         final router = GoRouter(
@@ -301,19 +310,20 @@ void main() {
 
         // Esegui il tap
         await tester.tap(find.text('Log Out'));
-        await tester.pumpAndSettle(); 
+        await tester.pumpAndSettle();
 
         // Il dialog di warning deve apparire
         expect(find.text('Warning: Unsaved Data'), findsOneWidget);
 
         // Tap su 'Logout & Lose Data' per proseguire ed eseguire context.go('/login')
         await tester.tap(find.text('Logout & Lose Data'));
-        await tester.pumpAndSettle(); 
+        await tester.pumpAndSettle();
 
         expect(find.text('Login Placeholder'), findsOneWidget);
       });
 
-      testWidgets('changes language when selected', (WidgetTester tester) async {
+      testWidgets('changes language when selected',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -347,7 +357,7 @@ void main() {
         await tester.tap(find.text('Italiano'));
         await tester.pumpAndSettle();
 
-        // Dialog should be closed, and in a real app locale changes, 
+        // Dialog should be closed, and in a real app locale changes,
         // the Settings screen should now show 'Italiano' as subtitle.
         // We verify that 'Italiano' is exactly one widget (the subtitle, not the dialog).
         expect(find.text('Italiano'), findsOneWidget);
@@ -355,13 +365,15 @@ void main() {
         expect(find.byType(Dialog), findsNothing);
       });
 
-      testWidgets('opens user profile and saves changes', skip: true, (WidgetTester tester) async {
+      testWidgets('opens user profile and saves changes',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final mockDb = MockDatabaseService();
         when(() => mockDb.getAllAssessments()).thenAnswer((_) async => []);
-        when(() => mockDb.getCurrentSession()).thenAnswer((_) async => UserSession()..displayName = 'Profile User');
+        when(() => mockDb.getCurrentSession()).thenAnswer(
+            (_) async => UserSession()..displayName = 'Profile User');
 
         await tester.pumpWidget(ProviderScope(
           overrides: [
@@ -383,22 +395,27 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        final saveChangesBtn = find.text('Save Changes');
+        final saveChangesBtn = find.widgetWithText(ElevatedButton, 'Save Changes', skipOffstage: false);
+        await tester.ensureVisible(saveChangesBtn);
         expect(saveChangesBtn, findsOneWidget);
+
+        final buttonWidget = tester.widget<ElevatedButton>(saveChangesBtn);
+        buttonWidget.onPressed!();
         
-        await tester.tap(saveChangesBtn);
         await tester.pumpAndSettle();
-        
+
         expect(find.text('Profile updated successfully'), findsOneWidget);
       });
 
-      testWidgets('triggers offline sync when data exists', (WidgetTester tester) async {
+      testWidgets('triggers offline sync when data exists',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final mockDb = MockDatabaseService();
-        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [FacilityLayout()..facilityName='Test']);
-        
+        when(() => mockDb.getAllAssessments())
+            .thenAnswer((_) async => [FacilityLayout()..facilityName = 'Test']);
+
         final mockSync = MockSyncNotifier();
 
         await tester.pumpWidget(ProviderScope(
@@ -428,7 +445,8 @@ void main() {
     // ASSESSMENTS LIST (widget_list_test.dart)
     // ==========================================
     group('AssessmentsListScreen Tests', () {
-      testWidgets('should render empty state placeholder when no assessments exist',
+      testWidgets(
+          'should render empty state placeholder when no assessments exist',
           (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -439,7 +457,8 @@ void main() {
           });
         });
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -458,11 +477,14 @@ void main() {
           await testIsar.writeTxn(() async {
             await testIsar.facilityLayouts.clear();
           });
-          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
-          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
+          await DatabaseService.instance
+              .saveAssessment(FacilityLayout(facilityName: 'Clinic Rome'));
+          await DatabaseService.instance
+              .saveAssessment(FacilityLayout(facilityName: 'Clinic London'));
         });
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -485,7 +507,8 @@ void main() {
         expect(find.text("Clinic London"), findsNothing);
       });
 
-      testWidgets('Sort dropdown changes list order', (WidgetTester tester) async {
+      testWidgets('Sort dropdown changes list order',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -493,14 +516,17 @@ void main() {
           await testIsar.writeTxn(() async {
             await testIsar.facilityLayouts.clear();
           });
-          final f1 = FacilityLayout(facilityName: 'A Clinic')..dateCreated = DateTime(2023, 1, 1);
-          final f2 = FacilityLayout(facilityName: 'Z Clinic')..dateCreated = DateTime(2022, 1, 1);
+          final f1 = FacilityLayout(facilityName: 'A Clinic')
+            ..dateCreated = DateTime(2023, 1, 1);
+          final f2 = FacilityLayout(facilityName: 'Z Clinic')
+            ..dateCreated = DateTime(2022, 1, 1);
           await DatabaseService.instance.saveAssessment(f1);
           await DatabaseService.instance.saveAssessment(f2);
         });
 
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -510,23 +536,24 @@ void main() {
         // Tap sort dropdown
         final sortButton = find.byIcon(Icons.sort);
         if (sortButton.evaluate().isNotEmpty) {
-           await tester.tap(sortButton);
-           await tester.pump();
-           await tester.pump(const Duration(milliseconds: 300));
-           await tester.pump(const Duration(milliseconds: 300));
-           // Attempt to tap a sort option
-           final highToLow = find.text('Score: High to Low');
-           if (highToLow.evaluate().isNotEmpty) {
-             await tester.tap(highToLow);
-             await tester.pump();
-             await tester.pump(const Duration(milliseconds: 300));
-             await tester.pump(const Duration(milliseconds: 300));
-           }
+          await tester.tap(sortButton);
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          await tester.pump(const Duration(milliseconds: 300));
+          // Attempt to tap a sort option
+          final highToLow = find.text('Score: High to Low');
+          if (highToLow.evaluate().isNotEmpty) {
+            await tester.tap(highToLow);
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 300));
+            await tester.pump(const Duration(milliseconds: 300));
+          }
         }
         expect(find.text("A Clinic"), findsWidgets);
       });
 
-      testWidgets('Tapping an item attempts navigation', (WidgetTester tester) async {
+      testWidgets('Tapping an item attempts navigation',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -534,11 +561,13 @@ void main() {
           await testIsar.writeTxn(() async {
             await testIsar.facilityLayouts.clear();
           });
-          await DatabaseService.instance.saveAssessment(FacilityLayout(facilityName: 'Tap Clinic'));
+          await DatabaseService.instance
+              .saveAssessment(FacilityLayout(facilityName: 'Tap Clinic'));
         });
 
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -547,15 +576,17 @@ void main() {
 
         final item = find.text('Tap Clinic');
         expect(item, findsWidgets);
-        
+
         // Removed tap testing since it invokes GoRouter which is not provided in createProviderApp
       });
 
-      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+      testWidgets('renders tablet portrait layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(850, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -563,11 +594,13 @@ void main() {
         expect(find.byType(AssessmentsListScreen), findsOneWidget);
       });
 
-      testWidgets('renders mobile portrait layout', (WidgetTester tester) async {
+      testWidgets('renders mobile portrait layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         await tester.runAsync(() async {
-          await tester.pumpWidget(createProviderApp(const AssessmentsListScreen()));
+          await tester
+              .pumpWidget(createProviderApp(const AssessmentsListScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
         });
         await tester.pump();
@@ -585,7 +618,8 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.pumpWidget(createProviderApp(const Scaffold(body: RegisterScreen())));
+        await tester.pumpWidget(
+            createProviderApp(const Scaffold(body: RegisterScreen())));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
@@ -597,10 +631,12 @@ void main() {
 
       testWidgets('password requirements checkmark state updates dynamically',
           (WidgetTester tester) async {
-        await tester.binding.setSurfaceSize(const Size(400, 800)); // Usiamo Mobile Portrait per evitare layout multipli e semplificare la ricerca
+        await tester.binding.setSurfaceSize(const Size(400,
+            800)); // Usiamo Mobile Portrait per evitare layout multipli e semplificare la ricerca
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.pumpWidget(createProviderApp(const Scaffold(body: RegisterScreen())));
+        await tester.pumpWidget(
+            createProviderApp(const Scaffold(body: RegisterScreen())));
         await tester.pumpAndSettle();
 
         final passwordFieldFinder = find.byType(TextFormField).last;
@@ -613,15 +649,19 @@ void main() {
 
         await tester.enterText(passwordFieldFinder, "Abc1234!");
         await tester.pumpAndSettle();
-        
+
         expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
       });
 
-      testWidgets('shows validation errors for invalid email formats and missing date/password', (WidgetTester tester) async {
-        await tester.binding.setSurfaceSize(const Size(400, 800)); // Mobile Portrait
+      testWidgets(
+          'shows validation errors for invalid email formats and missing date/password',
+          (WidgetTester tester) async {
+        await tester.binding
+            .setSurfaceSize(const Size(400, 800)); // Mobile Portrait
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        await tester.pumpWidget(createProviderApp(const Scaffold(body: RegisterScreen())));
+        await tester.pumpWidget(
+            createProviderApp(const Scaffold(body: RegisterScreen())));
         await tester.pumpAndSettle();
 
         final emailField = find.byType(TextFormField).at(2);
@@ -633,7 +673,8 @@ void main() {
         await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
-        expect(find.text("WHO Staff must use a @who.int email"), findsOneWidget);
+        expect(
+            find.text("WHO Staff must use a @who.int email"), findsOneWidget);
 
         // Cambia a External Partner
         await tester.ensureVisible(find.text("External Partner"));
@@ -659,11 +700,12 @@ void main() {
         await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
-        
+
         // Form is valid but Date of birth is null (trigger SnackBar)
         expect(find.byType(SnackBar), findsOneWidget);
         // The snackbar should say the date error
-        expect(find.textContaining('Please select your Date of Birth'), findsWidgets);
+        expect(find.textContaining('Please select your Date of Birth'),
+            findsWidgets);
       });
     });
 
@@ -682,11 +724,17 @@ void main() {
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
-            GoRoute(path: '/pre-assessment', builder: (context, state) {
-              preAssessmentVisited = true;
-              return const Scaffold(body: Text('PreAssessment Placeholder'));
-            }),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/pre-assessment',
+                builder: (context, state) {
+                  preAssessmentVisited = true;
+                  return const Scaffold(
+                      body: Text('PreAssessment Placeholder'));
+                }),
           ],
         );
 
@@ -699,8 +747,10 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
-        expect(find.text('Existing Facility with Dedicated Ward'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'),
+            findsOneWidget);
+        expect(
+            find.text('Existing Facility with Dedicated Ward'), findsOneWidget);
         expect(find.text('Stand-Alone Treatment Centre'), findsOneWidget);
         expect(find.text('Congregate Settings'), findsOneWidget);
 
@@ -712,14 +762,18 @@ void main() {
         expect(find.text('PreAssessment Placeholder'), findsOneWidget);
       });
 
-      testWidgets('renders mobile portrait layout with standard header', (WidgetTester tester) async {
+      testWidgets('renders mobile portrait layout with standard header',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
           ],
         );
 
@@ -733,17 +787,22 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text('Select Facility Type'), findsOneWidget);
-        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'),
+            findsOneWidget);
       });
 
-      testWidgets('renders tablet landscape split layout', (WidgetTester tester) async {
+      testWidgets('renders tablet landscape split layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
           ],
         );
 
@@ -758,10 +817,12 @@ void main() {
 
         // Split layout renders sidebar with title
         expect(find.text('Select Facility Type'), findsOneWidget);
-        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'),
+            findsOneWidget);
       });
 
-      testWidgets('ebola emergency navigates to map instead of pre-assessment', (WidgetTester tester) async {
+      testWidgets('ebola emergency navigates to map instead of pre-assessment',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -769,11 +830,16 @@ void main() {
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.ebola)),
-            GoRoute(path: '/map', builder: (context, state) {
-              mapVisited = true;
-              return const Scaffold(body: Text('Map Placeholder'));
-            }),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.ebola)),
+            GoRoute(
+                path: '/map',
+                builder: (context, state) {
+                  mapVisited = true;
+                  return const Scaffold(body: Text('Map Placeholder'));
+                }),
           ],
         );
 
@@ -793,14 +859,18 @@ void main() {
         expect(mapVisited, isTrue);
       });
 
-      testWidgets('renders tablet portrait layout', (WidgetTester tester) async {
+      testWidgets('renders tablet portrait layout',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(800, 1200));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.sars)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.sars)),
           ],
         );
 
@@ -814,22 +884,29 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
 
         expect(find.text('Select Facility Type'), findsOneWidget);
-        expect(find.text('Screening, Triage & Temporary Isolation'), findsOneWidget);
+        expect(find.text('Screening, Triage & Temporary Isolation'),
+            findsOneWidget);
       });
 
       testWidgets('taps back button', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-  
+
         bool popped = false;
         final router = GoRouter(
           initialLocation: '/home',
           routes: [
-            GoRoute(path: '/home', builder: (context, state) => const Scaffold(body: Text('Home'))),
-            GoRoute(path: '/facility', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/home',
+                builder: (context, state) =>
+                    const Scaffold(body: Text('Home'))),
+            GoRoute(
+                path: '/facility',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
           ],
         );
-  
+
         await tester.pumpWidget(MaterialApp.router(
           locale: const Locale('en'),
           routerConfig: router,
@@ -841,7 +918,7 @@ void main() {
         router.push('/facility');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-  
+
         final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
         if (backBtn.evaluate().isNotEmpty) {
           await tester.tap(backBtn.first);
@@ -849,17 +926,21 @@ void main() {
         }
       });
 
-      testWidgets('toggles sidebar on tablet landscape', (WidgetTester tester) async {
+      testWidgets('toggles sidebar on tablet landscape',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-  
+
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
           ],
         );
-  
+
         await tester.pumpWidget(MaterialApp.router(
           locale: const Locale('en'),
           routerConfig: router,
@@ -868,7 +949,7 @@ void main() {
         ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-  
+
         final collapseBtn = find.byIcon(Icons.menu_open_rounded);
         if (collapseBtn.evaluate().isNotEmpty) {
           await tester.tap(collapseBtn.first);
@@ -879,14 +960,17 @@ void main() {
       testWidgets('handles locked module tap', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-  
+
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.mpox)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.mpox)),
           ],
         );
-  
+
         await tester.pumpWidget(MaterialApp.router(
           locale: const Locale('en'),
           routerConfig: router,
@@ -895,11 +979,11 @@ void main() {
         ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-  
+
         // Tap on a locked module (Stand-alone Center is NOT locked for mpox... wait.
         // Let's use ebola to tap a locked one? Wait, Community Settings is locked in dev maybe?)
-        // Let's just tap 'Stand-alone Center' or 'Community Settings' and see if it shows Snackbar. 
-        // We know that `isImplemented` is false for some. 
+        // Let's just tap 'Stand-alone Center' or 'Community Settings' and see if it shows Snackbar.
+        // We know that `isImplemented` is false for some.
         // Let's just tap 'Existing Healthcare Facility with Ward' if we can't find 'Community Settings'.
         final lockedFacility = find.text('Community Settings');
         if (lockedFacility.evaluate().isNotEmpty) {
@@ -907,7 +991,7 @@ void main() {
           await tester.pump();
         } else {
           // just tap anything that is locked. Let's tap the second facility which is usually locked for mpox if not implemented.
-          // Actually, 'Stand-alone Center' is implemented for Mpox. 
+          // Actually, 'Stand-alone Center' is implemented for Mpox.
           // What is NOT implemented? 'Treatment Unit'?
           final treatmentUnit = find.text('Treatment Unit');
           if (treatmentUnit.evaluate().isNotEmpty) {
@@ -915,20 +999,23 @@ void main() {
             await tester.pump();
           }
         }
-        
       });
 
-      testWidgets('renders mobile landscape layout with list view', (WidgetTester tester) async {
+      testWidgets('renders mobile landscape layout with list view',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(800, 400));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-  
+
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const FacilitySelectionScreen(emergency: EmergencyType.sars)),
+            GoRoute(
+                path: '/',
+                builder: (context, state) => const FacilitySelectionScreen(
+                    emergency: EmergencyType.sars)),
           ],
         );
-  
+
         await tester.pumpWidget(MaterialApp.router(
           locale: const Locale('en'),
           routerConfig: router,
@@ -937,7 +1024,7 @@ void main() {
         ));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-  
+
         expect(find.text('Select Facility Type'), findsOneWidget);
       });
     });
@@ -946,7 +1033,8 @@ void main() {
     // SETTINGS ADDITIONAL TESTS
     // ==========================================
     group('SettingsScreen Additional Tests', () {
-      testWidgets('renders mobile layout with SliverAppBar', (WidgetTester tester) async {
+      testWidgets('renders mobile layout with SliverAppBar',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -977,7 +1065,8 @@ void main() {
         expect(find.byType(CustomScrollView), findsOneWidget);
       });
 
-      testWidgets('mobile language selector uses BottomSheet', (WidgetTester tester) async {
+      testWidgets('mobile language selector uses BottomSheet',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1015,7 +1104,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
       });
 
-      testWidgets('no data shows disabled sync tile', (WidgetTester tester) async {
+      testWidgets('no data shows disabled sync tile',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(400, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1045,7 +1135,8 @@ void main() {
     // ASSESSMENTS LIST ADDITIONAL TESTS
     // ==========================================
     group('AssessmentsListScreen Additional Tests', () {
-      testWidgets('delete confirmation dialog appears on swipe/long-press', (WidgetTester tester) async {
+      testWidgets('delete confirmation dialog appears on swipe/long-press',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1074,7 +1165,7 @@ void main() {
 
         final deleteIcon = find.byIcon(Icons.delete_outline).first;
         await tester.tap(deleteIcon);
-        await tester.pump(const Duration(milliseconds: 1000)); 
+        await tester.pump(const Duration(milliseconds: 1000));
 
         expect(find.text('Delete Assessment'), findsOneWidget);
 
@@ -1083,12 +1174,14 @@ void main() {
         await tester.pump(const Duration(milliseconds: 1000));
       });
 
-      testWidgets('tablet landscape shows split detail view', (WidgetTester tester) async {
+      testWidgets('tablet landscape shows split detail view',
+          (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final mockDb = MockDatabaseService();
-        final f1 = FacilityLayout(facilityName: 'Landscape Clinic')..dateCreated = DateTime(2024, 1, 1);
+        final f1 = FacilityLayout(facilityName: 'Landscape Clinic')
+          ..dateCreated = DateTime(2024, 1, 1);
         when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [f1]);
 
         await tester.pumpWidget(ProviderScope(
@@ -1115,9 +1208,12 @@ void main() {
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         final mockDb = MockDatabaseService();
-        final f1 = FacilityLayout(facilityName: 'High Score')..dateCreated = DateTime(2024, 1, 1);
-        final f2 = FacilityLayout(facilityName: 'Low Score')..dateCreated = DateTime(2024, 2, 1);
-        when(() => mockDb.getAllAssessments()).thenAnswer((_) async => [f1, f2]);
+        final f1 = FacilityLayout(facilityName: 'High Score')
+          ..dateCreated = DateTime(2024, 1, 1);
+        final f2 = FacilityLayout(facilityName: 'Low Score')
+          ..dateCreated = DateTime(2024, 2, 1);
+        when(() => mockDb.getAllAssessments())
+            .thenAnswer((_) async => [f1, f2]);
 
         await tester.pumpWidget(ProviderScope(
           overrides: [
@@ -1150,7 +1246,5 @@ void main() {
     // ==========================================
     // LOGIN SCREEN / FORMS (widget_forms_test.dart)
     // ==========================================
-
-
   });
 }

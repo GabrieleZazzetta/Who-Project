@@ -452,8 +452,14 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
   int _getColumnCount(BuildContext context, double width) {
     final bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+
     // Layout Premium: in Portrait forziamo 1 colonna così i box sono ampi e leggibili, evitando l'effetto "schiacciato"
     if (isPortrait) return 1;
+    
+    // Layout Premium: per Smartphone Orizzontale usiamo 1 colonna per evitare troncamenti dei testi lunghi
+    if (!isTablet && !isPortrait) return 1;
+
     if (width >= 900) return 3;
     if (width >= 600) return 2;
     return 1;

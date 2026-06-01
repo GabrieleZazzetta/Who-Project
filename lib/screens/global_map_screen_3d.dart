@@ -439,9 +439,13 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     }
   }
 
-  // RENDERING
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    // Layout Premium: Zoom maggiore per IPAD ORIZZONTALE per far risaltare il globo
+    final double initialZoom = (isTablet && isLandscape) ? 1.8 : 1.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
@@ -470,7 +474,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
           : MapWidget(
               viewport: CameraViewportState(
                 center: Point(coordinates: Position(20.0, 5.0)),
-                zoom: 1.0,
+                zoom: initialZoom,
                 pitch: 0.0,
               ),
               styleUri: 'mapbox://styles/zazzo33/cmor4cj6f005s01sab89uh960',

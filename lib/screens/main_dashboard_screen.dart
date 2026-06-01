@@ -551,8 +551,8 @@ class HomeContent extends StatelessWidget {
         Expanded(
           child: Transform.translate(
             offset: Offset(0, (useFullHeader && !isLandscape) ? -45 : 0),
-            child: (!isTablet && !isLandscape)
-                // BINARIO 1: SOLO PER TELEFONO VERTICALE
+            child: (!isTablet)
+                // BINARIO 1: SOLO PER SMARTPHONE (VERTICALE E ORIZZONTALE)
                 // Usa una Column scorrevole che rispetta l'altezza intrinseca naturale (compatta) delle card
                 ? SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -568,7 +568,7 @@ class HomeContent extends StatelessWidget {
                       ),
                     ),
                   )
-                // BINARIO 2: TABLET E LANDSCAPE
+                // BINARIO 2: TABLET (VERTICALE E ORIZZONTALE)
                 : Center(
                     child: LayoutBuilder(builder: (context, constraints) {
                       return ConstrainedBox(
