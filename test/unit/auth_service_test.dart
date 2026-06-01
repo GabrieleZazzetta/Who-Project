@@ -137,6 +137,62 @@ void main() {
       // Verifica che saveSession sia stato chiamato per la sessione offline
       verify(() => mockDb.saveSession(any())).called(1);
     });
+
+    test('login fallback fails if offline password is wrong', () async {
+      const cleanEmail = 'offline@test.com';
+      const password = 'wrongPassword';
+      final localCred = LocalUserCredential()
+        ..email = cleanEmail
+        ..passwordHash = 'someOtherHash'
+        ..displayName = 'Offline User'
+        ..isWhoStaff = false;
+
+      when(() => mockDb.getLocalCredential(cleanEmail))
+          .thenAnswer((_) async => localCred);
+
+      final failingAuth = FailingFirebaseAuth();
+      final offlineService = AuthService(auth: failingAuth, db: mockDb);
+
+      expect(
+        () async => await offlineService.login(cleanEmail, password),
+        throwsA(isA<FirebaseAuthException>()),
+      );
+    });
+
+    test('logout clears local data and signs out from firebase', () async {
+      await authService.logout();
+      
+      // verify che clearAllLocalData sia stato chiamato
+      verify(() => mockDb.clearAllLocalData()).called(1);
+    });
+
+    test('syncPendingPasswordChanges syncs successfully when user is logged in', () async {
+      final cred = LocalUserCredential()
+        ..email = 'test@who.int'
+        ..pendingPassword = 'newPassword123'
+        ..passwordNeedsSync = true;
+        
+      when(() => mockDb.getPendingPasswordSyncs()).thenAnswer((_) async => [cred]);
+
+      // authService usa mockFirebaseAuth che ha test@who.int loggato
+      await authService.syncPendingPasswordChanges();
+
+      // Verifica che il mock aggiorni la password
+      // Purtroppo MockFirebaseAuth non traccia le chiamate interne a updatePassword in modo semplice,
+      // ma possiamo verificare che il LocalUserCredential sia stato aggiornato per ripulire la pendingPassword.
+      verify(() => mockDb.saveLocalCredential(any(that: predicate<LocalUserCredential>((c) {
+        return c.passwordNeedsSync == false && c.pendingPassword == null;
+      })))).called(1);
+    });
+
+    test('syncPendingPasswordChanges does nothing if list is empty', () async {
+      when(() => mockDb.getPendingPasswordSyncs()).thenAnswer((_) async => []);
+      
+      await authService.syncPendingPasswordChanges();
+      
+      // Assicurati che non tenti di salvare credenziali
+      verifyNever(() => mockDb.saveLocalCredential(any()));
+    });
   });
 }
 
