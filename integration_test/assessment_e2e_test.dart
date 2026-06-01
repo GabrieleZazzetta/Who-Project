@@ -59,32 +59,95 @@ void main() {
       // Entriamo in un'ispezione esistente
       // Cerchiamo la lista ispezioni
       final bottomNav = find.byType(BottomNavigationBar);
-      final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.list));
+      final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
       if (listTab.evaluate().isNotEmpty) {
         await tester.tap(listTab.first);
         await tester.pumpAndSettle();
 
-        final tiles = find.byType(ListTile);
+        final tiles = find.byType(Card);
         if (tiles.evaluate().isNotEmpty) {
           await tester.tap(tiles.first);
           await tester.pumpAndSettle(const Duration(seconds: 2));
 
-          // Seleziona la prima zona
-          if (find.byType(Card).evaluate().isNotEmpty) {
-            await tester.tap(find.byType(Card).first);
+          // Cerca la zona e fai tap
+          final zoneCards = find.byType(Card);
+          if (zoneCards.evaluate().isNotEmpty) {
+            await tester.tap(zoneCards.first);
             await tester.pumpAndSettle(const Duration(seconds: 2));
-          } else if (find.byType(ListTile).evaluate().isNotEmpty) {
-            await tester.tap(find.byType(ListTile).first);
-            await tester.pumpAndSettle(const Duration(seconds: 2));
-          }
-          
-          if (find.byType(Card).evaluate().isNotEmpty || find.byType(ListTile).evaluate().isNotEmpty) {
+            
             // Trova una card domanda e fai tap su un pulsante compliance
             final complianceBtn = find.byIcon(Icons.check_circle_outline);
             if (complianceBtn.evaluate().isNotEmpty) {
               await tester.tap(complianceBtn.first);
               await tester.pumpAndSettle(const Duration(seconds: 1));
             }
+          }
+        }
+      }
+    });
+
+    testWidgets('Camera flow acquisition', (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle(const Duration(seconds: 4));
+
+      final bottomNav = find.byType(BottomNavigationBar);
+      final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
+      if (listTab.evaluate().isNotEmpty) {
+        await tester.tap(listTab.first);
+        await tester.pumpAndSettle();
+
+        final tiles = find.byType(Card);
+        if (tiles.evaluate().isNotEmpty) {
+          await tester.tap(tiles.first);
+          await tester.pumpAndSettle(const Duration(seconds: 2));
+
+          final zoneCards = find.byType(Card);
+          if (zoneCards.evaluate().isNotEmpty) {
+            await tester.tap(zoneCards.first);
+            await tester.pumpAndSettle(const Duration(seconds: 2));
+            
+            // Clicca sull'icona della fotocamera in una domanda
+            final cameraBtn = find.byIcon(Icons.camera_alt_outlined);
+            if (cameraBtn.evaluate().isNotEmpty) {
+              await tester.tap(cameraBtn.first);
+              await tester.pumpAndSettle(const Duration(seconds: 2));
+              
+              // Verifica che si apra il modale o passi alla camera
+              // La nostra app mostra un dialog per i permessi o la UI fotocamera
+              expect(find.byType(Dialog).evaluate().isNotEmpty || find.byIcon(Icons.camera).evaluate().isNotEmpty || find.byIcon(Icons.photo_library).evaluate().isNotEmpty, isTrue);
+              
+              // Chiudi eventuale dialog per non bloccare successivi test
+              if (find.text('Cancel').evaluate().isNotEmpty) {
+                await tester.tap(find.text('Cancel').first);
+                await tester.pumpAndSettle();
+              }
+            }
+          }
+        }
+      }
+    });
+
+    testWidgets('Delete Assessment', (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle(const Duration(seconds: 4));
+
+      final bottomNav = find.byType(BottomNavigationBar);
+      final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
+      if (listTab.evaluate().isNotEmpty) {
+        await tester.tap(listTab.first);
+        await tester.pumpAndSettle();
+
+        // Clicca sul cestino
+        final deleteBtn = find.byIcon(Icons.delete_outline);
+        if (deleteBtn.evaluate().isNotEmpty) {
+          await tester.tap(deleteBtn.first);
+          await tester.pumpAndSettle(const Duration(seconds: 2));
+
+          // Cerca il bottone di conferma "Delete"
+          final confirmBtn = find.text('Delete');
+          if (confirmBtn.evaluate().isNotEmpty) {
+            await tester.tap(confirmBtn.last);
+            await tester.pumpAndSettle(const Duration(seconds: 2));
           }
         }
       }

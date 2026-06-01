@@ -12,19 +12,21 @@ void main() {
     setUp(() async {
       try {
         final session = UserSession()
-          ..email = 'gabriele@who.int'
+          ..email = 'nikoanto03@gmail.com'
           ..isLoggedIn = true
-          ..isWhoStaff = true;
+          ..isWhoStaff = false;
         await DatabaseService.instance.saveSession(session);
       } catch (_) {}
     });
 
-    testWidgets('Profile changes persist and restore', (WidgetTester tester) async {
+    testWidgets('Profile changes persist and restore',
+        (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
-      final bottomNav = find.byType(BottomNavigationBar);
-      final settingsTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.settings));
+      final settingsTab = find.byIcon(Icons.settings).evaluate().isNotEmpty 
+          ? find.byIcon(Icons.settings) 
+          : find.byIcon(Icons.settings_rounded);
       if (settingsTab.evaluate().isNotEmpty) {
         await tester.tap(settingsTab.first);
         await tester.pumpAndSettle();
@@ -42,12 +44,12 @@ void main() {
           await tester.enterText(textFields.first, 'Gabriele Zazzetta');
           await tester.pumpAndSettle();
 
-          // Cerca bottone di salvataggio
-          if (find.text('Save').evaluate().isNotEmpty) {
-            await tester.tap(find.text('Save').first);
+          // Cerca bottone di salvataggio ("Save Changes")
+          if (find.text('Save Changes').evaluate().isNotEmpty) {
+            await tester.tap(find.text('Save Changes').first);
             await tester.pumpAndSettle(const Duration(seconds: 2));
-          } else if (find.text('Update').evaluate().isNotEmpty) {
-            await tester.tap(find.text('Update').first);
+          } else if (find.text('Save').evaluate().isNotEmpty) {
+            await tester.tap(find.text('Save').first);
             await tester.pumpAndSettle(const Duration(seconds: 2));
           }
         }
@@ -58,8 +60,9 @@ void main() {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
-      final bottomNav = find.byType(BottomNavigationBar);
-      final settingsTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.settings));
+      final settingsTab = find.byIcon(Icons.settings).evaluate().isNotEmpty 
+          ? find.byIcon(Icons.settings) 
+          : find.byIcon(Icons.settings_rounded);
       if (settingsTab.evaluate().isNotEmpty) {
         await tester.tap(settingsTab.first);
         await tester.pumpAndSettle();

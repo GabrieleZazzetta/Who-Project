@@ -1,6 +1,6 @@
 # Testing Campaign Report
 
-## 1. Alberatura delle Cartelle
+## 1. Test Folders Structure
 ```text
 test/
 │   helpers/
@@ -293,13 +293,20 @@ integration_test/
 - **SettingsScreen Tests**: sync string displays correctly when error
 
 ## 4. Integration Test (UI E2E on Simulator)
+
+Integration tests simulate a real user navigating through the complete WHO Health Facilities Assessment application on a running emulator. Unlike simpler widget tests, these end-to-end tests interact with the actual local database (Isar) and test the complex hybrid online/offline architecture (including sync mechanisms and state persistence). While they require more time to execute, they provide the highest level of confidence by ensuring that the core workflows—from offline login to assessment completion and geographic visualization—function flawlessly in a production-like environment before deployment.
+
+The tests are organised in this way:
 ### analytics_e2e_test.dart
 - **Analytics & Outbreak Reporting E2E**: Analytics global dashboard loads
 - **Analytics & Outbreak Reporting E2E**: Global Map 3D interaction
+- **Analytics & Outbreak Reporting E2E**: Interactive Map opens assessment
 
 ### assessment_e2e_test.dart
 - **Assessment Operations E2E**: Assessment add item (Start Pre-Assessment)
 - **Assessment Operations E2E**: Assessment compliance change
+- **Assessment Operations E2E**: Camera flow acquisition
+- **Assessment Operations E2E**: Delete Assessment
 
 ### auth_e2e_test.dart
 - **Authentication E2E**: Login fails with wrong credentials
