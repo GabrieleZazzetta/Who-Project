@@ -1,5 +1,11 @@
 # WHO Health Facilities Assessment Tool
 
+## 👥 Development Team
+* **Gabriele Francesco Zazzetta**
+* **Antonio Parente**
+
+> **Note**: A comprehensive **Design Document** is delivered alongside this repository. It provides an in-depth look at architectural decisions, design patterns, and the underlying domain model.
+
 ## 🌍 Project Overview
 The WHO Health Facilities Assessment Tool is an enterprise-grade, **offline-first** mobile application built with Flutter. It provides rapid structural assessment capabilities for health facilities during infectious disease outbreaks (e.g., Mpox, Ebola, SARI/COVID-19), strictly adhering to official WHO clinical pathways and spatial guidelines.
 
@@ -17,21 +23,21 @@ The WHO Health Facilities Assessment Tool is an enterprise-grade, **offline-firs
   * **Hardware Sensors:** Camera integration via `image_picker` for field evidence.
 * **Export Engine:** `pdf`, `printing` and `share_plus` modules integrated for native offline PDF generation and **editable Microsoft Word (.doc)** reporting.
 
-## 🚀 Key Features & Implementation Status
-* [x] **Advanced Global Visualization (2D/3D):**
+## 🚀 Key Features
+* **Advanced Global Visualization (2D/3D):**
   * **2D Clusters:** Optimized Leaflet view with marker clustering to manage hundreds of global assessments without UI lag.
   * **3D Globe:** Immersive Mapbox 3D view with custom teardrop pins and detached base graphics.
   * **Readiness Heatmaps:** Color-coded markers (Red, Amber, Green) driven by `globalReadinessScore`.
-* [x] **Automated Geocoding Engine:** Intelligent translation of facility addresses into GPS coordinates using Nominatim API and local storage.
-* [x] **Intelligent Navigation:** "Fit to Extent" and "FlyTo" animations for seamless transition between global overview and facility-specific details.
-* [x] **Mpox Assessment Modules:** Blueprints and checklists for:
+* **Automated Geocoding Engine:** Intelligent translation of facility addresses into GPS coordinates using Nominatim API and local storage.
+* **Intelligent Navigation:** "Fit to Extent" and "FlyTo" animations for seamless transition between global overview and facility-specific details.
+* **Mpox Assessment Modules:** Blueprints and checklists for:
   * Existing Facility with Dedicated Ward (Fig. 4)
   * Stand-Alone Treatment Centre (Fig. 5)
   * Congregate Settings / Camps (Fig. 6)
-* [x] **Glove-Friendly Interactive Map:** Spatial assessment map with expanded hit-test areas (80x80px) designed for PPE-clad operators.
-* [x] **Offline Data Entry & Persistence:** Real-time storage of evaluations via Isar NoSQL, surviving app restarts and connectivity loss.
-* [x] **Offline Data Analytics:** Advanced dashboard calculating global readiness scores, compliance breakdown, and critical failures.
-* [x] **Advanced Reporting (PDF & Word):** Automated, offline generation of printable structural reports and **fully editable Microsoft Word documents** via HTML-to-Office serialization, facilitating immediate field refinement.
+* **Glove-Friendly Interactive Map:** Spatial assessment map with expanded hit-test areas (80x80px) designed for PPE-clad operators.
+* **Offline Data Entry & Persistence:** Real-time storage of evaluations via Isar NoSQL, surviving app restarts and connectivity loss.
+* **Offline Data Analytics:** Advanced dashboard calculating global readiness scores, compliance breakdown, and critical failures.
+* **Advanced Reporting (PDF & Word):** Automated, offline generation of printable structural reports and **fully editable Microsoft Word documents** via HTML-to-Office serialization, facilitating immediate field refinement.
 
 ## 📂 Project Architecture
 
@@ -42,9 +48,13 @@ lib/
 ├── data/                           # Data Layer & Factory
 │   ├── facility_data_factory.dart  # Centralized factory routing data
 │   └── mpox/                       # Disease-specific data modules
+├── helpers/                        # Utility functions and extensions
+├── l10n/                           # Localization & Translations
 ├── models/                         # Data Models & Schemas
 │   ├── assessment_models.dart      # Core classes (Isar Collections)
 │   └── assessment_models.g.dart    # Auto-generated Isar bindings
+├── providers/                      # Riverpod State Management
+├── repositories/                   # Abstracted Data Access Layer
 ├── screens/                        # UI Layer
 │   ├── analytics_screen.dart       # Dashboard with KPIs and charts
 │   ├── assessment_screen.dart      # Interactive zone checklist
@@ -57,6 +67,7 @@ lib/
 ├── services/                       # Core Services
 │   ├── database_service.dart       # Local NoSQL Database Engine
 │   └── report_export_service.dart  # Multi-format report generation (PDF/Word)
+├── widgets/                        # Reusable Enterprise UI Components
 └── main.dart                       # App entry point & DB init
 ```
 
@@ -95,6 +106,22 @@ lib/
    ```bash
    flutter run
    ```
+
+### 🧪 Running Tests
+To ensure the robustness of the application, comprehensive test suites have been developed. 
+
+**Unit & Widget Tests**
+These test individual components and logic without requiring an emulator.
+```bash
+flutter test
+```
+
+**E2E Integration Tests**
+These simulate a real user navigating through the complete application on a running emulator, interacting with the Isar database and offline workflows.
+*(Ensure an emulator or physical device is connected before running)*
+```bash
+flutter test integration_test/
+```
 
 ## ⚠️ Known Issues & Technical Workarounds
 
