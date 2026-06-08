@@ -52,6 +52,7 @@ jobs:
           files: coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          skip_validation: true
 
       - name: Install lcov
         if: always()
