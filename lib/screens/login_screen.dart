@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/local_user_credential.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -22,8 +21,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  
-  // Modalità: true = WHO Staff, false = External
+
+  // Defines the active authentication mode (true = WHO Staff, false = External Partner).
   bool _isWhoStaff = true;
   bool _obscurePassword = true;
 
@@ -35,23 +34,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _isLoading = true);
       try {
         await ref.read(authServiceProvider).login(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
-        
-        // Sincronizza i dati del nuovo utente (scarica gli assessment da Firebase)
+              _emailController.text.trim(),
+              _passwordController.text,
+            );
+
+        // Triggers data synchronization to fetch the authenticated user's remote assessments.
         try {
           await ref.read(syncProvider.notifier).syncAll(forcePullAll: true);
         } catch (e) {
           debugPrint("Sync error after login: $e");
         }
-        
+
         if (mounted) context.go('/');
       } catch (e) {
         if (mounted) {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("${l10n.loginFailed}${e.toString()}"), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text("${l10n.loginFailed}${e.toString()}"),
+                backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -73,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final bool isTablet = mediaQuery.size.shortestSide >= 600;
     final bool isLandscape = mediaQuery.orientation == Orientation.landscape;
 
-    // LAYOUT PREMIUM PER TABLET (Split View for Landscape, Stacked for Portrait)
+    // TABLET LAYOUT COMPONENT
     if (isTablet) {
       if (!isLandscape) {
         return Scaffold(
@@ -81,10 +82,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                // Top Header Branding per Tablet Portrait
+                // BRANDING HEADER
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -103,39 +105,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         AppLocalizations.of(context)!.appTitleMultiline,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1, letterSpacing: -0.5),
+                        style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.1,
+                            letterSpacing: -0.5),
                       ),
                       if (_isWhoStaff) ...[
                         const SizedBox(height: 24),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade400.withOpacity(0.2),
+                            color: Colors.red.shade400.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
+                            border: Border.all(
+                                color: Colors.red.shade200.withValues(alpha: 0.3)),
                           ),
-                          child: Text(AppLocalizations.of(context)!.authorizedPersonnelOnly, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                          child: Text(
+                              AppLocalizations.of(context)!
+                                  .authorizedPersonnelOnly,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5)),
                         ),
                       ]
                     ],
                   ),
                 ),
-                // Form di Login Centrata
+                // AUTHENTICATION FORM WRAPPER
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 450),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 60),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(AppLocalizations.of(context)!.welcomeBack, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: -1)),
-                          const SizedBox(height: 8),
-                          Text(AppLocalizations.of(context)!.signInToContinue, style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
-                          const SizedBox(height: 40),
-                          _buildForm(),
-                        ]
-                      ),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(AppLocalizations.of(context)!.welcomeBack,
+                                style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF1E293B),
+                                    letterSpacing: -1)),
+                            const SizedBox(height: 8),
+                            Text(AppLocalizations.of(context)!.signInToContinue,
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey.shade600)),
+                            const SizedBox(height: 40),
+                            _buildForm(),
+                          ]),
                     ),
                   ),
                 ),
@@ -145,12 +168,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
 
-      // Layout Orizzontale (Landscape) per Tablet
+      // LANDSCAPE TABLET LAYOUT
       return Scaffold(
         backgroundColor: Colors.white,
         body: Row(
           children: [
-            // PARTE SINISTRA: Branding & Background (Fisso)
+            // BRANDING PANEL
             Expanded(
               flex: 1,
               child: Container(
@@ -166,7 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 child: Stack(
                   children: [
-                    // Elemento decorativo astratto (opzionale)
+                    //
                     Positioned(
                       top: -100,
                       left: -100,
@@ -175,7 +198,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 400,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -200,17 +223,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Tablet)
+                              //
                               if (_isWhoStaff)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.shade400.withOpacity(0.2),
+                                    color: Colors.red.shade400.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.red.shade200.withOpacity(0.3)),
+                                    border: Border.all(
+                                        color: Colors.red.shade200
+                                            .withValues(alpha: 0.3)),
                                   ),
                                   child: Text(
-                                    AppLocalizations.of(context)!.authorizedPersonnelOnly,
+                                    AppLocalizations.of(context)!
+                                        .authorizedPersonnelOnly,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -224,17 +251,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
             ),
-            // PARTE DESTRA: Form di Login (Scorrevole)
+            // FORM PANEL
             Expanded(
               flex: 1,
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 450),
                     child: Column(
@@ -270,13 +297,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
     }
 
-    // LAYOUT PER SMARTPHONE LANDSCAPE (Premium Rotating View)
+    // LANDSCAPE SMARTPHONE LAYOUT
     if (isLandscape) {
       return Scaffold(
         backgroundColor: Colors.white,
         body: Row(
           children: [
-            // Pannello laterale con branding (coerente con tablet)
+            // BRANDING PANEL
             Expanded(
               flex: 2,
               child: Container(
@@ -294,21 +321,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.appTitleLine1,
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900),
                     ),
                     if (_isWhoStaff)
                       Padding(
                         padding: const EdgeInsets.only(top: 12.0),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          // MODIFICA: Tag personalizzato per mobile landscape
+                          //
                           child: Text(
-                            AppLocalizations.of(context)!.authorizedPersonnelOnly,
-                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            AppLocalizations.of(context)!
+                                .authorizedPersonnelOnly,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -316,14 +351,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-            // AREA FORM DI ACCESSO (Ridimensionata per Mobile Landscape)
+            // SCALED FORM PANEL
             Expanded(
               flex: 3,
               child: Center(
                 child: SingleChildScrollView(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                  // MODIFICA: Vincolo di larghezza per mobile landscape
+                  //
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
                     child: _buildForm(),
@@ -336,14 +371,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
     }
 
-
-    // LAYOUT PER SMARTPHONE PORTRAIT (Premium Mobile)
+    // PORTRAIT SMARTPHONE LAYOUT
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header con Gradiente per Mobile
+            // GRADIENT HEADER
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(top: 60, bottom: 40),
@@ -364,22 +398,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 24),
                   Text(
                     AppLocalizations.of(context)!.appTitleLine1,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.5),
                   ),
                   Text(
                     AppLocalizations.of(context)!.appTitleLine2,
-                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                    style: TextStyle(
+                        fontSize: 16, color: Colors.white.withValues(alpha: 0.8)),
                   ),
                   const SizedBox(height: 16),
-                  // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Mobile Header)
+                  //
                   if (_isWhoStaff)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      // TAG AUTHORIZED PERSONNEL ONLY (Ottimizzato per Mobile Portrait)
+                      //
                       child: Text(
                         AppLocalizations.of(context)!.authorizedPersonnelOnly,
                         style: const TextStyle(
@@ -392,9 +432,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
 
-            // Area Form
+            // FORM AREA
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500.0),
                 child: Column(
@@ -408,11 +449,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
     );
-
   }
 
-
-  // COMPONENTE: LOGO (RIUTILIZZABILE)
+  // LOGO COMPONENT
   Widget _buildLogo({bool isDark = false}) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final double size = isTablet ? 180 : 140;
@@ -427,7 +466,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -449,68 +490,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-
-  // COMPONENTE: INTESTAZIONE (LOGO E TITOLI)
-  Widget _buildHeader({required CrossAxisAlignment alignment}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: alignment,
-      children: [
-        _buildLogo(),
-        const SizedBox(height: 24),
-        Text(
-          AppLocalizations.of(context)!.appTitleMultiline,
-          textAlign: alignment == CrossAxisAlignment.center ? TextAlign.center : TextAlign.start,
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Color(0xFF003D73), height: 1.1, letterSpacing: -0.5),
-        ),
-        const SizedBox(height: 12),
-        if (_isWhoStaff)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE4E6), // Pinkish background
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFDA4AF).withOpacity(0.5)),
-            ),
-            child: Text(
-              AppLocalizations.of(context)!.authorizedPersonnelOnly,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFFE11D48), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-            ),
-          ),
-      ],
-    );
-  }
-
-
-
-  // COMPONENTE: FORM DI AUTENTICAZIONE
+  // AUTHENTICATION FORM COMPONENT
   Widget _buildForm() {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // SELETTORE MODALITÀ ACCESSO
+        // MODE SELECTOR TOGGLE
         Container(
-          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.all(4),
           child: Row(
             children: [
-              Expanded(child: _buildModeToggle(l10n.whoStaff, _isWhoStaff, () => setState(() { _isWhoStaff = true; _emailController.clear(); }), key: const Key('toggle_who_staff'))),
-              Expanded(child: _buildModeToggle(l10n.externalPartner, !_isWhoStaff, () => setState(() { _isWhoStaff = false; _emailController.clear(); }), key: const Key('toggle_external_partner'))),
+              Expanded(
+                  child: _buildModeToggle(
+                      l10n.whoStaff,
+                      _isWhoStaff,
+                      () => setState(() {
+                            _isWhoStaff = true;
+                            _emailController.clear();
+                          }),
+                      key: const Key('toggle_who_staff'))),
+              Expanded(
+                  child: _buildModeToggle(
+                      l10n.externalPartner,
+                      !_isWhoStaff,
+                      () => setState(() {
+                            _isWhoStaff = false;
+                            _emailController.clear();
+                          }),
+                      key: const Key('toggle_external_partner'))),
             ],
           ),
         ),
         const SizedBox(height: 24),
 
-        // CREDENZIALI
+        // CREDENTIALS FORM
         Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFieldLabel(_isWhoStaff ? l10n.whoIdEmail : l10n.partnerEmail),
+              _buildFieldLabel(
+                  _isWhoStaff ? l10n.whoIdEmail : l10n.partnerEmail),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('input_email'),
@@ -522,14 +547,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return l10n.requiredField;
-                  
-                  // Regex per validazione formato email
-                  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                  
+
+                  // Validates standard email pattern.
+                  final emailRegex =
+                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
                   if (_isWhoStaff) {
-                    if (!value.toLowerCase().endsWith("@who.int")) return l10n.whoStaffEmailError;
+                    if (!value.toLowerCase().endsWith("@who.int")) {
+                      return l10n.whoStaffEmailError;
+                    }
                   } else {
-                    if (!emailRegex.hasMatch(value)) return l10n.invalidEmailError;
+                    if (!emailRegex.hasMatch(value)) {
+                      return l10n.invalidEmailError;
+                    }
                   }
                   return null;
                 },
@@ -544,11 +574,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: _buildInputDecoration(
                   icon: Icons.lock_outline,
                   suffix: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-                validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
+                validator: (value) =>
+                    value == null || value.isEmpty ? l10n.requiredField : null,
               ),
               _buildForgotPasswordButton(),
               const SizedBox(height: 16),
@@ -562,8 +598,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  // METODI HELPER UI (Semplificano il codice principale)
-  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap, {Key? key}) {
+  // UI HELPER METHODS
+  Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap,
+      {Key? key}) {
     return GestureDetector(
       key: key,
       onTap: onTap,
@@ -573,17 +610,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         decoration: BoxDecoration(
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          boxShadow: isActive ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)
+                ]
+              : [],
         ),
-        child: Center(child: Text(title, style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.w500, color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey.shade600))),
+        child: Center(
+            child: Text(title,
+                style: TextStyle(
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                    color: isActive
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey.shade600))),
       ),
     );
   }
 
-  Widget _buildFieldLabel(String label) => Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey));
+  Widget _buildFieldLabel(String label) => Text(label,
+      style: const TextStyle(
+          fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey));
 
-  // DECORAZIONE INPUT FIELD
-  InputDecoration _buildInputDecoration({required IconData icon, String? hint, Widget? suffix}) {
+  // INPUT FIELD DECORATOR
+  InputDecoration _buildInputDecoration(
+      {required IconData icon, String? hint, Widget? suffix}) {
     return InputDecoration(
       hintText: hint,
       prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
@@ -610,7 +661,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-
   Widget _buildForgotPasswordButton() {
     final mediaQuery = MediaQuery.of(context);
     final bool isTablet = mediaQuery.size.shortestSide >= 600;
@@ -620,7 +670,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: TextButton(
         onPressed: () {
           if (isTablet) {
-            // Visualizzazione Premium Fluttuante Centrata su iPad/Tablet (sia Verticale che Orizzontale)
+            // Presents a floating, centered dialog optimized for tablet screen estates.
             showDialog(
               context: context,
               barrierDismissible: true,
@@ -628,7 +678,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 return Dialog(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  insetPadding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 480),
                     decoration: BoxDecoration(
@@ -636,12 +687,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 30,
                           offset: const Offset(0, 15),
                         ),
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -654,7 +705,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
             );
           } else {
-            // Visualizzazione standard Bottom Sheet per Smartphone (sia Verticale che Orizzontale)
+            // Presents a bottom sheet optimized for smartphone screen estates.
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
@@ -680,7 +731,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
           }
         },
-        child: Text(AppLocalizations.of(context)!.forgotPassword, style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+        child: Text(AppLocalizations.of(context)!.forgotPassword,
+            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
       ),
     );
   }
@@ -694,29 +746,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
         ),
         onPressed: _isLoading ? null : _login,
-        child: _isLoading 
-          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-          : Text(AppLocalizations.of(context)!.authenticate, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+        child: _isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2))
+            : Text(AppLocalizations.of(context)!.authenticate,
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5)),
       ),
     );
   }
 
   Widget _buildRegisterNavigation() {
-    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final l10n = AppLocalizations.of(context)!;
-    
+
     Widget content = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(l10n.dontHaveAccount, style: TextStyle(color: Colors.grey.shade600)),
+        Text(l10n.dontHaveAccount,
+            style: TextStyle(color: Colors.grey.shade600)),
         TextButton(
           onPressed: () => context.go('/register'),
-          child: Text(l10n.registerHere, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+          child: Text(l10n.registerHere,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary)),
         ),
       ],
     );
@@ -729,20 +793,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// ==========================================
-// FORGOT PASSWORD MODAL (OFFLINE RECOVERY)
-// ==========================================
-
+// OFFLINE PASSWORD RECOVERY MODAL
 class ForgotPasswordModal extends ConsumerStatefulWidget {
   final bool isWhoStaff;
   const ForgotPasswordModal({super.key, required this.isWhoStaff});
 
   @override
-  ConsumerState<ForgotPasswordModal> createState() => _ForgotPasswordModalState();
+  ConsumerState<ForgotPasswordModal> createState() =>
+      _ForgotPasswordModalState();
 }
 
 class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
-  int _step = 1; // 1 = Verify DOB, 2 = Set Password
+  int _step = 1; // Tracks the current step in the password recovery flow.
   bool _loading = false;
   String? _errorMessage;
   LocalUserCredential? _foundCredential;
@@ -795,7 +857,8 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
     });
 
     try {
-      final cred = await ref.read(databaseServiceProvider).getLocalCredential(email);
+      final cred =
+          await ref.read(databaseServiceProvider).getLocalCredential(email);
       if (cred == null) {
         setState(() {
           _errorMessage = "No matching registered account found locally.";
@@ -804,7 +867,7 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
         return;
       }
 
-      // Confronta anno, mese, giorno della data di nascita
+      // Validates the provided Date of Birth against the securely stored local credential.
       final dob = cred.dateOfBirth;
       if (dob == null ||
           dob.year != _selectedDate!.year ||
@@ -843,12 +906,12 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
 
     try {
       final newPassword = _passwordController.text;
-      
-      // Calcola l'hash della nuova password
+
+      // Computes the SHA-256 hash of the newly provided password.
       final bytes = utf8.encode(newPassword);
       final passwordHash = sha256.convert(bytes).toString();
 
-      // Memorizziamo la password hashata per offline e quella in chiaro per la sync
+      // Stores the hashed password for immediate offline access and queues the plaintext password for secure remote synchronization.
       final String? oldPasswordPlain = _foundCredential!.pendingPassword;
 
       _foundCredential!.passwordHash = passwordHash;
@@ -857,21 +920,22 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
         _foundCredential!.oldPassword = oldPasswordPlain;
       }
       _foundCredential!.passwordNeedsSync = true;
-      
-      await ref.read(databaseServiceProvider).saveLocalCredential(_foundCredential!);
 
-      // Crea sessione locale per login immediato
+      await ref
+          .read(databaseServiceProvider)
+          .saveLocalCredential(_foundCredential!);
+
+      // Generates a local session token to instantly authenticate the user offline.
       await ref.read(databaseServiceProvider).saveSession(UserSession()
         ..uid = "local_${_foundCredential!.id}"
         ..email = _foundCredential!.email
         ..displayName = _foundCredential!.displayName
         ..isLoggedIn = true
         ..isWhoStaff = _foundCredential!.isWhoStaff
-        ..lastLogin = DateTime.now().toUtc()
-      );
+        ..lastLogin = DateTime.now().toUtc());
 
       if (mounted) {
-        Navigator.of(context).pop(); // chiude il bottom sheet
+        Navigator.of(context).pop(); // Closes the recovery modal.
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Password reset offline successful! Logged in."),
@@ -891,227 +955,295 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final double modalWidth = mediaQuery.size.width > 500 ? 460 : double.infinity;
+    final double modalWidth =
+        mediaQuery.size.width > 500 ? 460 : double.infinity;
     final bool isTablet = mediaQuery.size.shortestSide >= 600;
 
     final Widget mainContent = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: modalWidth),
       child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header del Modal
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      _step == 1 ? "Account Recovery" : "Reset Password",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _step == 1
-                    ? "Verify your registered identity using your Date of Birth."
-                    : "Choose a secure password below to complete your recovery.",
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 24),
-
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.shade200),
-                  ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // MODAL HEADER
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
                   child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red.shade700, fontSize: 13, fontWeight: FontWeight.w500),
+                    _step == 1 ? "Account Recovery" : "Reset Password",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.grey),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _step == 1
+                  ? "Verify your registered identity using your Date of Birth."
+                  : "Choose a secure password below to complete your recovery.",
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 24),
 
-              if (_step == 1) ...[
-                // Email Input
-                Text(widget.isWhoStaff ? "WHO ID / Email" : "Partner Email", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    hintText: widget.isWhoStaff ? "e.g. jdoe@who.int" : "name@example.com",
-                    prefixIcon: Icon(widget.isWhoStaff ? Icons.badge_outlined : Icons.email_outlined, color: const Color(0xFF64748B)),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
-                    ),
+            if (_errorMessage != null) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_step == 1) ...[
+              // EMAIL INPUT
+              Text(widget.isWhoStaff ? "WHO ID / Email" : "Partner Email",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.grey)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: widget.isWhoStaff
+                      ? "e.g. jdoe@who.int"
+                      : "name@example.com",
+                  prefixIcon: Icon(
+                      widget.isWhoStaff
+                          ? Icons.badge_outlined
+                          : Icons.email_outlined,
+                      color: const Color(0xFF64748B)),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF005DA8), width: 2),
                   ),
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
 
-                // Date of Birth Input
-                const Text("Date of Birth", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime(2000),
-                      firstDate: DateTime(1930),
-                      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-                    );
-                    if (date != null) setState(() => _selectedDate = date);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.calendar_today_outlined, color: Color(0xFF64748B)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _selectedDate == null
-                                ? "Date of Birth"
-                                : DateFormat('dd MMM yyyy').format(_selectedDate!),
-                            style: TextStyle(
-                              color: _selectedDate == null ? Colors.blueGrey.shade300 : Colors.black87,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Submit Button Step 1
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF005DA8),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 2,
-                    ),
-                    onPressed: _loading ? null : _verifyIdentity,
-                    child: _loading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Verify & Continue", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  ),
-                ),
-              ] else ...[
-                // Step 2: New Password Input
-                const Text("New WIMS Password", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF64748B)),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF005DA8), width: 2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Requirements panel
-                Container(
-                  padding: const EdgeInsets.all(12),
+              // DATE OF BIRTH INPUT
+              const Text("Date of Birth",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.grey)),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime(2000),
+                    firstDate: DateTime(1930),
+                    lastDate:
+                        DateTime.now().subtract(const Duration(days: 365 * 18)),
+                  );
+                  if (date != null) setState(() => _selectedDate = date);
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                    border:
+                        Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        "Password must contain:",
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(child: _buildRequirement(_hasMinLength, "8+ Chars")),
-                          Expanded(child: _buildRequirement(_hasUpper, "1 Uppercase")),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(child: _buildRequirement(_hasNumber, "1 Number")),
-                          Expanded(child: _buildRequirement(_hasSpecial, "1 Special (!@#)")),
-                        ],
+                      const Icon(Icons.calendar_today_outlined,
+                          color: Color(0xFF64748B)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _selectedDate == null
+                              ? "Date of Birth"
+                              : DateFormat('dd MMM yyyy')
+                                  .format(_selectedDate!),
+                          style: TextStyle(
+                            color: _selectedDate == null
+                                ? Colors.blueGrey.shade300
+                                : Colors.black87,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+              ),
+              const SizedBox(height: 32),
 
-                // Submit Button Step 2
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF005DA8),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 2,
-                    ),
-                    onPressed: _loading ? null : _submitPasswordReset,
-                    child: _loading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Save & Reset Password", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              // STEP 1 SUBMIT ACTION
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF005DA8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
+                  ),
+                  onPressed: _loading ? null : _verifyIdentity,
+                  child: _loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text("Verify & Continue",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5)),
+                ),
+              ),
+            ] else ...[
+              // NEW PASSWORD INPUT
+              const Text("New WIMS Password",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.grey)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  prefixIcon:
+                      const Icon(Icons.lock_outline, color: Color(0xFF64748B)),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF005DA8), width: 2),
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(height: 16),
+
+              // SECURITY REQUIREMENTS PANEL
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Password must contain:",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                            child:
+                                _buildRequirement(_hasMinLength, "8+ Chars")),
+                        Expanded(
+                            child: _buildRequirement(_hasUpper, "1 Uppercase")),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: _buildRequirement(_hasNumber, "1 Number")),
+                        Expanded(
+                            child: _buildRequirement(
+                                _hasSpecial, "1 Special (!@#)")),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // STEP 2 SUBMIT ACTION
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF005DA8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
+                  ),
+                  onPressed: _loading ? null : _submitPasswordReset,
+                  child: _loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text("Save & Reset Password",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5)),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
-      );
+      ),
+    );
 
     if (isTablet) {
       return mainContent;
@@ -1129,10 +1261,17 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
           size: 14,
         ),
         const SizedBox(width: 6),
-        Expanded(child: Text(text, style: TextStyle(
-            fontSize: 12,
-            color: met ? Colors.green.shade700 : Colors.grey.shade600,
-            fontWeight: met ? FontWeight.bold : FontWeight.normal, ), ), ), ], );
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: met ? Colors.green.shade700 : Colors.grey.shade600,
+              fontWeight: met ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
-

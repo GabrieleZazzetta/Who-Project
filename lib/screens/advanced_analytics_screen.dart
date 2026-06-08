@@ -10,18 +10,22 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
 
   const AdvancedAnalyticsScreen({super.key, required this.data});
 
-  // CONFIGURAZIONE E TEMA
+  // CONSTANTS & THEMING
   final Color _primaryBlue = const Color(0xFF005DA8);
   final Color _slateDark = const Color(0xFF1E293B);
   final Color _slateLight = const Color(0xFF64748B);
 
-  // LOGICA DI COSTRUZIONE DELL'INTERFACCIA CON SUPPORTO ADATTIVO
+  // MAIN UI BUILDER
   @override
   Widget build(BuildContext context) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // Ordinamento cronologico per l'analisi temporale dei trend
+    // DATA PREPARATION
+    // Sorts the assessment history chronologically to ensure the line chart
+    // correctly displays the facility's readiness evolution over time.
+    // Null dates are safely pushed to the end.
     final sortedData = List<FacilityLayout>.from(data)
       ..sort((a, b) {
         if (a.dateCreated == null) return 1;
@@ -34,7 +38,9 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.advancedAnalytics,
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: _slateDark, fontSize: isTablet ? 24 : 18)),
+                fontWeight: FontWeight.w800,
+                color: _slateDark,
+                fontSize: isTablet ? 24 : 18)),
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: IconThemeData(color: _slateDark),
@@ -44,15 +50,17 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
               child: Text(AppLocalizations.of(context)!.noDataToDisplay,
                   style: TextStyle(color: _slateLight, fontSize: 16)))
           : ScreenTypeLayout.builder(
-              mobile: (context) => _buildMobileLayout(context, sortedData, isLandscape),
+              mobile: (context) =>
+                  _buildMobileLayout(context, sortedData, isLandscape),
               tablet: (context) => _buildTabletLayout(context, sortedData),
               desktop: (context) => _buildTabletLayout(context, sortedData),
             ),
     );
   }
 
-  // LAYOUT VERTICALE OTTIMIZZATO PER MOBILE E LANDSCAPE
-  Widget _buildMobileLayout(BuildContext context, List<FacilityLayout> sortedData, bool isLandscape) {
+  // MOBILE LAYOUT
+  Widget _buildMobileLayout(
+      BuildContext context, List<FacilityLayout> sortedData, bool isLandscape) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: isLandscape
@@ -62,8 +70,12 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionOfGlobalScore),
-                      _buildLineChartCard(context, sortedData, isLandscape: true),
+                      _buildSectionHeader(
+                          context,
+                          AppLocalizations.of(context)!.readinessTrend,
+                          AppLocalizations.of(context)!.evolutionOfGlobalScore),
+                      _buildLineChartCard(context, sortedData,
+                          isLandscape: true),
                     ],
                   ),
                 ),
@@ -71,7 +83,10 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildSectionHeader(context, AppLocalizations.of(context)!.performanceRadar, AppLocalizations.of(context)!.pillarsBalance),
+                      _buildSectionHeader(
+                          context,
+                          AppLocalizations.of(context)!.performanceRadar,
+                          AppLocalizations.of(context)!.pillarsBalance),
                       _buildRadarChartCard(context, data, isLandscape: true),
                     ],
                   ),
@@ -81,10 +96,16 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                _buildSectionHeader(
+                    context,
+                    AppLocalizations.of(context)!.readinessTrend,
+                    AppLocalizations.of(context)!.evolutionGlobalScoreTime),
                 _buildLineChartCard(context, sortedData),
                 const SizedBox(height: 32),
-                _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                _buildSectionHeader(
+                    context,
+                    AppLocalizations.of(context)!.multidimensionalPerformance,
+                    AppLocalizations.of(context)!.balanceAcrossPillars),
                 _buildRadarChartCard(context, data, isSmartphonePortrait: true),
                 const SizedBox(height: 40),
               ],
@@ -92,9 +113,11 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // LAYOUT ADATTIVO PER TABLET E DESKTOP
-  Widget _buildTabletLayout(BuildContext context, List<FacilityLayout> sortedData) {
-    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+  // TABLET & DESKTOP LAYOUT
+  Widget _buildTabletLayout(
+      BuildContext context, List<FacilityLayout> sortedData) {
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
@@ -109,8 +132,13 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
-                      _buildLineChartCard(context, sortedData, isTabletPortrait: false),
+                      _buildSectionHeader(
+                          context,
+                          AppLocalizations.of(context)!.readinessTrend,
+                          AppLocalizations.of(context)!
+                              .evolutionGlobalScoreTime),
+                      _buildLineChartCard(context, sortedData,
+                          isTabletPortrait: false),
                     ],
                   ),
                 ),
@@ -119,8 +147,13 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
-                      _buildRadarChartCard(context, data, isTabletPortrait: false),
+                      _buildSectionHeader(
+                          context,
+                          AppLocalizations.of(context)!
+                              .multidimensionalPerformance,
+                          AppLocalizations.of(context)!.balanceAcrossPillars),
+                      _buildRadarChartCard(context, data,
+                          isTabletPortrait: false),
                     ],
                   ),
                 ),
@@ -130,10 +163,17 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader(context, AppLocalizations.of(context)!.readinessTrend, AppLocalizations.of(context)!.evolutionGlobalScoreTime),
-                _buildLineChartCard(context, sortedData, isTabletPortrait: true),
+                _buildSectionHeader(
+                    context,
+                    AppLocalizations.of(context)!.readinessTrend,
+                    AppLocalizations.of(context)!.evolutionGlobalScoreTime),
+                _buildLineChartCard(context, sortedData,
+                    isTabletPortrait: true),
                 const SizedBox(height: 48),
-                _buildSectionHeader(context, AppLocalizations.of(context)!.multidimensionalPerformance, AppLocalizations.of(context)!.balanceAcrossPillars),
+                _buildSectionHeader(
+                    context,
+                    AppLocalizations.of(context)!.multidimensionalPerformance,
+                    AppLocalizations.of(context)!.balanceAcrossPillars),
                 _buildRadarChartCard(context, data, isTabletPortrait: true),
               ],
             ),
@@ -143,7 +183,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, String subtitle) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -165,12 +206,14 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // COMPONENTI DEI GRAFICI
-  // Grafico a linee per la visualizzazione del trend di readiness
-  Widget _buildLineChartCard(BuildContext context, List<FacilityLayout> sortedData, {bool isLandscape = false, bool isTabletPortrait = false}) {
+  // CHART WIDGETS
+  // Line chart visualization
+  Widget _buildLineChartCard(
+      BuildContext context, List<FacilityLayout> sortedData,
+      {bool isLandscape = false, bool isTabletPortrait = false}) {
     final validData = sortedData.where((d) => d.dateCreated != null).toList();
 
-    // Caso con un solo assessment: mostriamo un riepilogo testuale invece di un grafico vuoto
+    // Handle single data point edge case
     if (validData.length == 1) {
       final single = validData.first;
       return Container(
@@ -179,23 +222,34 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
         decoration: _cardDecoration(),
         child: Column(
           children: [
-            Icon(Icons.insights_rounded, size: 40, color: _primaryBlue.withOpacity(0.4)),
+            Icon(Icons.insights_rounded,
+                size: 40, color: _primaryBlue.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             Text(
               "${single.globalReadinessScore.toStringAsFixed(1)}%",
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: _primaryBlue),
+              style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
+                  color: _primaryBlue),
             ),
             const SizedBox(height: 4),
             Text(
-              AppLocalizations.of(context)!.readinessScoreFor(single.facilityName.isNotEmpty ? single.facilityName : AppLocalizations.of(context)!.thisAssessment),
+              AppLocalizations.of(context)!.readinessScoreFor(
+                  single.facilityName.isNotEmpty
+                      ? single.facilityName
+                      : AppLocalizations.of(context)!.thisAssessment),
               textAlign: TextAlign.center,
-              style: TextStyle(color: _slateLight, fontWeight: FontWeight.w500, fontSize: 13),
+              style: TextStyle(
+                  color: _slateLight,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13),
             ),
             const SizedBox(height: 12),
             Text(
               AppLocalizations.of(context)!.addMoreAssessmentsUnlock,
               textAlign: TextAlign.center,
-              style: TextStyle(color: _slateLight.withOpacity(0.6), fontSize: 11),
+              style:
+                  TextStyle(color: _slateLight.withValues(alpha: 0.6), fontSize: 11),
             ),
           ],
         ),
@@ -203,7 +257,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     }
 
     if (validData.length < 2) {
-      return _buildEmptyStateCard(context, AppLocalizations.of(context)!.notEnoughHistoricalData);
+      return _buildEmptyStateCard(
+          context, AppLocalizations.of(context)!.notEnoughHistoricalData);
     }
 
     List<FlSpot> spots = [];
@@ -211,7 +266,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       spots.add(FlSpot(i.toDouble(), validData[i].globalReadinessScore));
     }
 
-    // Periodo coperto dai dati
+    // Calculate time period
     final DateTime firstDate = validData.first.dateCreated!;
     final DateTime lastDate = validData.last.dateCreated!;
     final bool sameDay = firstDate.year == lastDate.year &&
@@ -224,7 +279,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Grafico ──────────────────────────────────────────────────
+        // Chart configuration
         Container(
           height: isLandscape ? 260 : (isTabletPortrait ? 400 : 380),
           padding: const EdgeInsets.fromLTRB(8, 24, 16, 16),
@@ -243,8 +298,6 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                     const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 rightTitles:
                     const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                // Nessuna etichetta sull'asse X: il grafico è pulitissimo.
-                // La data compare nel tooltip al tocco.
                 bottomTitles:
                     const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
@@ -264,19 +317,23 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
               maxX: (validData.length - 1).toDouble(),
               minY: 0,
               maxY: 100,
-              // TOOLTIP PREMIUM: score + nome facility + data
+              // Tooltip configuration
+              // Generates a dynamic multi-line tooltip showing the score,
+              // facility name (or fallback index), and the exact creation date.
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
                   getTooltipColor: (_) => Colors.white,
                   tooltipBorderRadius: BorderRadius.circular(10),
-                  tooltipBorder: BorderSide(color: Colors.grey.shade200, width: 1),
+                  tooltipBorder:
+                      BorderSide(color: Colors.grey.shade200, width: 1),
                   getTooltipItems: (touchedSpots) {
                     return touchedSpots.map((spot) {
                       final int index = spot.x.toInt();
                       final String name = index < validData.length
                           ? (validData[index].facilityName.isNotEmpty
                               ? validData[index].facilityName
-                              : AppLocalizations.of(context)!.assessmentIndex(index + 1))
+                              : AppLocalizations.of(context)!
+                                  .assessmentIndex(index + 1))
                           : '';
                       final String dateStr = index < validData.length
                           ? DateFormat('d MMM yyyy')
@@ -319,7 +376,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                   isStrokeCapRound: true,
                   dotData: FlDotData(
                     show: true,
-                    getDotPainter: (spot, pct, bar, index) => FlDotCirclePainter(
+                    getDotPainter: (spot, pct, bar, index) =>
+                        FlDotCirclePainter(
                       radius: 4,
                       color: Colors.white,
                       strokeWidth: 2.5,
@@ -330,8 +388,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                     show: true,
                     gradient: LinearGradient(
                       colors: [
-                        _primaryBlue.withOpacity(0.18),
-                        _primaryBlue.withOpacity(0.0),
+                        _primaryBlue.withValues(alpha: 0.18),
+                        _primaryBlue.withValues(alpha: 0.0),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -342,19 +400,19 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
             ),
           ),
         ),
-        // ── Striscia periodo ────────────────────────────────────────
+        // Period indicator
         Padding(
           padding: const EdgeInsets.only(top: 10, left: 4),
           child: Row(
             children: [
               Icon(Icons.calendar_today_outlined,
-                  size: 11, color: _slateLight.withOpacity(0.5)),
+                  size: 11, color: _slateLight.withValues(alpha: 0.5)),
               const SizedBox(width: 5),
               Text(
                 periodLabel,
                 style: TextStyle(
                   fontSize: 11,
-                  color: _slateLight.withOpacity(0.7),
+                  color: _slateLight.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.2,
                 ),
@@ -366,8 +424,14 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // Grafico a ragnatela per il confronto tra le diverse categorie tecniche
-  Widget _buildRadarChartCard(BuildContext context, List<FacilityLayout> allData, {bool isLandscape = false, bool isSmartphonePortrait = false, bool isTabletPortrait = false}) {
+  // Radar chart visualization
+  Widget _buildRadarChartCard(
+      BuildContext context, List<FacilityLayout> allData,
+      {bool isLandscape = false,
+      bool isSmartphonePortrait = false,
+      bool isTabletPortrait = false}) {
+    // Scoring matrix per technical pillar.
+    // Index 0: Accumulated score value. Index 1: Total possible maximum score.
     Map<AssessmentCategory, List<int>> categoryScores = {
       AssessmentCategory.infectionPreventionControl: [0, 0],
       AssessmentCategory.wash: [0, 0],
@@ -375,6 +439,8 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
       AssessmentCategory.logistics: [0, 0],
     };
 
+    // Aggregates raw score values across all answered questions.
+    // Excludes Pending or Not Applicable answers to avoid skewing the percentage.
     for (var facility in allData) {
       for (var zone in facility.zones) {
         for (var q in zone.checklist) {
@@ -398,7 +464,9 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     double logistics = getPct(AssessmentCategory.logistics);
 
     return Container(
-      height: isLandscape ? 280 : (isTabletPortrait ? 500 : (isSmartphonePortrait ? 420 : 350)),
+      height: isLandscape
+          ? 280
+          : (isTabletPortrait ? 500 : (isSmartphonePortrait ? 420 : 350)),
       padding: const EdgeInsets.fromLTRB(52, 24, 52, 24),
       decoration: _cardDecoration(),
       child: Column(
@@ -408,7 +476,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
               RadarChartData(
                 dataSets: [
                   RadarDataSet(
-                    fillColor: _primaryBlue.withOpacity(0.2),
+                    fillColor: _primaryBlue.withValues(alpha: 0.2),
                     borderColor: _primaryBlue,
                     entryRadius: 4,
                     dataEntries: [
@@ -434,12 +502,10 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
                   switch (index) {
                     case 0:
                       return RadarChartTitle(
-                          text: 'IPC\n${ipc.toStringAsFixed(0)}%',
-                          angle: 0);
+                          text: 'IPC\n${ipc.toStringAsFixed(0)}%', angle: 0);
                     case 1:
                       return RadarChartTitle(
-                          text: 'WASH\n${wash.toStringAsFixed(0)}%',
-                          angle: 0);
+                          text: 'WASH\n${wash.toStringAsFixed(0)}%', angle: 0);
                     case 2:
                       return RadarChartTitle(
                           text: 'LAYOUT\n${layout.toStringAsFixed(0)}%',
@@ -465,21 +531,21 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  // STILI E WIDGET DI SUPPORTO
+  // UTILITY WIDGETS & STYLES
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 16,
               offset: const Offset(0, 4))
         ],
         border: Border.all(color: Colors.grey.shade100));
   }
 
-  // Gestione dello stato vuoto o mancanza di dati storici
+  // Empty state handling
   Widget _buildEmptyStateCard(BuildContext context, String message) {
     return Container(
       width: double.infinity,
@@ -498,4 +564,3 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
   }
 }
-

@@ -61,7 +61,7 @@ void main() {
   tearDown(() {
     testIsar.close(deleteFromDisk: true);
     if (tempDir.existsSync()) {
-      try { tempDir.deleteSync(recursive: true); } catch (e) {}
+      try { tempDir.deleteSync(recursive: true); } catch(e){/* ignore */}
     }
   });
 
@@ -404,7 +404,7 @@ void main() {
           });
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 500));
-        } catch (e) {}
+        } catch(e){/* ignore */}
         
         expect(find.text('Global Assessment Map'), findsOneWidget);
       });
@@ -424,7 +424,7 @@ void main() {
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 500));
           }
-        } catch (e) {}
+        } catch(e){/* ignore */}
       });
     });
 

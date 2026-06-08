@@ -11,9 +11,7 @@ import 'package:assessment_tool/providers/database_provider.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/repositories/sync_repository.dart';
-import 'package:assessment_tool/providers/locale_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
 import 'package:mocktail/mocktail.dart';
 import 'package:go_router/go_router.dart';
 
@@ -39,13 +37,11 @@ class MockSyncService extends AsyncNotifier<SyncState> implements SyncNotifier {
 void main() {
   late MockDatabaseService mockDb;
   late MockAuthService mockAuth;
-  late MockSyncService mockSync;
-  late SharedPreferences mockPrefs;
 
   setUp(() {
     mockDb = MockDatabaseService();
     mockAuth = MockAuthService();
-    mockSync = MockSyncService(SyncState(status: SyncStatus.idle));
+    final mockSync = MockSyncService(SyncState(status: SyncStatus.idle)); // ignore: unused_local_variable
     SharedPreferences.setMockInitialValues({'locale': 'en'});
 
     when(() => mockDb.getCurrentSession()).thenAnswer((_) async => UserSession()
@@ -128,9 +124,9 @@ void main() {
 
       // Mount SettingsScreen in mobile layout
       await tester.pumpWidget(createTestApp(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(400, 800)),
-          child: const SettingsScreen(),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(400, 800)),
+          child: SettingsScreen(),
         ),
       ));
       await tester.pumpAndSettle();
@@ -181,7 +177,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(400, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      when(() => mockAuth.logout()).thenAnswer((_) async => null);
+      when(() => mockAuth.logout()).thenAnswer((_) async {});
 
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
       await tester.pumpAndSettle();
@@ -233,7 +229,7 @@ void main() {
       when(() => mockDb.getDirtyAssessments()).thenAnswer((_) async => [
         FacilityLayout()..isDirty = true
       ]);
-      when(() => mockAuth.logout()).thenAnswer((_) async => null);
+      when(() => mockAuth.logout()).thenAnswer((_) async {});
 
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
       await tester.pumpAndSettle();

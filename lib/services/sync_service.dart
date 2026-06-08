@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -83,7 +84,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
       try {
         await ref.read(authServiceProvider).syncPendingPasswordChanges();
       } catch (pwErr) {
-        print("Background password sync error: $pwErr");
+        debugPrint("Background password sync error: $pwErr");
       }
 
       final dirtyAssessments = await _db.getDirtyAssessments();
@@ -108,7 +109,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
         status: SyncStatus.error,
         errorMessage: "Sync failed. Please check connection.",
       ));
-      throw e; // Bubble exception to notify caller UI
+      rethrow; // Bubble exception to notify caller UI
     }
   }
 
@@ -125,7 +126,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
       try {
         await ref.read(authServiceProvider).syncPendingPasswordChanges();
       } catch (pwErr) {
-        print("Background password sync error: $pwErr");
+        debugPrint("Background password sync error: $pwErr");
       }
 
       // STAGE 1: OUTGOING DATA (PUSH)

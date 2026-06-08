@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import 'interactive_map_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -34,11 +33,12 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
   }
 
   // LOGICA DI CARICAMENTO E GEOCODIFICA
-  // Caricamento degli assessment e generazione dei marker geografici
+  // Caricamento degli assessment e generazione dei pin
   Future<void> _loadAssessmentsAndGeocode() async {
     setState(() => _isLoading = true);
 
-    final assessments = await ref.read(databaseServiceProvider).getAllAssessments();
+    final assessments =
+        await ref.read(databaseServiceProvider).getAllAssessments();
     final List<Marker> generatedMarkers = [];
     final List<LatLng> coords = [];
 
@@ -128,7 +128,7 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
     return null;
   }
 
-  // POSIZIONAMENTO TELECAMERA
+  // POSIZIONAMENTO TELECAMERA (Vista della mappa 2D)
   // Adattamento della vista per includere tutti i marker presenti
   void _zoomToFacilities() {
     if (_allCoordinates.isEmpty) return;
@@ -168,11 +168,14 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
     return Colors.red.shade500;
   }
 
-  // Pin personalizzato con indicatore di punteggio ed allarme critico
+  // Pin con indicatore di punteggio ed allarme critico
   Widget _buildPin(FacilityLayout facility) {
-    bool hasCritical = facility.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
-    Color pinColor = hasCritical ? Colors.red.shade500 : _getScoreColor(facility.globalReadinessScore);
-    Color shadowColor = pinColor.withOpacity(0.6);
+    bool hasCritical =
+        facility.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
+    Color pinColor = hasCritical
+        ? Colors.red.shade500
+        : _getScoreColor(facility.globalReadinessScore);
+    Color shadowColor = pinColor.withValues(alpha: 0.6);
 
     return Container(
       decoration: BoxDecoration(
@@ -230,7 +233,7 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                        color: scoreColor.withOpacity(0.1),
+                        color: scoreColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle),
                     child: Icon(Icons.health_and_safety,
                         color: scoreColor, size: 28),
@@ -345,11 +348,14 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
                         ),
                       );
                     },
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [Text(AppLocalizations.of(context)!.viewDetails,
-                            style: TextStyle(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(AppLocalizations.of(context)!.viewDetails,
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 15)),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward_rounded, size: 18),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded, size: 18),
                       ],
                     ),
                   )
@@ -369,7 +375,7 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.globalAssessmentMap,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -382,13 +388,16 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
                   const CircularProgressIndicator(
                       color: Color(0xFF38BDF8), strokeWidth: 3),
                   const SizedBox(height: 24),
-                  Text(AppLocalizations.of(context)!.calibratingSatelliteImagery,
-                      style: TextStyle(
+                  Text(
+                      AppLocalizations.of(context)!.calibratingSatelliteImagery,
+                      style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text(AppLocalizations.of(context)!.syncingAssessmentCoordinates,
+                  Text(
+                      AppLocalizations.of(context)!
+                          .syncingAssessmentCoordinates,
                       style:
                           TextStyle(color: Colors.grey.shade400, fontSize: 12)),
                 ],
@@ -430,7 +439,7 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
                                 color: const Color(0xFF38BDF8), width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF000000).withOpacity(0.5),
+                                color: const Color(0xFF000000).withValues(alpha: 0.5),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                                 offset: const Offset(0, 3),
@@ -460,9 +469,8 @@ class _GlobalMapScreen2DState extends ConsumerState<GlobalMapScreen2D> {
               elevation: 6,
               icon: const Icon(Icons.zoom_out_map_rounded),
               label: Text(AppLocalizations.of(context)!.fitToExtent,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
     );
   }
 }
-

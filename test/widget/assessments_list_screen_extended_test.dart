@@ -33,13 +33,10 @@ class CustomSyncNotifier extends AsyncNotifier<SyncState> implements SyncNotifie
   @override
   Future<void> pushPendingData() async {}
 
-  @override
   Future<void> clearAllData() async {}
 
-  @override
   void resetState() {}
   
-  @override
   Future<void> cancelSync() async {}
 
   @override

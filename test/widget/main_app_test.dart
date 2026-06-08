@@ -12,7 +12,6 @@ import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
 
-import '../helpers/mocks.dart';
 
 void main() {
   late Isar testIsar;
@@ -31,7 +30,7 @@ void main() {
   tearDownAll(() async {
     await testIsar.close(deleteFromDisk: true);
     if (tempDir.existsSync()) {
-      try { tempDir.deleteSync(recursive: true); } catch (e) {}
+      try { tempDir.deleteSync(recursive: true); } catch(e){/* ignore */}
     }
   });
 

@@ -17,7 +17,7 @@ class AssessmentScreen extends StatefulWidget {
 
 class _AssessmentScreenState extends State<AssessmentScreen>
     with SingleTickerProviderStateMixin {
-  // STATO E DIPENDENZE
+  // STATE & DEPENDENCIES
   final ImagePicker _picker = ImagePicker();
   TabController? _tabController;
   List<String> _sectionNames = [];
@@ -40,8 +40,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     super.dispose();
   }
 
-  // LOGICA DI CONTROLLO E DATI
-  // Raggruppa le domande in sezioni specifiche basate sul prefisso dell'ID per la valutazione generale
+  // DATA MAPPING
+  // Segregates questions into distinct functional tabs for general assessments.
+  // Routing is based on specific ID prefixes inherited from the database schema.
   void _initializeGeneralAssessmentTabs() {
     _groupedQuestions = {
       'Accesses & Flows': [],
@@ -74,8 +75,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     });
   }
 
-  // GESTIONE INPUT E MEDIA
-  // Modali per l'inserimento di annotazioni testuali e acquisizione prove fotografiche
+  // MEDIA & INPUT HANDLING
   Future<void> _showNoteDialog(AssessmentQuestion question) async {
     final noteController = TextEditingController(text: question.note);
 
@@ -83,9 +83,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: Text(AppLocalizations.of(context)!.addNote,
+        title: Text(
+          AppLocalizations.of(context)!.addNote,
           style:
-              TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold),
+              const TextStyle(color: Color(0xFF003D73), fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: noteController,
@@ -98,7 +99,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -178,7 +180,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(AppLocalizations.of(context)!.errorPickingImage + e.toString()),
+              content: Text(AppLocalizations.of(context)!.errorPickingImage +
+                  e.toString()),
               backgroundColor: Colors.red),
         );
       }
@@ -191,7 +194,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       barrierDismissible: true,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 8,
           child: Container(
             constraints: const BoxConstraints(maxWidth: 400),
@@ -209,17 +213,23 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     color: Colors.amber.shade50,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.linked_camera_outlined, size: 40, color: Colors.amber.shade800),
+                  child: Icon(Icons.linked_camera_outlined,
+                      size: 40, color: Colors.amber.shade800),
                 ),
                 const SizedBox(height: 20),
-                Text(AppLocalizations.of(context)!.cameraAccessRequired,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                Text(
+                  AppLocalizations.of(context)!.cameraAccessRequired,
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B)),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   AppLocalizations.of(context)!.cameraAccessMsg,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
+                  style: TextStyle(
+                      fontSize: 14, color: Colors.grey.shade600, height: 1.4),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -228,10 +238,12 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     backgroundColor: const Color(0xFF005DA8),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(AppLocalizations.of(context)!.understood, style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.understood,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -278,14 +290,13 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // RENDERIZZAZIONE UI COMPLESSA
+  // MAIN UI BUILDER
   @override
   Widget build(BuildContext context) {
     final bool isTablet = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
-      backgroundColor: Colors.white, // Sfondo bianco puro per un look arioso
-
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -320,15 +331,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               )
             : null,
       ),
-      // LAYOUT ADATTIVO E PREMIUM
-      // Rimossi i limiti stringenti (maxWidth: 800) per espandere il contenuto a tutto schermo sui tablet.
-      // Aggiunto un limite morbido di 1200 per evitare deformazioni solo su monitor desktop giganti.
+      // ADAPTIVE LAYOUT
+      // Implements a soft constraint of 1200px to prevent visual distortion on ultrawide desktop monitors,
+      // while allowing full utilization of tablet screen real estate.
       body: SafeArea(
         top: false,
         child: Column(
           children: [
             _buildProgressHeader(),
-            // SEPARATORE PREMIUM: Stacco visivo netto tra header fisso e domande scorrevoli
             Container(
               height: 1,
               width: double.infinity,
@@ -336,7 +346,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 color: Colors.grey.shade300,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   )
@@ -380,8 +390,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // COMPONENTI UI
-  // Header adattivo: compatto in landscape con sola barra, completo in portrait
+  // ADAPTIVE HEADER COMPONENT
   Widget _buildProgressHeader() {
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
@@ -400,7 +409,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // In landscape mostriamo la barra e la percentuale affiancate per risparmiare spazio
+                // Layout adjustment for landscape orientation to optimize vertical space
                 isLandscape
                     ? Row(
                         children: [
@@ -432,8 +441,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(AppLocalizations.of(context)!.overallCompletion,
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.overallCompletion,
+                                style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF0F172A)),
@@ -463,14 +473,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               ],
             ),
           ),
-          const SizedBox(
-              height: 8), // Aggiunto piccolo respiro prima del separatore
+          const SizedBox(height: 8),
         ],
       );
     }
 
-    final String titleText =
-        isMobilePortrait ? AppLocalizations.of(context)!.areaChecklist : AppLocalizations.of(context)!.areaAssessmentChecklist;
+    final String titleText = isMobilePortrait
+        ? AppLocalizations.of(context)!.areaChecklist
+        : AppLocalizations.of(context)!.areaAssessmentChecklist;
     final double titleFontSize = isMobilePortrait ? 18 : 20;
 
     return Container(
@@ -494,11 +504,12 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              AppLocalizations.of(context)!.completedPct(widget.zone.completionPercentage.toStringAsFixed(0)),
+              AppLocalizations.of(context)!.completedPct(
+                  widget.zone.completionPercentage.toStringAsFixed(0)),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.bold,
@@ -510,8 +521,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // COSTRUZIONE ELEMENTO DOMANDA (Premium Full-Screen Layout)
-  // Utilizza un layout arioso, separato da divisori leggeri, abbandonando l'uso delle Card restrittive.
+  // QUESTION CARD WIDGET
+  // Handles the rendering of individual checklist elements.
+  // Leverages intrinsic height and responsive typographies depending on device width and orientation.
   Widget _buildQuestionCard(AssessmentQuestion question) {
     final requiresRecommendation =
         question.selectedCompliance == ComplianceLevel.doesNotMeet ||
@@ -522,7 +534,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         MediaQuery.of(context).orientation == Orientation.landscape;
     final bool isTablet = MediaQuery.of(context).size.width >= 800;
 
-    // Tipografia responsiva Premium: più grande solo in portrait tablet
     final double questionFontSize =
         (isTablet && isPortrait) ? 20.0 : (isTablet ? 17.0 : 15.0);
 
@@ -569,7 +580,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         color: Colors.white,
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-          // Indicatore visivo di criticità sul bordo sinistro
           left: question.isCriticalFailure
               ? BorderSide(color: Colors.red.shade400, width: 4)
               : BorderSide.none,
@@ -578,7 +588,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Layout principale: affiancato su landscape tablet, impilato su portrait/mobile
+          // Dynamic structural layout adapting to screen aspect ratio
           if (isLandscape && isTablet)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,7 +620,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             _buildMediaGallery(question),
           const SizedBox(height: 24),
           Align(
-            alignment: isLandscape ? Alignment.centerLeft : Alignment.centerRight,
+            alignment:
+                isLandscape ? Alignment.centerLeft : Alignment.centerRight,
             child: Wrap(
               alignment: isLandscape ? WrapAlignment.start : WrapAlignment.end,
               spacing: 8,
@@ -629,7 +640,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 TextButton.icon(
                   onPressed: () => _showNoteDialog(question),
                   icon: const Icon(Icons.edit_note, size: 22),
-                  label: Text(question.note == null ? AppLocalizations.of(context)!.addNote : "Edit Note",
+                  label: Text(
+                      question.note == null
+                          ? AppLocalizations.of(context)!.addNote
+                          : "Edit Note",
                       style: TextStyle(fontSize: isTablet ? 15 : 14)),
                   style: TextButton.styleFrom(
                       foregroundColor: Colors.grey.shade700,
@@ -668,7 +682,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: color.withOpacity(0.3),
+                        color: color.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 3))
                   ]
@@ -702,7 +716,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   ),
                 ),
               ),
-              // Icona Info in alto a destra se il criterio esiste per questa domanda
               if (criteriaText != null)
                 Positioned(
                   top: 6,
@@ -727,7 +740,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // Dialog Premium per mostrare le motivazioni di valutazione
   void _showCriteriaDialog(String title, String criteria, Color color) {
     showDialog(
       context: context,
@@ -771,7 +783,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             ),
             onPressed: () => context.pop(),
             child: Text(AppLocalizations.of(context)!.gotIt,
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -919,7 +931,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // Rende il testo della domanda più Premium separando l'intestazione dalla domanda vera e propria
   Widget _buildRichQuestionText(String text, double fontSize, bool isTablet) {
     final parts = text.split('\n\n');
     if (parts.length > 1) {

@@ -1,6 +1,5 @@
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +17,6 @@ void main() {
     registerFallbackValue(LocalUserCredential());
     registerFallbackValue(UserSession());
   });
-  late Directory tempDir;
   late MockAuthService mockAuth;
   late MockSyncNotifier mockSync;
 
@@ -153,9 +151,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1800, 3000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(800, 1000)),
-          child: const Scaffold(body: LoginScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(800, 1000)),
+          child: Scaffold(body: LoginScreen()),
         ),
       ));
       await tester.pumpAndSettle();
@@ -166,9 +164,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(3600, 2400));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(1200, 800)),
-          child: const Scaffold(body: LoginScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(1200, 800)),
+          child: Scaffold(body: LoginScreen()),
         ),
       ));
       await tester.pumpAndSettle();
@@ -179,9 +177,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(2400, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(800, 400)),
-          child: const Scaffold(body: LoginScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(800, 400)),
+          child: Scaffold(body: LoginScreen()),
         ),
       ));
       await tester.pumpAndSettle();
@@ -330,9 +328,9 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(380, 700)),
-          child: const Scaffold(body: LoginScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(380, 700)),
+          child: Scaffold(body: LoginScreen()),
         ),
       ));
       await tester.pump();
@@ -349,9 +347,9 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(400, 800)),
-          child: const Scaffold(body: LoginScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(400, 800)),
+          child: Scaffold(body: LoginScreen()),
         ),
       ));
       await tester.pump();

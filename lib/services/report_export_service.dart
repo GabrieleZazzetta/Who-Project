@@ -112,6 +112,7 @@ class ReportExportService {
       debugPrint("Report generated. macOS path: ${file.path}");
 
       // Trigger native OS sharing interface (AirDrop, email, file system)
+      if (!context.mounted) return;
       final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path)],

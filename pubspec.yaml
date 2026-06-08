@@ -64,6 +64,8 @@ dev_dependencies:
   firebase_auth_mocks: ^0.14.2
   firebase_storage_mocks: ^0.7.0
 
+  path_provider_platform_interface: any
+  share_plus_platform_interface: any
 flutter:
   generate: true
   uses-material-design: true

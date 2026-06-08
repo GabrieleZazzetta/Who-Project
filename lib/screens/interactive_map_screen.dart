@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../data/facility_data_factory.dart';
 import '../data/general_facility_data.dart';
@@ -23,16 +22,17 @@ class InteractiveMapScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
+  ConsumerState<InteractiveMapScreen> createState() =>
+      _InteractiveMapScreenState();
 }
 
 class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
     with SingleTickerProviderStateMixin {
-  // LOGICA DI STATO
-
+  // STATE MANAGEMENT
   late FacilityLayout layoutData;
   bool _isLoading = true;
-  static const bool _debugMode = false; // ATTIVA PER VEDERE LE AREE DI TOCCO (BLU)
+  static const bool _debugMode =
+      false; // Toggles visual rendering of touch areas for debugging purposes.
   late AnimationController _pulseController;
   final TransformationController _mapController = TransformationController();
   bool _isSaving = false;
@@ -55,12 +55,12 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
     super.dispose();
   }
 
-  // GESTIONE DATI E PERSISTENZA
-
+  // DATA & PERSISTENCE MANAGEMENT
   Future<void> _initializeData() async {
     try {
       if (widget.assessmentId != null) {
-        final existing = await ref.read(databaseServiceProvider)
+        final existing = await ref
+            .read(databaseServiceProvider)
             .getAssessmentById(widget.assessmentId!);
         if (existing != null) {
           layoutData = existing;
@@ -117,7 +117,8 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
     if (_hasRealAnswers()) {
       _isSaving = true;
       try {
-        final savedId = await ref.read(databaseServiceProvider).saveAssessment(layoutData);
+        final savedId =
+            await ref.read(databaseServiceProvider).saveAssessment(layoutData);
         layoutData.id = savedId;
       } catch (e) {
         debugPrint("Errore durante il salvataggio dello stato: $e");
@@ -129,8 +130,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
 
   void _refresh() => setState(() {});
 
-  // COSTRUZIONE INTERFACCIA
-
+  // MAIN UI COMPONENTS
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -164,7 +164,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 1,
-      shadowColor: Colors.black.withOpacity(0.2),
+      shadowColor: Colors.black.withValues(alpha: 0.2),
       leading: IconButton(
         icon: Icon(Icons.arrow_back_ios_new,
             color: const Color(0xFF003D73),
@@ -198,10 +198,11 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.15), width: 0.5),
+        border: Border.all(
+            color: const Color(0xFF005DA8).withValues(alpha: 0.15), width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           )
@@ -209,7 +210,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF005DA8).withOpacity(0.05),
+          color: const Color(0xFF005DA8).withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: IconButton(
@@ -217,7 +218,9 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
               color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
           tooltip: AppLocalizations.of(context)!.viewSavedAssessments,
           onPressed: () => context.go('/', extra: 1),
-          padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
+          padding: isMobilePortrait
+              ? const EdgeInsets.all(6)
+              : const EdgeInsets.all(12),
           constraints: isMobilePortrait ? const BoxConstraints() : null,
         ),
       ),
@@ -230,10 +233,11 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.15), width: 0.5),
+        border: Border.all(
+            color: const Color(0xFF005DA8).withValues(alpha: 0.15), width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           )
@@ -241,7 +245,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF005DA8).withOpacity(0.05),
+          color: const Color(0xFF005DA8).withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: IconButton(
@@ -249,7 +253,9 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
           icon: Icon(Icons.domain_verification,
               color: const Color(0xFF005DA8), size: isMobilePortrait ? 20 : 28),
           tooltip: AppLocalizations.of(context)!.generalAssessment,
-          padding: isMobilePortrait ? const EdgeInsets.all(6) : const EdgeInsets.all(12),
+          padding: isMobilePortrait
+              ? const EdgeInsets.all(6)
+              : const EdgeInsets.all(12),
           constraints: isMobilePortrait ? const BoxConstraints() : null,
           onPressed: () async {
             if (_isNavigating) return;
@@ -258,7 +264,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
               final zone = layoutData.zones
                   .firstWhere((z) => z.id == 'general_facility_assessment');
 
-              // NAVIGAZIONE ALL'ASSESSMENT DELLA ZONA
+              // ROUTES TO ZONE ASSESSMENT
               await context.push('/assessment', extra: zone);
             } finally {
               _isNavigating = false;
@@ -303,9 +309,8 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
     );
   }
 
-  // LOGICA DELLA MAPPA INTERATTIVA CON MAPPATURA ADATTIVA
-
-  // Dimensioni di riferimento dinamiche
+  // INTERACTIVE MAP WITH ADAPTIVE MAPPING LOGIC
+  // Dynamic reference dimensions
   double get _refWidth {
     switch (widget.facilityType) {
       case FacilityType.existingFacilityWithWard:
@@ -335,8 +340,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
   Widget _buildInteractiveMap() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calcolo del fattore di scala basato sulla larghezza disponibile (es. iPad vs iPhone)
-        // Questo permette di usare i pixel estratti su un dispositivo e scalarli proporzionalmente
+        // Computes scale factor based on viewport width to proportionally scale touch coordinates and SVG elements across different device forms.
         final double availableWidth = constraints.maxWidth;
         final double scale = availableWidth / _refWidth;
         final double scaledHeight = _refHeight * scale;
@@ -344,7 +348,8 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
         return ClipRRect(
           child: InteractiveViewer(
             transformationController: _mapController,
-            minScale: 0.5, // Permette di vedere la mappa intera su iPad
+            minScale:
+                0.5, // Minimum scale ensures the full floor plan is visible on larger tablets without artificial boundaries.
             maxScale: 4.0,
             constrained: false,
             boundaryMargin: const EdgeInsets.all(double.infinity),
@@ -394,7 +399,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
   }
 
   Widget _buildTappableArea(SpatialZone zone, double scale) {
-    // Applicazione della scala alle coordinate e dimensioni dell'area di tocco
+    // Applies computed scale to raw touch area coordinates mapped from the SVG.
     return Positioned(
       top: zone.touchArea.top * scale,
       left: zone.touchArea.left * scale,
@@ -417,9 +422,8 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
         },
         child: Container(
           decoration: BoxDecoration(
-            color: _debugMode
-                ? Colors.blue.withOpacity(0.3)
-                : Colors.transparent,
+            color:
+                _debugMode ? Colors.blue.withValues(alpha: 0.3) : Colors.transparent,
             shape: BoxShape.circle,
             border:
                 _debugMode ? Border.all(color: Colors.blue, width: 1) : null,
@@ -436,15 +440,15 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
 
   Widget _buildStatusIndicator(
       SpatialZone zone, bool isCritical, double scale) {
-    // Calcolo di un moltiplicatore adattivo per la dimensione della bolla e dell'icona
-    // Evita che le bolle diventino troppo grandi su schermi enormi o troppo piccole su schermi ridotti
+    // Calculates an adaptive clamping multiplier for bubble and icon sizes.
+    // Prevents status indicators from dominating the view on ultra-wides or becoming invisible on compact screens.
     double multiplier = scale < 1.0 ? 1.0 : scale * 0.8;
     multiplier = multiplier.clamp(0.8, 1.5);
 
     final double bubbleSize = 20.0 * multiplier;
     final double iconSize = 16.0 * multiplier;
 
-    // Applicazione della scala al posizionamento dell'indicatore di stato
+    // Applies computed scale to the position vector of the status indicator.
     return Positioned(
       top: zone.coordinates.top * scale,
       left: zone.coordinates.left * scale,
@@ -466,7 +470,7 @@ class _InteractiveMapScreenState extends ConsumerState<InteractiveMapScreen>
                   boxShadow: [
                     BoxShadow(
                       color:
-                          zone.statusColor.withOpacity(isCritical ? 0.8 : 0.4),
+                          zone.statusColor.withValues(alpha: isCritical ? 0.8 : 0.4),
                       blurRadius: isCritical ? 15 : 8,
                       spreadRadius: isCritical ? 4 : 1,
                     )

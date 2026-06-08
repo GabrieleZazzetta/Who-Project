@@ -21,7 +21,6 @@ import 'package:assessment_tool/screens/settings_screen.dart';
 import 'package:assessment_tool/screens/assessments_list_screen.dart';
 import 'package:assessment_tool/screens/register_screen.dart';
 import 'package:assessment_tool/screens/facility_selection_screen.dart';
-import 'package:assessment_tool/screens/login_screen.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
 
 import '../helpers/mocks.dart';
@@ -55,7 +54,7 @@ void main() {
     if (tempDir.existsSync()) {
       try {
         tempDir.deleteSync(recursive: true);
-      } catch (e) {}
+      } catch(e){/* ignore */}
     }
   });
 
@@ -84,43 +83,6 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: home,
-      ),
-    );
-  }
-
-  Widget createProviderAppWithRouter(Widget home) {
-    final mockAuth = MockAuthService();
-    when(() => mockAuth.syncPendingPasswordChanges()).thenAnswer((_) async {});
-    when(() => mockAuth.logout()).thenAnswer((_) async {});
-
-    final router = GoRouter(
-      initialLocation: '/',
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => home,
-        ),
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const Scaffold(
-            body: Text('Login Placeholder'),
-          ),
-        ),
-      ],
-    );
-
-    return ProviderScope(
-      overrides: [
-        authServiceProvider.overrideWithValue(mockAuth),
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        syncProvider.overrideWith(() => MockSyncNotifier()),
-        databaseServiceProvider.overrideWithValue(DatabaseService.instance),
-      ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
   }
@@ -332,10 +294,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SettingsScreen(),
+            home: SettingsScreen(),
           ),
         ));
         await tester.pumpAndSettle();
@@ -375,10 +337,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const Scaffold(body: SettingsScreen()),
+            home: Scaffold(body: SettingsScreen()),
           ),
         ));
         await tester.pumpAndSettle();
@@ -418,10 +380,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => mockSync),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SettingsScreen(),
+            home: SettingsScreen(),
           ),
         ));
         await tester.pumpAndSettle();
@@ -876,7 +838,6 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(1200, 800));
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        bool popped = false;
         final router = GoRouter(
           initialLocation: '/home',
           routes: [
@@ -1023,10 +984,10 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
               syncProvider.overrideWith(() => MockSyncNotifier()),
             ],
-            child: MaterialApp(
+            child: const MaterialApp(
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              home: const SettingsScreen(),
+              home: SettingsScreen(),
             ),
           ));
           await Future.delayed(const Duration(milliseconds: 500));
@@ -1054,10 +1015,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SettingsScreen(),
+            home: SettingsScreen(),
           ),
         ));
         await tester.pump();
@@ -1093,10 +1054,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SettingsScreen(),
+            home: SettingsScreen(),
           ),
         ));
         await tester.pump();
@@ -1124,10 +1085,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const AssessmentsListScreen(),
+            home: AssessmentsListScreen(),
           ),
         ));
         await tester.pump();
@@ -1163,10 +1124,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const AssessmentsListScreen(),
+            home: AssessmentsListScreen(),
           ),
         ));
         await tester.pump();
@@ -1194,10 +1155,10 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             syncProvider.overrideWith(() => MockSyncNotifier()),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const AssessmentsListScreen(),
+            home: AssessmentsListScreen(),
           ),
         ));
         await tester.pump();

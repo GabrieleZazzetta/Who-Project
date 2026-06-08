@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../models/local_user_credential.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
@@ -88,7 +87,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               displayName: displayName,
             );
 
-        // SALVATAGGIO CREDENZIALI LOCALI PER ACCESSO OFFLINE / RECUPERO PASSWORD
+        // OFFLINE CREDENTIAL SYNCHRONIZATION
         final bytes = utf8.encode(password);
         final passwordHash = sha256.convert(bytes).toString();
 
@@ -129,7 +128,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final bool isTablet = mediaQuery.size.shortestSide >= 600;
     final bool isLandscape = mediaQuery.orientation == Orientation.landscape;
 
-    // LAYOUT PREMIUM PER TABLET (Split View for Landscape, Stacked for Portrait)
+    // TABLET LAYOUT DISPATCHER
+    // Routes to stacked view for portrait or split view for landscape orientation.
     if (isTablet) {
       if (!isLandscape) {
         return Scaffold(
@@ -137,7 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                // Top Header Branding per Tablet Portrait
+                // TABLET PORTRAIT BRANDING HEADER
                 Container(
                   width: double.infinity,
                   padding:
@@ -159,7 +159,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       const SizedBox(height: 32),
                       Text(AppLocalizations.of(context)!.joinPlatform,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -171,7 +171,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         AppLocalizations.of(context)!.createAccountDescGlobal,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.8), fontSize: 16),
+                            color: Colors.white.withValues(alpha: 0.8), fontSize: 16),
                       ),
                       if (_isWhoStaff) ...[
                         const SizedBox(height: 24),
@@ -179,13 +179,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade400.withOpacity(0.2),
+                            color: Colors.red.shade400.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.red.shade200.withOpacity(0.3)),
+                                color: Colors.red.shade200.withValues(alpha: 0.3)),
                           ),
                           child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -195,7 +195,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ],
                   ),
                 ),
-                // Form di Registrazione Centrata
+                // CENTERED REGISTRATION FORM
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 550),
@@ -212,12 +212,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
       }
 
-      // Layout Orizzontale (Landscape) per Tablet
+      // SPLIT VIEW LANDSCAPE LAYOUT
       return Scaffold(
         backgroundColor: Colors.white,
         body: Row(
           children: [
-            // PARTE SINISTRA: Branding & Background (Fisso)
+            // STATIC BRANDING SIDEBAR
             Expanded(
               flex: 1,
               child: Container(
@@ -241,7 +241,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         height: 400,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -256,7 +256,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               const SizedBox(height: 40),
                               Text(AppLocalizations.of(context)!.joinPlatform,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -271,7 +271,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ),
             ),
-            // PARTE DESTRA: Form di Registrazione (Scorrevole)
+            // SCROLLABLE FORM CONTAINER
             Expanded(
               flex: 1,
               child: Center(
@@ -284,7 +284,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(AppLocalizations.of(context)!.createAccountTitle,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF1E293B),
@@ -312,13 +312,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
     }
 
-    // LAYOUT PER SMARTPHONE LANDSCAPE (Premium Rotating View)
+    // MOBILE LANDSCAPE LAYOUT
     if (isLandscape) {
       return Scaffold(
         backgroundColor: Colors.white,
         body: Row(
           children: [
-            // Pannello laterale con branding (coerente con tablet)
+            // COMPACT BRANDING SIDEBAR
             Expanded(
               flex: 2,
               child: Container(
@@ -335,7 +335,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     _buildLogo(isDark: true),
                     const SizedBox(height: 16),
                     Text(AppLocalizations.of(context)!.joinPlatform,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w900),
@@ -347,24 +347,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          // INIZIO MODIFICA: TAG AUTHORIZED PERSONNEL (Mobile Landscape)
                           child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold),
                           ),
-                          // FINE MODIFICA
                         ),
                       ),
                   ],
                 ),
               ),
             ),
-            // AREA FORM DI REGISTRAZIONE (Ridimensionata per Mobile Landscape)
+            // COMPACT REGISTRATION FORM
             Expanded(
               flex: 3,
               child: Center(
@@ -383,13 +381,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
     }
 
-    // LAYOUT PER SMARTPHONE PORTRAIT (Premium Mobile)
+    // STANDARD MOBILE PORTRAIT LAYOUT
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header con Gradiente per Mobile
+            // MOBILE BRANDING HEADER
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(top: 60, bottom: 40),
@@ -409,7 +407,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   _buildLogo(isDark: true),
                   const SizedBox(height: 24),
                   Text(AppLocalizations.of(context)!.joinPlatform,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -418,21 +416,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Text(
                     AppLocalizations.of(context)!.createAccountDescStart,
                     style: TextStyle(
-                        fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                        fontSize: 16, color: Colors.white.withValues(alpha: 0.8)),
                   ),
                   const SizedBox(height: 16),
-                  // TAG AUTHORIZED PERSONNEL ONLY (Ripristinato per Mobile Header)
                   if (_isWhoStaff)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      // TAG AUTHORIZED PERSONNEL ONLY (Ottimizzato per Mobile Portrait)
+                      // AUTHORIZED PERSONNEL TAG
                       child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.bold),
@@ -442,7 +439,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ),
 
-            // Area Form
+            // FORM AREA
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -461,7 +458,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  // COMPONENTE: LOGO (RIUTILIZZABILE)
+  // REUSABLE BRANDING LOGO COMPONENT
   Widget _buildLogo({bool isDark = false}) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final double size = isTablet ? 180 : 140;
@@ -477,8 +474,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.1),
+                  ? Colors.black.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -500,56 +497,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  // COMPONENTE: INTESTAZIONE (LOGO E TITOLI)
-  Widget _buildHeader({required CrossAxisAlignment alignment}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: alignment,
-      children: [
-        _buildLogo(),
-        const SizedBox(height: 24),
-        Text(
-          AppLocalizations.of(context)!.createAccountTitle,
-          textAlign: alignment == CrossAxisAlignment.center
-              ? TextAlign.center
-              : TextAlign.start,
-          style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF003D73),
-              height: 1.1,
-              letterSpacing: -0.5),
-        ),
-        const SizedBox(height: 12),
-        if (_isWhoStaff)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE4E6), // Pinkish background
-              borderRadius: BorderRadius.circular(20),
-              border:
-                  Border.all(color: const Color(0xFFFDA4AF).withOpacity(0.5)),
-            ),
-            child: Text(AppLocalizations.of(context)!.authorizedPersonnel,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Color(0xFFE11D48),
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5),
-            ),
-          ),
-      ],
-    );
-  }
-
-  // COMPONENTE: FORM DI REGISTRAZIONE
+  // CORE REGISTRATION FORM COMPONENT
   Widget _buildForm() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // SELETTORE MODALITÀ UTENTE
+        // USER ROLE TOGGLE
         Container(
           decoration: BoxDecoration(
               color: Colors.grey.shade200,
@@ -621,7 +575,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  // METODI HELPER UI
+  // UI BUILDER HELPERS
   Widget _buildModeToggle(String title, bool isActive, VoidCallback onTap, {Key? key}) {
     return GestureDetector(
       key: key,
@@ -633,7 +587,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           boxShadow: isActive
-              ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)]
+              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
               : [],
         ),
         child: Center(
@@ -669,7 +623,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_outlined, color: const Color(0xFF64748B)),
+            const Icon(Icons.calendar_today_outlined, color: Color(0xFF64748B)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -711,18 +665,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty)
+        if (value == null || value.isEmpty) {
           return AppLocalizations.of(context)!.requiredValidation;
+        }
 
-        // Regex per validazione formato email
+        // REGEX EMAIL VALIDATION
         final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
         if (_isWhoStaff) {
-          if (!value.toLowerCase().endsWith("@who.int"))
+          if (!value.toLowerCase().endsWith("@who.int")) {
             return "WHO Staff must use a @who.int email";
+          }
         } else {
-          if (!emailRegex.hasMatch(value))
+          if (!emailRegex.hasMatch(value)) {
             return "Please enter a valid email address";
+          }
         }
         return null;
       },
@@ -812,7 +769,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: CircularProgressIndicator(
                     color: Colors.white, strokeWidth: 2))
             : Text(AppLocalizations.of(context)!.createAccountTitle,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5)),
@@ -821,10 +778,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildLoginNavigation() {
-    final mediaQuery = MediaQuery.of(context);
-    final bool isTablet = mediaQuery.size.shortestSide >= 600;
-    final bool isMobile = !isTablet;
-
     Widget content = Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,

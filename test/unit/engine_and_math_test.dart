@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:assessment_tool/models/assessment_models.dart';
-import 'package:assessment_tool/models/user_model.dart';
-import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/data/facility_data_factory.dart';
 
 void main() {
@@ -157,10 +155,11 @@ void main() {
 
         Map<String, List<AssessmentQuestion>> grouped = {'Accesses & Flows': [], 'Systems & Finishing': [], 'Waste Management': [], 'Water & Sanitation': []};
         for (final q in checklist) {
-          if (q.id.startsWith('gen_2_1')) grouped['Accesses & Flows']!.add(q);
-          else if (q.id.startsWith('gen_2_2')) grouped['Systems & Finishing']!.add(q);
-          else if (q.id.startsWith('gen_2_3')) grouped['Waste Management']!.add(q);
-          else if (q.id.startsWith('gen_2_4')) grouped['Water & Sanitation']!.add(q);
+          if (q.id.startsWith('gen_2_1')) {
+            grouped['Accesses & Flows']!.add(q);
+          } else if (q.id.startsWith('gen_2_2')) { grouped['Systems & Finishing']!.add(q); }
+          else if (q.id.startsWith('gen_2_3')) { grouped['Waste Management']!.add(q); }
+          else if (q.id.startsWith('gen_2_4')) { grouped['Water & Sanitation']!.add(q); }
         }
 
         expect(grouped['Accesses & Flows']!.length, equals(2));

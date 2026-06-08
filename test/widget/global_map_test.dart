@@ -1,12 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:assessment_tool/screens/global_map_screen_3d.dart';
-import 'package:assessment_tool/providers/database_provider.dart';
-import 'package:assessment_tool/services/database_service.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
-import '../helpers/mocks.dart';
 
 void main() {
   // TEST SUITE: GLOBAL MAP SCREEN 3D
@@ -17,13 +13,12 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       // Provision empty database mock
-      final mockDb = MockDatabaseService();
       
       // Mount widget
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           overrides: [],
-          child: const MaterialApp(
+          child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: GlobalMapScreen3D(),

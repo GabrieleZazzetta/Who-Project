@@ -191,10 +191,10 @@ void main() {
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
         
-        await tester.pumpWidget(MaterialApp(
+        await tester.pumpWidget(const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
+          home: PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
         ));
         await tester.pump(const Duration(milliseconds: 500));
         
@@ -207,10 +207,10 @@ void main() {
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
         
-        await tester.pumpWidget(MaterialApp(
+        await tester.pumpWidget(const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
+          home: PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
         ));
         await tester.pump(const Duration(milliseconds: 500));
         

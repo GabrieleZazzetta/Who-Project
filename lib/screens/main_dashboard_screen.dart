@@ -7,8 +7,8 @@ import 'assessments_list_screen.dart';
 import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
 
-// LOGICA DI NAVIGAZIONE PRINCIPALE
-// Gestisce il passaggio tra le sezioni principali tramite la Bottom Bar o Navigation Rail
+// MAIN NAVIGATION LOGIC
+// Manages transitions between core application sections via BottomNavigationBar or NavigationRail.
 class MainDashboardScreen extends StatefulWidget {
   final int initialIndex;
   const MainDashboardScreen({super.key, this.initialIndex = 0});
@@ -19,7 +19,7 @@ class MainDashboardScreen extends StatefulWidget {
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
   late int _currentIndex;
-  // LOGICA DI STATO: Controllo dell'espansione della barra laterale
+  // STATE MANAGEMENT: Sidebar expansion control.
   bool _isSidebarExpanded = true;
 
   @override
@@ -34,12 +34,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     const SettingsScreen(),
   ];
 
-  // LOGICA DI NAVIGAZIONE ADATTIVA
+  // ADAPTIVE NAVIGATION LOGIC
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final size = mediaQuery.size;
-    // Calcoliamo l'orientamento reale escludendo lo spazio occupato dalla tastiera virtuale (viewInsets.bottom)
+    // Computes effective orientation by excluding virtual keyboard overlay space.
     final bool isLandscape =
         size.width > (size.height + mediaQuery.viewInsets.bottom);
 
@@ -52,13 +52,13 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     );
   }
 
-  // LAYOUT MOBILE: Adattamento dinamico tra Portrait e Landscape
+  // DYNAMIC MOBILE LAYOUT
   Widget _buildMobileLayout({required bool isLandscape}) {
     if (isLandscape) {
-      // In modalità orizzontale usiamo il design Premium dell'iPad (Sidebar laterale)
+      // Applies side navigation rail for mobile landscape view.
       return Scaffold(
         backgroundColor:
-            const Color(0xFF003D73), // Colore di fondo scuro unificato
+            const Color(0xFF003D73),
         body: Row(
           children: [
             _buildNavigationRail(),
@@ -75,7 +75,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       );
     }
 
-    // In modalità verticale manteniamo la BottomNavigationBar per ergonomia mobile
+    // Applies bottom navigation bar for mobile portrait ergonomics.
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: _pages[_currentIndex],
@@ -83,7 +83,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     );
   }
 
-  // LAYOUT TABLET E DESKTOP
+  // TABLET & DESKTOP LAYOUT
   Widget _buildTabletLayout({required bool isLandscape}) {
     return Scaffold(
       backgroundColor: const Color(0xFF003D73),
@@ -103,7 +103,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     );
   }
 
-  // COMPONENTI DI NAVIGAZIONE
+  // NAVIGATION COMPONENTS
   Widget _buildBottomBar() {
     return Container(
       decoration: BoxDecoration(
@@ -131,24 +131,22 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     );
   }
 
-  // Sidebar integrata con gradiente e logo per tablet
+  // ADAPTIVE NAVIGATION RAIL
   Widget _buildNavigationRail() {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-    final bool isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
     final double expandedWidth = isTablet ? 350 : 280;
 
     final topPadding = MediaQuery.of(context).padding.top;
 
-    // Calcolo posizione dinamica del tasto menu per Tablet
+    // Computes dynamic menu button positioning based on screen insets.
     double menuTop = 12;
     double menuRight = 12;
 
     if (isTablet) {
       menuTop = topPadding > 0
           ? topPadding + 8
-          : 12; // Estremo superiore sotto la status bar
-      // Quando espanso sta a destra, quando collassato si centra (90px larghezza - 48px icon button = 42 -> 21px dal bordo)
+          : 12;
+      // Adjusts horizontal padding to center the toggle icon when the sidebar is collapsed.
       menuRight = _isSidebarExpanded ? 12 : 21;
     }
 
@@ -158,10 +156,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       width: _isSidebarExpanded ? expandedWidth : 90,
       decoration: const BoxDecoration(
         color:
-            Color(0xFF003D73), // Colore solido profondo per massima continuità
+            Color(0xFF003D73),
       ),
       child: Stack(
-        // Utilizzo Stack per posizionamento assoluto dell'icona menu
+        // Uses Stack for absolute positioning of the menu toggle button over the scrolling rail.
         children: [
           SafeArea(
             bottom: false,
@@ -171,8 +169,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                   SizedBox(
                       height: isTablet
                           ? 60
-                          : 24), // Spazio per isolare il logo dal menu in alto
-                  // Logo centrale: mostrato solo quando la sidebar è espansa
+                          : 24),
+                  // Renders WHO branding elements exclusively when the navigation rail is expanded.
                   if (_isSidebarExpanded)
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -183,7 +181,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -206,12 +204,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                       ),
                     ),
                   if (_isSidebarExpanded) ...[
-                    const SizedBox(height: 16), // Ridotto da 24
+                    const SizedBox(height: 16),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       child: SizedBox(
-                        width: 248, // 280 - 32 padding
+                        width: 248,
                         child: Text(
                           AppLocalizations.of(context)!.appTitleMultiline,
                           textAlign: TextAlign.center,
@@ -219,7 +217,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                             color: Colors.white,
                             fontSize: isTablet
                                 ? 24
-                                : 16, // Ancora più grande per tablet portrait
+                                : 16,
                             fontWeight: FontWeight.w900,
                             height: 1.1,
                             letterSpacing: -0.2,
@@ -230,8 +228,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                   ],
                   SizedBox(
                       height:
-                          _isSidebarExpanded ? 32 : 32), // Ridotto da 60 a 32
-                  // Elementi di navigazione custom per sidebar premium
+                          _isSidebarExpanded ? 32 : 32),
+                  // RAIL NAVIGATION ITEMS
                   ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -254,15 +252,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                           index: 2),
                     ],
                   ),
-                  // Versione e Info a fondo pagina RIMOSSE per pulizia del design
                 ],
-              ), // chiude Column
-            ), // chiude SingleChildScrollView
-          ), // chiude SafeArea
+              ),
+            ),
+          ),
 
-          // PULSANTE MENU GLOBALE RIMOSSO (Ripristinato in sidebar)
-
-          // TASTO MENU PREMIUM (Dinamico)
+          // DYNAMIC MENU TOGGLE
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
             top: menuTop,
@@ -279,9 +274,9 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                   duration: const Duration(milliseconds: 300),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Icon(
                     _isSidebarExpanded
@@ -295,11 +290,11 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             ),
           ),
         ],
-      ), // chiude Stack
-    ); // chiude AnimatedContainer
+      ),
+    );
   }
 
-  // Helper per voci della sidebar premium
+  // SIDEBAR ITEM COMPONENT
   Widget _buildSidebarItem(
       {required IconData icon, required String label, required int index}) {
     final bool isActive = _currentIndex == index;
@@ -307,8 +302,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // Aumento delle scritte e icone specificamente per tablet verticali (isTablet && !isLandscape)
-    // per uniformità e resa premium del menu senza toccare altri design (smartphone o tablet landscape che avevano già 18/28)
+    // Calculates typography and icon scales dynamically based on form factor to preserve visual hierarchy.
     final double iconSize = isTablet ? 28 : 24;
     final double fontSize = isTablet ? 18 : 15;
     final double verticalPadding = isTablet ? 16 : 12;
@@ -321,7 +315,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
         padding: EdgeInsets.symmetric(
             horizontal: _isSidebarExpanded ? 16 : 0, vertical: verticalPadding),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white.withOpacity(0.15) : Colors.transparent,
+          color: isActive ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: SingleChildScrollView(
@@ -376,7 +370,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.all(isActive ? 6 : 0),
             decoration: BoxDecoration(
-              color: isActive ? color.withOpacity(0.1) : Colors.transparent,
+              color: isActive ? color.withValues(alpha: 0.1) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: isActive ? 28 : 24),
@@ -397,8 +391,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   }
 }
 
-// CONTENUTO DELLA HOME
-// Visualizza le opzioni di valutazione disponibili (Mpox, Ebola, etc.)
+// HOME DASHBOARD CONTENT
+// Renders available health emergency assessment modules.
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
@@ -417,11 +411,11 @@ class HomeContent extends StatelessWidget {
                   : MediaQuery.of(context).size.width * 0.85,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 30,
                       spreadRadius: 5)
                 ],
@@ -437,7 +431,7 @@ class HomeContent extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 4)),
                       ],
@@ -504,8 +498,8 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // RENDERING CONTENUTO ADATTIVO
-  // Gestisce la visualizzazione in griglia o lista in base allo spazio disponibile
+  // ADAPTIVE CONTENT RENDERING
+  // Switches between list and grid views depending on available viewport width and orientation.
   @override
   Widget build(BuildContext context) {
     return ScreenTypeLayout.builder(
@@ -521,19 +515,18 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // DISPATCHER LAYOUT
+  // LAYOUT DISPATCHER
   Widget _buildContent(BuildContext context, {required int columns}) {
     return _buildStandardLayout(context, columns: columns);
   }
 
-  // LAYOUT STANDARD (Mobile Portrait, Tablet Portrait)
+  // STANDARD LAYOUT
   Widget _buildStandardLayout(BuildContext context, {required int columns}) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // LOGICA HEADER: Mostra l'header istituzionale solo su mobile in Portrait.
-    // In Landscape (sia mobile che tablet) usiamo il design pulito con Sidebar.
+    // HEADER LOGIC: Displays the institutional header exclusively in mobile portrait mode to maximize vertical space in landscape.
     final bool useFullHeader = !isTablet && !isLandscape;
 
     return Column(
@@ -543,17 +536,15 @@ class HomeContent extends StatelessWidget {
           _buildMobileHeader(context)
         else
           const SizedBox(
-              height: 54), // Spaziatura premium per layout con sidebar
+              height: 54),
 
-        // GRID DEI MODULI DI VALUTAZIONE
-        // L'utilizzo di Transform.translate permette l'effetto "floating" delle card sull'header
-        // Disattivato in landscape mobile per massimizzare lo spazio verticale utile
+        // ASSESSMENT MODULES GRID
+        // Applies vertical translation to create a floating depth effect over the header, disabled in landscape to save space.
         Expanded(
           child: Transform.translate(
             offset: Offset(0, (useFullHeader && !isLandscape) ? -45 : 0),
             child: (!isTablet)
-                // BINARIO 1: SOLO PER SMARTPHONE (VERTICALE E ORIZZONTALE)
-                // Usa una Column scorrevole che rispetta l'altezza intrinseca naturale (compatta) delle card
+                // COMPACT SCROLLING COLUMN FOR SMARTPHONES
                 ? SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
@@ -568,15 +559,15 @@ class HomeContent extends StatelessWidget {
                       ),
                     ),
                   )
-                // BINARIO 2: TABLET (VERTICALE E ORIZZONTALE)
+                // GRID LAYOUT FOR TABLETS
                 : Center(
                     child: LayoutBuilder(builder: (context, constraints) {
                       return ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: 900, // Premium max width for cards
+                          maxWidth: 900,
                           minHeight: isTablet
                               ? constraints.maxHeight
-                              : 0, // Forza la centratura verticale su tablet
+                              : 0,
                         ),
                         child: Column(
                           mainAxisAlignment: isTablet
@@ -616,19 +607,19 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // Header istituzionale per visualizzazione mobile o portrait
+  // INSTITUTIONAL MOBILE HEADER
   Widget _buildMobileHeader(BuildContext context) {
     final bool isCompact = MediaQuery.of(context).size.width >= 600;
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
     final double logoSize = isCompact
         ? 180.0
-        : 230.0; // Calibrazione finale: via di mezzo ideale per autorevolezza ed equilibrio
+        : 230.0;
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-          top: isLandscape ? 12 : 64, // Ridotto drasticamente in landscape
+          top: isLandscape ? 12 : 64,
           bottom: isLandscape ? 12 : 80),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -643,7 +634,7 @@ class HomeContent extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // TASTO INFO: Allineamento adattivo per landscape
+          // ADAPTIVE INFO BUTTON
           Positioned(
             top: isLandscape ? 0 : 0,
             right: 0,
@@ -655,7 +646,7 @@ class HomeContent extends StatelessWidget {
               onPressed: () => _showInfoDialog(context),
             ),
           ),
-          // LOGO WHO: Centratura e ridimensionamento Premium per landscape
+          // BRANDING SCALING LOGIC
           Transform.translate(
             offset: Offset(0, isLandscape ? 0 : 10),
             child: Center(
@@ -668,14 +659,14 @@ class HomeContent extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: isLandscape ? 15 : 30,
                         offset: Offset(0, isLandscape ? 4 : 10)),
                   ],
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(
-                      isLandscape ? 8.0 : 24.0), // Padding ridotto in landscape
+                      isLandscape ? 8.0 : 24.0),
                   child: Image.asset(
                     'assets/images/who_logo.png',
                     fit: BoxFit.contain,
@@ -740,8 +731,7 @@ class HomeContent extends StatelessWidget {
     ];
   }
 
-  // COMPONENTI UI: CARDS E LAYOUT
-  // Costruisce le card dei moduli con stati attivo/bloccato ispirandosi fedelmente al design Premium originale
+  // MODULE CARD COMPONENT
   Widget _buildHTMLCard({
     required BuildContext context,
     required String title,
@@ -756,13 +746,11 @@ class HomeContent extends StatelessWidget {
     required Color badgeBgColor,
     required bool isActive,
   }) {
-    final bool isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // Parametrizzazione delle dimensioni per look Premium su Tablet
+    // Responsive dimension parameters based on device type.
     final double cardPadding = isTablet ? 32 : (isLandscape ? 12 : 18);
     final double iconBoxPadding = isTablet ? 18 : 14;
     final double iconSize = isTablet ? 48 : 32;
@@ -776,12 +764,11 @@ class HomeContent extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        // Bordi ultra-sottili e premium per una definizione superiore
         border: Border.all(
-            color: const Color(0xFFE2E8F0).withOpacity(0.5), width: 0.5),
+            color: const Color(0xFFE2E8F0).withValues(alpha: 0.5), width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -815,7 +802,7 @@ class HomeContent extends StatelessWidget {
                           vertical: isLandscape ? 12 : 28),
                       child: Row(
                         children: [
-                          // ICONA MODULO: Box arrotondato con colore tematico
+                          // THEMED MODULE ICON
                           Container(
                             padding: EdgeInsets.all(iconBoxPadding),
                             decoration: BoxDecoration(
@@ -825,7 +812,7 @@ class HomeContent extends StatelessWidget {
                             child: Icon(icon, color: iconColor, size: iconSize),
                           ),
                           SizedBox(width: spacing),
-                          // INFO E STATO: Titolo, Badge e Sottotitolo
+                          // MODULE METADATA
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -848,7 +835,7 @@ class HomeContent extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    // BADGE STATO: Design a pillola fedele all'originale
+                                    // STATUS BADGE
                                     Flexible(
                                       flex: 1,
                                       child: Container(
@@ -888,7 +875,7 @@ class HomeContent extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // INDICATORE AZIONE: Chevron o Lucchetto
+                          // ACTION INDICATOR
                           Icon(
                             isActive
                                 ? Icons.chevron_right_rounded

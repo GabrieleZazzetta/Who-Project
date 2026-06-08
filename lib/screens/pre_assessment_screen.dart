@@ -17,7 +17,7 @@ class PreAssessmentScreen extends StatefulWidget {
 }
 
 class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
-  // STATO E CONFIGURAZIONE DEI FORM
+  // FORM STATE AND CONFIGURATION
   int _currentStep = 0;
   final int _totalSteps = 4;
   bool _isSidebarExpanded = true;
@@ -29,7 +29,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     GlobalKey<FormState>(),
   ];
 
-  // Informazioni generali dell'assessment
+  // GENERAL ASSESSMENT METADATA
   final TextEditingController _assessmentNameController =
       TextEditingController();
   DateTime? _assessmentDate = DateTime.now();
@@ -39,7 +39,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   final TextEditingController _assessorPhoneController =
       TextEditingController();
 
-  // Dati di localizzazione geografica
+  // GEOGRAPHIC LOCATION DATA
   final TextEditingController _countryController = TextEditingController();
   final TextEditingController _regionController = TextEditingController();
   final TextEditingController _districtController = TextEditingController();
@@ -47,7 +47,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   final TextEditingController _addressController = TextEditingController();
   String? _locationRecord;
 
-  // Identificazione della struttura sanitaria
+  // FACILITY IDENTIFICATION
   final TextEditingController _facilityCodeController = TextEditingController();
   final TextEditingController _facilityNameController = TextEditingController();
   String? _managingAuthority;
@@ -63,7 +63,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
   String? _structureType;
   String? _existingFacilityType;
 
-  // Servizi e capacità della struttura
+  // FACILITY SERVICES AND CAPACITY
   String? _offersOutpatient;
   String? _offersInpatient;
   final TextEditingController _inpatientBedsController =
@@ -95,7 +95,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     super.dispose();
   }
 
-  // LOGICA DI NAVIGAZIONE E INVIO
+  // NAVIGATION AND SUBMISSION LOGIC
   String _getFacilityTypeName(FacilityType type) {
     switch (type) {
       case FacilityType.screeningAndIsolation:
@@ -127,7 +127,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     }
   }
 
-  // Finalizzazione del pre-assessment e inizializzazione del layout in memoria
+  // Initializes the facility layout in memory and finalizes the pre-assessment phase.
   void _submitForm() async {
     showDialog(
         context: context,
@@ -172,12 +172,12 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       ..has24hEmergency = _has24hEmergency
       ..hasIcuOrHdu = _hasIcuOrHdu;
 
-    // CHIUSURA DIALOG DI CARICAMENTO
+    // CLOSES LOADING DIALOG
     if (mounted) context.pop();
 
     if (mounted) {
-      // NAVIGAZIONE ALLA MAPPA INTERATTIVA
-      // Utilizzo di context.go per sostituire la schermata attuale
+      // INTERACTIVE MAP NAVIGATION
+      // Replaces the current route to transition to the spatial configuration mapping phase.
       context.go('/map', extra: {
         'emergencyType': widget.emergencyType,
         'facilityType': widget.facilityType,
@@ -186,7 +186,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     }
   }
 
-  // METODO DI RENDERING PRINCIPALE E GESTIONE RESPONSIVE
+  // MAIN RENDER AND RESPONSIVE DISPATCHER
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -194,7 +194,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
         final isLandscape =
             MediaQuery.of(context).orientation == Orientation.landscape;
         final screenWidth = constraints.maxWidth;
-        // Allineato alla logica di facility_selection: split layout per schermi larghi in landscape
+        // Determines whether to use a split view layout based on viewport width.
         final useSplitLayout = isLandscape && screenWidth >= 900;
 
         if (useSplitLayout) {
@@ -205,8 +205,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // LAYOUT TABLET (SPLIT VIEW PREMIUM)
-  // Gestisce la visualizzazione affiancata: branding e progresso a sinistra, form a destra all'interno di una Card.
+  // SPLIT VIEW TABLET LAYOUT
+  // Manages the side-by-side presentation of the branding/progress sidebar and the configuration form.
   Widget _buildTabletLayout() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -225,11 +225,11 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             ),
             child: Stack(
               children: [
-                // CONTENUTO SIDEBAR
+                // SIDEBAR CONTENT
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 100), // Spazio per i tasti dinamici
+                    const SizedBox(height: 100),
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
@@ -260,7 +260,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black.withValues(alpha: 0.2),
                                           blurRadius: 20,
                                           offset: const Offset(0, 10),
                                         ),
@@ -325,12 +325,12 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                                   500
                                               ? 14
                                               : 18,
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                       height: 1.5,
                                     ),
                                   ),
                                   const SizedBox(height: 32),
-                                  // INDICATORE DI PROGRESSO LATERALE
+                                  // LATERAL PROGRESS INDICATOR
                                   Text(
                                       AppLocalizations.of(context)!
                                           .stepProgress(
@@ -346,7 +346,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                     child: LinearProgressIndicator(
                                       value: (_currentStep + 1) / _totalSteps,
                                       backgroundColor:
-                                          Colors.white.withOpacity(0.2),
+                                          Colors.white.withValues(alpha: 0.2),
                                       valueColor:
                                           const AlwaysStoppedAnimation<Color>(
                                               Colors.white),
@@ -364,7 +364,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                   ],
                 ),
 
-                // TASTO MENU (Dinamico) - POSIZIONATO IN ALTO A DESTRA DELLA SIDEBAR
+                // DYNAMIC SIDEBAR MENU TOGGLE
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 300),
                   top: 12,
@@ -399,8 +399,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                         ),
                 ),
 
-                // TASTO BACK (Dinamico)
-                // Espanso: Top-Left | Contratto: Below Menu Center
+                // DYNAMIC BACK BUTTON
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 300),
                   top: _isSidebarExpanded ? 12 : 55,
@@ -419,8 +418,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             ),
           ),
 
-          // AREA FORM (Destra)
-          // Il form espanso liberamente, senza Card, per un look arioso e nativo
+          // MAIN FORM AREA
           Expanded(
             child: SafeArea(
               child: Center(
@@ -444,8 +442,8 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // LAYOUT MOBILE E PORTRAIT
-  // Struttura standard verticale con app bar e indicatore di progresso superiore.
+  // STANDARD PORTRAIT AND MOBILE LAYOUT
+  // Vertical structure featuring a top app bar and a horizontal progress indicator.
   Widget _buildMobileLayout() {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
@@ -468,7 +466,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Indicatore di avanzamento step
+            // STEP PROGRESS INDICATOR
             Container(
               color: Colors.white,
               padding: EdgeInsets.symmetric(
@@ -520,7 +518,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                       ],
                     ),
             ),
-            // Contenuto scrollabile con form
+            // SCROLLABLE FORM CONTENT
             Expanded(
               child: IndexedStack(
                 index: _currentStep,
@@ -538,7 +536,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // COSTRUZIONE DEI SINGOLI STEP DEL FORM
+  // FORM STEP BUILDERS
   Widget _buildStep1() {
     return _buildPageWrapper(
       formKey: _formKeys[0],
@@ -700,7 +698,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
             margin: const EdgeInsets.only(top: 8, bottom: 24),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-                color: Colors.blue.shade50.withOpacity(0.5),
+                color: Colors.blue.shade50.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.blue.shade100)),
             child: Column(
@@ -737,8 +735,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // COMPONENTI UI E METODI DI SUPPORTO
-  // Wrapper scrollabile unico: campi + bottoni in un solo flusso verticale
+  // UI COMPONENTS AND HELPERS
   Widget _buildPageWrapper(
       {required GlobalKey<FormState> formKey,
       required String title,
@@ -749,16 +746,11 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     final double pad = isLandscape ? 16.0 : 24.0;
     final double titleSize = isLandscape ? 18.0 : 24.0;
     final double titleSpacing = isLandscape ? 16.0 : 32.0;
-
-    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-    final bool isTabletLandscape = isTablet && isLandscape;
-
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.all(pad),
       child: Center(
         child: ConstrainedBox(
-          // Allargato a 800 per permettere al form di respirare nella nuova visualizzazione Premium
           constraints: const BoxConstraints(maxWidth: 800),
           child: Padding(
             padding:
@@ -785,8 +777,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                   ),
                   SizedBox(height: titleSpacing),
                   ...children,
-                  // SEZIONE BOTTONI DI NAVIGAZIONE
-                  // Integrati nel flusso scrollabile per massimizzare lo spazio verticale
+                  // NAVIGATION ACTION BUTTONS
                   SizedBox(height: isLandscape ? 16 : 32),
                   Builder(builder: (context) {
                     final bool isPortrait =
@@ -797,8 +788,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                     final bool isMobilePortrait = isPortrait && !isTablet;
                     final bool isMobileLandscape = !isPortrait && !isTablet;
 
-                    // Dimensioni adattive per i bottoni
-                    // Ancora più compatti in landscape per risparmiare spazio verticale
+                    // Computes adaptive button dimensions to maximize vertical space in landscape orientation.
                     final double btnPadding =
                         isMobilePortrait ? 14 : (isMobileLandscape ? 12 : 20);
                     final double btnFontSize =
@@ -814,19 +804,19 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
                                     EdgeInsets.symmetric(vertical: btnPadding),
                                 side: BorderSide(
                                   color: Theme.of(context).colorScheme.primary,
-                                  width: 1.2, // Bordo più nitido
+                                  width: 1.2,
                                 ),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                               ),
-                              clipBehavior: Clip.antiAlias, // Evita sbavature
+                              clipBehavior: Clip.antiAlias,
                               onPressed: _prevStep,
                               child: Text(
                                   AppLocalizations.of(context)!.backButton,
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .primary, // Colore solido
+                                          .primary,
                                       fontSize: btnFontSize,
                                       fontWeight: FontWeight.bold)),
                             ),
@@ -870,7 +860,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     );
   }
 
-  // Spaziatura e dimensioni tipografiche adattive per tablet vs mobile
+  // ADAPTIVE TYPOGRAPHY AND SPACING
   Widget _buildQuestionField(String question, Widget inputField) {
     final bool isWideScreen = MediaQuery.of(context).size.width >= 800;
     final bool isPortrait =
@@ -878,7 +868,7 @@ class _PreAssessmentScreenState extends State<PreAssessmentScreen> {
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // Se siamo su tablet (wide) in portrait, usiamo font molto più grandi. Altrimenti torniamo al design originale.
+    // Computes responsive typography and padding based on form factor and device orientation.
     final double fontSize = (isWideScreen && isPortrait)
         ? 19.0
         : (isWideScreen ? 16.0 : (isLandscape ? 13.0 : 15.0));

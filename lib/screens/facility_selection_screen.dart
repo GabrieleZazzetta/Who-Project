@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../models/assessment_models.dart';
 import '../l10n/app_localizations.dart';
 
-// LOGICA DI PRESENTAZIONE E DATI
-// Gestisce i metadati delle strutture sanitarie e i calcoli del layout
+// PRESENTATION & DATA LOGIC
+// Manages facility metadata and calculates dynamic layouts.
 class FacilitySelectionScreen extends StatefulWidget {
   final EmergencyType emergency;
   const FacilitySelectionScreen({super.key, required this.emergency});
@@ -28,8 +28,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     }
   }
 
-  // DATI STRUTTURA: PALETTE PREMIUM
-  // Definisce le tipologie di facility con colori professionali orientati all'ambito sanitario
+  // FACILITY DATA MODEL
+  // Defines facility types and maps them to presentation styles.
   List<_FacilityData> get _facilities => [
         const _FacilityData(
           title: "Screening, Triage & Temporary Isolation",
@@ -37,7 +37,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           type: FacilityType.screeningAndIsolation,
           isImplemented: true,
           icon: Icons.local_hospital_outlined,
-          color: Color(0xFF005DA8), // WHO Blue
+          color: Color(0xFF005DA8),
         ),
         const _FacilityData(
           title: "Existing Facility with Dedicated Ward",
@@ -45,7 +45,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           type: FacilityType.existingFacilityWithWard,
           isImplemented: true,
           icon: Icons.apartment_outlined,
-          color: Color(0xFF0369A1), // Deep Sky Blue
+          color: Color(0xFF0369A1),
         ),
         const _FacilityData(
           title: "Stand-Alone Treatment Centre",
@@ -53,7 +53,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           type: FacilityType.standAloneCenter,
           isImplemented: true,
           icon: Icons.medical_services_outlined,
-          color: Color(0xFF0E7490), // Professional Cyan
+          color: Color(0xFF0E7490),
         ),
         const _FacilityData(
           title: "Congregate Settings",
@@ -61,14 +61,13 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           type: FacilityType.congregateSetting,
           isImplemented: true,
           icon: Icons.holiday_village_outlined,
-          color: Color(0xFF475569), // Neutral Slate
+          color: Color(0xFF475569),
         ),
       ];
 
-  // COMPONENTI UI: LAYOUT PRINCIPALE
+  // MAIN UI COMPONENTS
   @override
   Widget build(BuildContext context) {
-    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -90,13 +89,13 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
               );
             },
           ),
-          // PULSANTE MENU GLOBALE RIMOSSO (Ripristinato in sidebar)
+          //
         ],
       ),
     );
   }
 
-  // LAYOUT STANDARD (Mobile o Portrait)
+  // STANDARD LAYOUT
   Widget _buildStandardLayout(BuildContext context,
       {required BoxConstraints constraints}) {
     final bool isPortrait =
@@ -133,7 +132,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     );
   }
 
-  // Header per visualizzazione mobile
+  // MOBILE HEADER COMPONENT
   Widget _buildMobileHeader(BuildContext context) {
     final bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
@@ -150,7 +149,6 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Tasto Back a sinistra
           IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded,
                 color: const Color(0xFF003D73), size: isTablet ? 28 : 20),
@@ -163,7 +161,6 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
             },
           ),
 
-          // Titolo: centrato e più grande solo su tablet/mobile portrait
           Expanded(
             child: Text(
               AppLocalizations.of(context)!.facilitiesLabel(_emergencyName),
@@ -178,7 +175,6 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
             ),
           ),
 
-          // Logo WHO a destra
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: Image.asset(
@@ -194,7 +190,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     );
   }
 
-  // LAYOUT SPLIT (Tablet Landscape)
+  // SPLIT LAYOUT COMPONENT
   Widget _buildSplitLayout(BuildContext context,
       {required BoxConstraints constraints}) {
     const int columns = 2;
@@ -202,7 +198,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Sidebar sinistra premium con branding
+        // BRANDED SIDEBAR
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -216,7 +212,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           ),
           child: Stack(
             children: [
-              // CONTENUTO SIDEBAR (Logo, Titolo, etc.)
+              // SIDEBAR CONTENT
               Column(
                 children: [
                   const SizedBox(height: 80),
@@ -249,7 +245,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
+                                        color: Colors.black.withValues(alpha: 0.2),
                                         blurRadius: 20,
                                         offset: const Offset(0, 10),
                                       ),
@@ -310,7 +306,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                                         MediaQuery.of(context).size.height < 500
                                             ? 13
                                             : 15,
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     height: 1.5,
                                   ),
                                 ),
@@ -324,7 +320,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                   ),
                 ],
               ),
-              // TASTO MENU (Dinamico) - POSIZIONATO IN ALTO A DESTRA DELLA SIDEBAR
+              // DYNAMIC MENU BUTTON
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 300),
                 top: 12,
@@ -358,7 +354,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                         ),
                       ),
               ),
-              // TASTO BACK (Dinamico)
+              // DYNAMIC BACK BUTTON
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 300),
                 top: _isSidebarExpanded ? 12 : 55,
@@ -382,7 +378,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
             ],
           ),
         ),
-        // Area contenuti destra
+        // CONTENT AREA
         Expanded(
           child: Container(
             color: const Color(0xFFF8FAFC),
@@ -398,8 +394,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     );
   }
 
-  // COMPONENTI UI: GRIGLIA E CARD
-  // Metodi per la generazione dinamica della griglia e delle singole tessere
+  // GRID & CARD COMPONENTS
+  // Dynamically generates the facility selection grid.
   Widget _buildGrid(BuildContext context, {required int columns}) {
     final items = _facilities
         .map((f) => _buildFacilityCard(
@@ -415,9 +411,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
       final bool isMobilePortrait = isPortrait && !isTablet;
 
       return ListView.separated(
-        shrinkWrap: true, // Centratura verticale premium
-        padding: EdgeInsets.fromLTRB(24, isMobilePortrait ? 4 : 32, 24,
-            32), // Padding superiore ridotto in mobile portrait
+        shrinkWrap: true,
+        padding: EdgeInsets.fromLTRB(24, isMobilePortrait ? 4 : 32, 24, 32),
         itemCount: items.length,
         separatorBuilder: (context, index) => const SizedBox(height: 20),
         itemBuilder: (context, index) => items[index],
@@ -429,7 +424,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
     final bool isTabletGrid = MediaQuery.of(context).size.shortestSide >= 600;
     final bool isIpadLandscape = isTabletGrid && !isPortraitGrid;
 
-    // BINARIO ISOLATO PER IPAD LANDSCAPE E TELEFONO ORIZZONTALE
+    // ISOLATED TRACK FOR HORIZONTAL ORIENTATIONS
+    // Adjusts the grid aspect ratio specifically for horizontal layouts to optimize screen space.
     final double gridAspectRatio = isIpadLandscape
         ? 1.9
         : ((!isPortraitGrid && !isTabletGrid) ? 2.0 : 2.5);
@@ -454,10 +450,10 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
         MediaQuery.of(context).orientation == Orientation.portrait;
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
 
-    // Layout Premium: in Portrait forziamo 1 colonna così i box sono ampi e leggibili, evitando l'effetto "schiacciato"
+    // Forces a single column in portrait mode to ensure touch targets remain large and readable.
     if (isPortrait) return 1;
     
-    // Layout Premium: per Smartphone Orizzontale usiamo 1 colonna per evitare troncamenti dei testi lunghi
+    // Forces a single column for horizontal smartphone layouts to prevent text truncation.
     if (!isTablet && !isPortrait) return 1;
 
     if (width >= 900) return 3;
@@ -473,7 +469,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
         MediaQuery.of(context).orientation == Orientation.portrait;
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
 
-    // Dimensioni dinamiche Premium per Tablet (Orizzontale e Verticale)
+    // Dynamically scales paddings and font sizes based on screen classification.
     final double cardPadding = isTablet ? 32 : 20;
     final double iconBoxPadding = isTablet ? 16 : 12;
     final double iconSize = isTablet ? 40 : 28;
@@ -487,7 +483,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.04),
+                color: const Color(0xFF0F172A).withValues(alpha: 0.04),
                 blurRadius: 12,
                 offset: const Offset(0, 4))
           ],
@@ -518,7 +514,7 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
           child: Padding(
             padding: EdgeInsets.all(cardPadding),
             child: (isPortrait && !isTablet)
-                // DESIGN MOBILE VERTICALE: Minimalista, senza icone e con riferimento alle figure
+                // VERTICAL MOBILE LAYOUT
                 ? Row(
                     children: [
                       Expanded(
@@ -559,13 +555,13 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
                       ),
                     ],
                   )
-                // DESIGN IPAD / LANDSCAPE: Design originale con icone
+                // LANDSCAPE/TABLET LAYOUT
                 : Row(
                     children: [
                       Container(
                         padding: EdgeInsets.all(iconBoxPadding),
                         decoration: BoxDecoration(
-                          color: data.color.withOpacity(0.08),
+                          color: data.color.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child:
@@ -614,8 +610,8 @@ class _FacilitySelectionScreenState extends State<FacilitySelectionScreen> {
   }
 }
 
-// MODELLO DATI FACILITY
-// Struttura interna per separare i dati dalla presentazione
+// INTERNAL FACILITY DATA MODEL
+// Decouples facility metadata from the presentation layer.
 class _FacilityData {
   final String title;
   final String subtitle;

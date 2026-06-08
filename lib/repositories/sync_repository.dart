@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -29,7 +30,7 @@ class SyncRepository {
       try {
         return FirebaseFirestore.instance;
       } catch (e) {
-        print("FirebaseFirestore.instance failed: $e");
+        debugPrint("FirebaseFirestore.instance failed: $e");
         return null;
       }
     }
@@ -60,7 +61,7 @@ class SyncRepository {
   Future<String?> pushAssessment(FacilityLayout facility) async {
     final firestore = _firestore;
     if (firestore == null) {
-      print("Firebase Push Aborted: Firebase not initialized. Using local only.");
+      debugPrint("Firebase Push Aborted: Firebase not initialized. Using local only.");
       return null;
     }
 
@@ -82,7 +83,7 @@ class SyncRepository {
           
       return facility.remoteId;
     } catch (e) {
-      print("Firebase Push Error: $e");
+      debugPrint("Firebase Push Error: $e");
       return null;
     }
   }
@@ -118,10 +119,10 @@ class SyncRepository {
                     final downloadUrl = await uploadTask.ref.getDownloadURL();
                     updatedPaths.add(downloadUrl);
                   } else {
-                    print("Local file not found, skipping upload: $path");
+                    debugPrint("Local file not found, skipping upload: $path");
                   }
                 } catch (e) {
-                  print("Failed to upload image $path: $e");
+                  debugPrint("Failed to upload image $path: $e");
                   updatedPaths.add(path); // Retain original path on upload failure
                 }
               }
@@ -131,7 +132,7 @@ class SyncRepository {
         }
       }
     } catch (e) {
-      print("Firebase Storage error: $e");
+      debugPrint("Firebase Storage error: $e");
     }
   }
 
@@ -140,7 +141,7 @@ class SyncRepository {
   Future<List<Map<String, dynamic>>> pullAssessments(DateTime? lastSync) async {
     final firestore = _firestore;
     if (firestore == null) {
-      print("Firebase Pull Aborted: Firebase not initialized. Using local only.");
+      debugPrint("Firebase Pull Aborted: Firebase not initialized. Using local only.");
       return [];
     }
 
@@ -174,7 +175,7 @@ class SyncRepository {
         return data;
       }).toList();
     } catch (e) {
-      print("Firebase Pull Error: $e");
+      debugPrint("Firebase Pull Error: $e");
       return [];
     }
   }

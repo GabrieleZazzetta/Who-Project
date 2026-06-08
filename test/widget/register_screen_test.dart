@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:assessment_tool/screens/register_screen.dart';
 import 'package:assessment_tool/providers/database_provider.dart';
 import 'package:assessment_tool/services/auth_service.dart';
-import 'package:assessment_tool/services/database_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
 import '../helpers/mocks.dart';
@@ -163,9 +162,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1800, 3000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(800, 1000)),
-          child: const Scaffold(body: RegisterScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(800, 1000)),
+          child: Scaffold(body: RegisterScreen()),
         ),
       ));
       await tester.pumpAndSettle();
@@ -176,9 +175,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1200, 2400));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(400, 800)),
-          child: const Scaffold(body: RegisterScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(400, 800)),
+          child: Scaffold(body: RegisterScreen()),
         ),
       ));
       await tester.pumpAndSettle();
@@ -189,9 +188,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(2400, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(800, 400)),
-          child: const Scaffold(body: RegisterScreen()),
+        const MediaQuery(
+          data: MediaQueryData(size: Size(800, 400)),
+          child: Scaffold(body: RegisterScreen()),
         ),
       ));
       await tester.pumpAndSettle();

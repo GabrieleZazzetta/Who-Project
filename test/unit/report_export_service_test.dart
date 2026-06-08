@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
@@ -15,7 +14,7 @@ class FakeSharePlatform extends SharePlatform {
     String? text,
     Rect? sharePositionOrigin,
   }) async {
-    return ShareResult('Success', ShareResultStatus.success);
+    return const ShareResult('Success', ShareResultStatus.success);
   }
 }
 
@@ -64,8 +63,8 @@ void main() {
       facility.zones = [SpatialZone(
         id: 'z1',
         name: 'Triage',
-        coordinates: MapCoordinates(top: 0, left: 0),
-        touchArea: MapCoordinates(top: 0, left: 0, width: 0, height: 0),
+        coordinates: const MapCoordinates(top: 0, left: 0),
+        touchArea: const MapCoordinates(top: 0, left: 0, width: 0, height: 0),
         checklist: [
           AssessmentQuestion(
             id: 'q1',
@@ -81,10 +80,10 @@ void main() {
 
       // Mock context for Share.shareXFiles
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Center(
-              child: const Text('Export Context'),
+              child: Text('Export Context'),
             ),
           ),
         ),

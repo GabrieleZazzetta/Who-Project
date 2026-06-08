@@ -82,8 +82,8 @@ void main() {
       });
 
       test('Hashing and Local Login: Verify SHA256 correctness and simulate offline login', () async {
-        final email = 'medico@who.int';
-        final password = 'SafePassword2026!';
+        const email = 'medico@who.int';
+        const password = 'SafePassword2026!';
         final bytes = utf8.encode(password);
         final hash = sha256.convert(bytes).toString();
 

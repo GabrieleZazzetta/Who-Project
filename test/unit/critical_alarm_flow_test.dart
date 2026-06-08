@@ -12,6 +12,9 @@ import 'package:assessment_tool/services/report_export_service.dart';
 // MOCK BUILD CONTEXT
 class MockBuildContext implements BuildContext {
   @override
+  bool get mounted => true;
+
+  @override
   RenderObject? findRenderObject() => null;
 
   @override

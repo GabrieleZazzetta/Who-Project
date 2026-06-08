@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:assessment_tool/helpers/global_map_helper.dart';

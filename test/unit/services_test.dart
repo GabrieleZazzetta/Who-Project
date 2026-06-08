@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:intl/intl.dart';
 
 import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';

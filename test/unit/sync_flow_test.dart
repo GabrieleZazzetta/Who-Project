@@ -15,7 +15,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class FakeAuthService implements AuthService {
   @override
-  Stream<User?> get authStateChanges => Stream.empty();
+  Stream<User?> get authStateChanges => const Stream.empty();
   
   @override
   User? get currentUser => null;
@@ -51,7 +51,7 @@ class FakeSyncRepository extends SyncRepository {
       throw Exception('Fake network failure');
     }
     pushedAssessments.add(facility);
-    return facility.remoteId ?? 'remote_${facility.id ?? DateTime.now().millisecondsSinceEpoch}';
+    return facility.remoteId ?? 'remote_${facility.id }';
   }
 
   @override
@@ -65,7 +65,7 @@ class MockSyncRepository extends SyncRepository {
   @override
   Future<String?> pushAssessment(FacilityLayout facility) async {
     final data = {
-      'remoteId': facility.remoteId ?? 'remote_${facility.id ?? DateTime.now().millisecondsSinceEpoch}',
+      'remoteId': facility.remoteId ?? 'remote_${facility.id }',
       'facilityName': facility.facilityName,
       'emergencyType': facility.emergencyType.name,
       'updatedAt': (facility.updatedAt ?? DateTime.now().toUtc()).toIso8601String(),
@@ -139,7 +139,7 @@ void main() {
   });
 
   tearDownAll(() async {
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){/* ignore */}}
   });
 
   // TEST SUITE: SYNC FLOW INTEGRATION

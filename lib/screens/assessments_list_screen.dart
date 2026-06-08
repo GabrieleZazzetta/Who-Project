@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../models/assessment_models.dart';
 import '../l10n/app_localizations.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../services/report_export_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,14 +19,14 @@ class AssessmentsListScreen extends ConsumerStatefulWidget {
 }
 
 class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
-  // LOGICA DI STATO E GESTIONE DATI
+  // STATE & DATA MANAGEMENT
   bool _isLoading = true;
   List<FacilityLayout> _allAssessments = [];
   List<FacilityLayout> _filteredAssessments = [];
   FacilityLayout?
-      _selectedAssessment; // Tracciamento dell'elemento selezionato per Master-Detail
+      _selectedAssessment; // Tracks selected assessment for the Master-Detail tablet layout
   double?
-      _userMasterWidth; // Memorizza la larghezza personalizzata decisa dall'utente
+      _userMasterWidth; // Stores custom dragged width for the master panel
 
   final TextEditingController _searchController = TextEditingController();
   String _currentFilter = 'All';
@@ -41,15 +40,15 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     _loadAssessments();
   }
 
-  // LOGICA DI STATO E DISPOSIZIONE RISORSE
+  // LIFECYCLE MANAGEMENT
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  // LOGICA DI CARICAMENTO E FILTRAGGIO DATI
-  // Gestisce il recupero asincrono dal database e l'applicazione dei filtri di ricerca
+  // DATA LOADING & FILTERING
+  // Asynchronously retrieves database records and applies text/status filters.
   Future<void> _loadAssessments() async {
     setState(() => _isLoading = true);
     final data = await ref.read(databaseServiceProvider).getAllAssessments();
@@ -66,7 +65,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     _applyFilters();
   }
 
-  // Determinazione dello stato dell'assessment basata su completezza e criticità
+  // Evaluates assessment status based on zone completion and critical failures
   String _getAssessmentStatus(FacilityLayout facility) {
     int totalQuestions = 0;
     int answeredQuestions = 0;
@@ -92,7 +91,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     return 'Completed';
   }
 
-  // Motore di filtraggio per query testuale, stato e data con logica di ordinamento
+  // Filter engine applying text query, status, date and sorting logic
   void _applyFilters() {
     List<FacilityLayout> temp = List.from(_allAssessments);
 
@@ -136,15 +135,14 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     });
   }
 
-  // GESTIONE DELLA CANCELLAZIONE DATI
-  // Presenta un dialogo di conferma prima di rimuovere permanentemente un record
+  // DATA DELETION
   Future<void> _confirmDelete(FacilityLayout facility) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         title: Text(AppLocalizations.of(context)!.deleteAssessment,
-            style: TextStyle(
+            style: const TextStyle(
                 fontWeight: FontWeight.bold, color: Color(0xFF003D73))),
         content: Text(AppLocalizations.of(context)!.deleteAssessmentConfirm),
         actions: [
@@ -177,8 +175,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     }
   }
 
-  // METODO DI RENDERING PRINCIPALE ADATTIVO
-  // GESTIONE LAYOUT RESPONSIVE E NAVIGAZIONE
+  // MAIN UI BUILDER
   @override
   Widget build(BuildContext context) {
     final bool isLandscape =
@@ -187,7 +184,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      // Il corpo della pagina è ottimizzato per lo scorrimento e la reattività verticale
       body: getValueForScreenType<Widget>(
         context: context,
         mobile: _buildMainContent(
@@ -201,8 +197,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // COMPONENTI UI: LISTA E GRIGLIA
-  // Utilizza CustomScrollView per permettere all'header di scorrere e massimizzare lo spazio verticale
+  // LIST & GRID COMPONENTS
   Widget _buildMainContent(
       {required int columns,
       required bool isLandscape,
@@ -212,7 +207,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
       onRefresh: _loadAssessments,
       child: CustomScrollView(
         slivers: [
-          // AppBar minimale con titolo e pulsante Analytics premium
           SliverAppBar(
             pinned: true,
             floating: false,
@@ -220,7 +214,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
             elevation: 0,
             centerTitle: false,
             title: Text(AppLocalizations.of(context)!.savedAssessments,
-                style: TextStyle(
+                style: const TextStyle(
                     color: Color(0xFF003D73),
                     fontWeight: FontWeight.w900,
                     fontSize: 20)),
@@ -233,12 +227,10 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
             ],
           ),
 
-          // Sezione di ricerca e filtri (Sliver che scompare allo scorrimento)
           SliverToBoxAdapter(
             child: _buildSearchAndFilters(isSmallHeight),
           ),
 
-          // Elenco degli assessment in formato griglia o lista (Sliver)
           if (_isLoading)
             const SliverFillRemaining(
                 child: Center(
@@ -250,9 +242,9 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               padding: EdgeInsets.all(isSmallHeight ? 12 : 16),
               sliver: SliverLayoutBuilder(
                 builder: (context, constraints) {
-                  // Design Smartphone Orizzontale e Tablet Master-Detail:
-                  // Per la visualizzazione Master-Detail di iPad Landscape, se la colonna di sinistra (master)
-                  // viene ristretta dall'utente, adattiamo dinamicamente l'aspect ratio per evitare overflow.
+                  // Grid aspect ratio constraints.
+                  // Dynamically interpolates the ratio based on available crossAxisExtent,
+                  // particularly for the draggable master column, to prevent pixel overflows.
                   int dynamicColumns = columns;
                   bool isMobileLandscape = isLandscape &&
                       !getValueForScreenType<bool>(
@@ -260,7 +252,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
 
                   double ratio;
                   if (isMasterView) {
-                    // Adattamento dinamico basato sulla larghezza reale della colonna master per evitare qualsiasi overflow
                     ratio =
                         (constraints.crossAxisExtent / 170.0).clamp(1.5, 2.1);
                   } else {
@@ -293,17 +284,15 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // COMPONENTI UI: MASTER-DETAIL
-  // Implementa un layout a doppia colonna con DIVISORE DRAGGABILE PREMIUM.
-  // Permette all'utente di decidere quanto spazio assegnare alla lista (sinistra) e al dettaglio (destra).
+  // MASTER-DETAIL LAYOUT
+  // Handles a split-view layout with a user-draggable divider.
   Widget _buildMasterDetailLayout() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
 
-        // Protezione Anti-Squish per Portrait:
-        // Se lo spazio è troppo ristretto (es. tablet in verticale con sidebar aperta),
-        // abbandoniamo il master-detail e mostriamo solo la lista a tutto schermo.
+        // Fallback for tight layouts (e.g., portrait tablet with open side menu).
+        // Abandons the split-view to render the master list full-screen.
         if (totalWidth < 600) {
           return Container(
             color: Colors.white,
@@ -315,19 +304,17 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
           );
         }
 
-        // 1. Calcolo della larghezza "ideale" di base per Master-Detail equilibrato
-        // Per evitare che la parte di destra (dettagli) venga schiacciata e mostri testi accapo orrendi
-        // (specialmente con la barra laterale espansa su iPad), la lista di sinistra (master)
-        // occupa circa il 45% dello spazio utile, bilanciata fra 330px e 450px.
+        // Default structural allocation: limits master width to ~45% of available space,
+        // bounded between 330px and 450px to guarantee readable detail panels.
         double defaultMasterWidth = (totalWidth * 0.45).clamp(330.0, 450.0);
 
-        // 2. Applicazione della scelta dell'utente con limiti di sicurezza (min 300px, max 70% dello schermo)
+        // Overrides with user's dragged width, clamping between safe thresholds.
         double currentMasterWidth = _userMasterWidth ?? defaultMasterWidth;
         currentMasterWidth = currentMasterWidth.clamp(300.0, totalWidth * 0.7);
 
         return Row(
           children: [
-            // PANNELLO DI SINISTRA (Lista e Filtri)
+            // MASTER PANEL
             SizedBox(
               width: currentMasterWidth,
               child: Container(
@@ -340,7 +327,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               ),
             ),
 
-            // DIVISORE DRAGGABILE PREMIUM
+            // DRAGGABLE DIVIDER
             MouseRegion(
               cursor: SystemMouseCursors.resizeColumn,
               child: GestureDetector(
@@ -351,13 +338,13 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                   });
                 },
                 onDoubleTap: () {
-                  // Reset alla dimensione di default con un doppio tocco
+                  // Reset custom width on double tap
                   setState(() {
                     _userMasterWidth = null;
                   });
                 },
                 child: Container(
-                  width: 12, // Area di presa confortevole (touch target)
+                  width: 12,
                   decoration: BoxDecoration(
                       color: Colors.grey.shade50,
                       border: Border.symmetric(
@@ -378,7 +365,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               ),
             ),
 
-            // PANNELLO DI DESTRA (Dettaglio)
+            // DETAIL PANEL
             Expanded(
               child: Container(
                 color: const Color(0xFFF8FAFC),
@@ -393,8 +380,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // COMPONENTI UI: HEADER E FILTRI
-  // Gestisce la barra di ricerca unificata e i controlli consolidati in un'unica area elegante
+  // SEARCH & FILTER COMPONENTS
   Widget _buildSearchAndFilters(bool isSmallHeight) {
     return Container(
       color: Colors.white,
@@ -404,7 +390,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(
             children: [
-              // BARRA DI RICERCA UNIFICATA CON ICONA MAPPA INTEGRATA
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -452,20 +437,17 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                 ),
               ),
 
-              // CONTROLLI CONSOLIDATI (FILTRI E ORDINAMENTO IN RIGA SCORREVOLE)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                 child: Row(
                   children: [
-                    // Bottone Opzioni Unificato (Data e Ordinamento)
                     _buildUnifiedOptionsButton(),
                     const SizedBox(width: 12),
                     const SizedBox(
                         height: 24, child: VerticalDivider(width: 1)),
                     const SizedBox(width: 12),
-                    // Chip di stato filtraggio
                     _buildFilterChip('All'),
                     const SizedBox(width: 8),
                     _buildFilterChip('In Progress'),
@@ -494,8 +476,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // Bottone Analytics con design premium pill-shaped
-  // Si condensa (isCompact) automaticamente in visualizzazioni strette (es. colonna Master)
+  // Automatically condenses icon label when rendered in constrained spaces like the Master column.
   Widget _buildPremiumAnalyticsButton({bool isCompact = false}) {
     return InkWell(
       onTap: () => context.push('/analytics'),
@@ -505,9 +486,9 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         padding:
             EdgeInsets.symmetric(horizontal: isCompact ? 12 : 16, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFE0F2FE), // Azzurro tenue WHO Premium
+          color: const Color(0xFFE0F2FE),
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: const Color(0xFF005DA8).withOpacity(0.1)),
+          border: Border.all(color: const Color(0xFF005DA8).withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -517,7 +498,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
             if (!isCompact) ...[
               const SizedBox(width: 8),
               Text(AppLocalizations.of(context)!.analytics,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Color(0xFF005DA8),
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -530,7 +511,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // Bottone unificato per l'ordinamento e il filtraggio per data
   Widget _buildUnifiedOptionsButton() {
     return PopupMenuButton<dynamic>(
       offset: const Offset(0, 45),
@@ -538,7 +518,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
       icon: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF005DA8).withOpacity(0.1),
+          color: const Color(0xFF005DA8).withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child:
@@ -568,7 +548,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         PopupMenuItem(
           enabled: false,
           child: Text(AppLocalizations.of(context)!.sortBy,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey)),
@@ -592,7 +572,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         PopupMenuItem(
           enabled: false,
           child: Text(AppLocalizations.of(context)!.dateFilter,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey)),
@@ -613,7 +593,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
           PopupMenuItem(
             value: 'clear_date',
             child:
-                Text(AppLocalizations.of(context)!.clearDateFilter, style: TextStyle(color: Colors.red)),
+                Text(AppLocalizations.of(context)!.clearDateFilter, style: const TextStyle(color: Colors.red)),
           ),
       ],
     );
@@ -648,8 +628,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // COMPONENTI UI: DETTAGLIO ASSESSMENT
-  // Rendering del pannello laterale con statistiche avanzate e breakdown per zona
+  // ASSESSMENT DETAIL COMPONENT
   Widget _buildDetailView(FacilityLayout facility) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -694,7 +673,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                         onPressed: () => _openAssessmentMap(facility),
                         icon: const Icon(Icons.map),
                         label: Text(AppLocalizations.of(context)!.openInteractiveMap,
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -734,13 +713,12 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                       onPressed: () => _openAssessmentMap(facility),
                       icon: const Icon(Icons.map),
                       label: Text(AppLocalizations.of(context)!.openInteractiveMap,
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
               const SizedBox(height: 32),
 
-              // GRIGLIA KPI DETTAGLIATA
               Row(
                 children: [
                   _buildLargeStatCard(AppLocalizations.of(context)!.criticalFails,
@@ -755,13 +733,12 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
               const SizedBox(height: 32),
 
               Text(AppLocalizations.of(context)!.zoneBreakdown,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF0F172A))),
               const SizedBox(height: 16),
 
-              // ELENCO DELLE ZONE VALUTATE
               ...facility.zones.map((zone) => Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
@@ -829,9 +806,9 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
       child: Container(
         padding: EdgeInsets.all(isNarrow ? 16 : 24),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -853,8 +830,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // LOGICA DI NAVIGAZIONE E SUPPORTO
-  // Calcolo delle zone effettivamente valutate (con almeno una risposta data)
+  // NAVIGATION & SUPPORT LOGIC
   int _countEvaluatedZones(FacilityLayout facility) {
     int count = 0;
     for (var zone in facility.zones) {
@@ -867,7 +843,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     return count;
   }
 
-  // Calcolo rapido dei fallimenti critici per indicatori sintetici
   int _countCriticalFails(FacilityLayout facility) {
     int count = 0;
     for (var zone in facility.zones) {
@@ -876,7 +851,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     return count;
   }
 
-  // Reindirizzamento alla mappa interattiva con pre-popolamento dei dati
   void _openAssessmentMap(FacilityLayout facility) async {
     FacilityType typeToOpen = FacilityType.existingFacilityWithWard;
     final savedTypeStr = facility.generalInfo?.assessedFacilityType;
@@ -900,8 +874,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     _loadAssessments();
   }
 
-  // COMPONENTI UI: SUPPORTO E STATISTICHE
-  // Visualizzazione sintetica delle performance regionali aggregando i dati degli assessment
+  // SUPPORT & STATS COMPONENTS
   Widget _buildGeoStats() {
     Map<String, List<double>> regionScores = {};
     for (var f in _allAssessments) {
@@ -946,8 +919,8 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: statColor.withOpacity(0.05),
-                    border: Border.all(color: statColor.withOpacity(0.3)),
+                    color: statColor.withValues(alpha: 0.05),
+                    border: Border.all(color: statColor.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -995,7 +968,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // Costruzione della card per il singolo assessment con indicatori di progresso e punteggio
+  // ASSESSMENT CARD COMPONENT
   Widget _buildAssessmentCard(FacilityLayout facility,
       {bool isMasterView = false, bool isSmallHeight = false}) {
     int totalQuestions = 0;
@@ -1027,11 +1000,11 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     final isSelected = _selectedAssessment?.id == facility.id;
 
     return Card(
-      elevation: isSelected ? 0 : 2, // Selezionato è piatto con bordo
+      elevation: isSelected ? 0 : 2,
       color: isSelected
           ? const Color(0xFFF0F7FF)
-          : Colors.white, // Sfondo premium blu chiaro se selezionato
-      shadowColor: Colors.black.withOpacity(0.05),
+          : Colors.white,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -1043,7 +1016,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
         onTap: () {
           if (isMasterView) {
             if (_selectedAssessment?.id == facility.id) {
-              // Se la card è già selezionata su Tablet, un altro click apre direttamente la mappa per coerenza!
+              // If already selected on Tablet, a secondary click opens the map routing.
               _openAssessmentMap(facility);
             } else {
               setState(() => _selectedAssessment = facility);
@@ -1088,7 +1061,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // INDICATORE DI SINCRONIZZAZIONE (UX)
+                            // SYNC INDICATOR
                             Tooltip(
                               message: facility.isDirty
                                   ? "Pending Sync"
@@ -1119,7 +1092,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                        color: stateColor.withOpacity(0.15),
+                        color: stateColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20)),
                     child: Text(stateLabel.toUpperCase(),
                         style: TextStyle(
@@ -1142,7 +1115,6 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                       isSmallHeight: isSmallHeight),
                   const Spacer(),
 
-                  // GRUPPO AZIONI
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1155,8 +1127,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
-                      const SizedBox(
-                          width: 12), // Leggermente più spazio tra le icone
+                      const SizedBox(width: 12),
                       IconButton(
                         icon: Icon(Icons.delete_outline,
                             color: Colors.red.shade300, size: 22),
@@ -1175,7 +1146,7 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // Widget di supporto per la visualizzazione di metriche compatte nelle card
+  // MINI STAT WIDGET
   Widget _buildMiniStat(String label, String value, Color color,
       {bool isSmallHeight = false}) {
     return Column(
@@ -1195,13 +1166,18 @@ class _AssessmentsListScreenState extends ConsumerState<AssessmentsListScreen> {
     );
   }
 
-  // Componente interattivo per la selezione dei filtri di stato
+  // FILTER CHIP COMPONENT
   Widget _buildFilterChip(String label) {
     String displayLabel = label;
-    if (label == 'All') displayLabel = AppLocalizations.of(context)!.filterAll;
-    else if (label == 'In Progress') displayLabel = AppLocalizations.of(context)!.inProgress;
-    else if (label == 'Completed') displayLabel = AppLocalizations.of(context)!.completed;
-    else if (label == 'Critical Fails') displayLabel = AppLocalizations.of(context)!.criticalFails;
+    if (label == 'All') {
+      displayLabel = AppLocalizations.of(context)!.filterAll;
+    } else if (label == 'In Progress') {
+      displayLabel = AppLocalizations.of(context)!.inProgress;
+    } else if (label == 'Completed') {
+      displayLabel = AppLocalizations.of(context)!.completed;
+    } else if (label == 'Critical Fails') {
+      displayLabel = AppLocalizations.of(context)!.criticalFails;
+    }
 
     bool isSelected = _currentFilter == label;
     return GestureDetector(

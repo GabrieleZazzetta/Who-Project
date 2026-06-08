@@ -6,7 +6,6 @@ import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../services/sync_service.dart';
 import '../services/auth_service.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../models/user_model.dart';
 import '../models/assessment_models.dart';
@@ -19,7 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final bool isTablet = MediaQuery.of(context).size.width >= 800;
     final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
-    Widget _wrapWithScrollIfNeeded(Widget child) {
+    Widget wrapWithScrollIfNeeded(Widget child) {
       if (isLandscape) {
         return SingleChildScrollView(child: child);
       }
@@ -41,20 +40,20 @@ class SettingsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 50,
                     offset: const Offset(0, 15),
                   ),
                 ],
               ),
-              child: _wrapWithScrollIfNeeded(
+              child: wrapWithScrollIfNeeded(
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF005DA8).withOpacity(0.08),
+                        color: const Color(0xFF005DA8).withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.language_rounded, size: 40, color: Color(0xFF005DA8)),
@@ -106,7 +105,7 @@ class SettingsScreen extends ConsumerWidget {
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: _wrapWithScrollIfNeeded(
+              child: wrapWithScrollIfNeeded(
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -149,7 +148,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: const Color(0xFF005DA8).withOpacity(0.2),
+              color: const Color(0xFF005DA8).withValues(alpha: 0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
@@ -180,7 +179,7 @@ class SettingsScreen extends ConsumerWidget {
     final isSelected = locale.languageCode == currentLocale.languageCode;
     return ListTile(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      tileColor: isSelected ? const Color(0xFF005DA8).withOpacity(0.05) : Colors.transparent,
+      tileColor: isSelected ? const Color(0xFF005DA8).withValues(alpha: 0.05) : Colors.transparent,
       title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF005DA8) : Colors.black87)),
       trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF005DA8)) : null,
       onTap: () {
@@ -190,8 +189,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  // LOGICA DI STATO E SINCRONIZZAZIONE
-  // FUNZIONALITÀ PROFILO UTENTE PREMIUM
+  // USER PROFILE PRESENTATION LOGIC
   void _showUserProfile(BuildContext context, WidgetRef ref) {
     final mediaQuery = MediaQuery.of(context);
     final isTablet = mediaQuery.size.shortestSide >= 600;
@@ -225,13 +223,12 @@ class SettingsScreen extends ConsumerWidget {
               shrinkWrap: true,
               padding: EdgeInsets.symmetric(horizontal: isDialog ? 40 : 32, vertical: 8),
               children: [
-                // Avatar Premium
                 Center(
                   child: Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF005DA8).withOpacity(0.1),
+                      color: const Color(0xFF005DA8).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.person,
@@ -243,7 +240,7 @@ class SettingsScreen extends ConsumerWidget {
                   future: ref.read(databaseServiceProvider).getCurrentSession(),
                   builder: (context, snapshot) {
                     final session = snapshot.data;
-                    // Se la sessione è ancora in caricamento, mostriamo un indicatore minimo
+                    // Renders a fallback loading indicator while fetching the active session.
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                           child: Padding(
@@ -325,7 +322,7 @@ class SettingsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 50,
                     offset: const Offset(0, 15),
                   ),
@@ -407,7 +404,7 @@ class SettingsScreen extends ConsumerWidget {
           constraints: const BoxConstraints(maxWidth: 800),
           child: CustomScrollView(
             slivers: [
-              // HEADER PREMIUM ADATTIVO
+              // ADAPTIVE HEADER
               if (!isTablet)
                 Builder(builder: (context) {
                   final bool isPortrait =
@@ -434,13 +431,13 @@ class SettingsScreen extends ConsumerWidget {
                   );
                 }),
 
-              // SEZIONE: ACCOUNT & SYNC
+              // ACCOUNT AND SYNC SECTION
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.only(
                       top: isTablet
                           ? 40
-                          : 16), // Aumentato il padding su tablet per sopperire alla mancanza dell'header
+                          : 16), // Increases top padding on tablet to compensate for the omitted responsive header.
                   child: _buildSectionHeader(l10n.accountAndSync),
                 ),
               ),
@@ -474,7 +471,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
 
-              // SEZIONE: PREFERENZE
+              // PREFERENCES SECTION
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 24),
@@ -492,7 +489,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
 
-              // SEZIONE: ABOUT
+              // ABOUT SECTION
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 24),
@@ -516,26 +513,26 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
 
-              // AZIONE DI LOGOUT (DESIGN PREMIUM)
+              // LOGOUT ACTION COMPONENT
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
                   child: InkWell(
                     onTap: () async {
-                      // 1. Controlla se ci sono dati offline pendenti
+                      // 1. Checks for pending offline synchronization data.
                       final db = ref.read(databaseServiceProvider);
                       var dirtyAssessments = await db.getDirtyAssessments();
                       
                       debugPrint("SETTINGS ONTAP DIRTY LENGTH: ${dirtyAssessments.length}");
                       if (dirtyAssessments.isNotEmpty) {
-                        // 2. Sincronizza eventuali dati offline pendenti verso Firebase prima di uscire
+                        // 2. Triggers remote synchronization for pending data before proceeding.
                         try {
                           await ref.read(syncProvider.notifier).pushPendingData();
                         } catch (e) {
                           debugPrint("Push fallito durante il logout: $e");
                         }
                         
-                        // 3. Ricontrolla se ci sono ancora dati pendenti (es. senza rete)
+                        // 3. Verifies persistence of unsynchronized data (e.g. network failure).
                         dirtyAssessments = await db.getDirtyAssessments();
                         debugPrint("DIRTY ASSESSMENTS AFTER PUSH: ${dirtyAssessments.length}");
                         
@@ -588,17 +585,17 @@ class SettingsScreen extends ConsumerWidget {
 
                             if (confirmLogout != true) {
                               debugPrint("LOGOUT ABORTED, confirmLogout=$confirmLogout");
-                              return; // Interrompe il logout
+                              return;
                             }
                             debugPrint("LOGOUT CONFIRMED");
                           } else {
                             debugPrint("CONTEXT NOT MOUNTED");
-                            return; // Se il context non è montato, fermiamo
+                            return;
                           }
                         }
                       }
 
-                      // 4. LOGICA DI LOGOUT IBRIDA (Firebase + Isar)
+                      // 4. HYBRID LOGOUT EXECUTION (Firebase + Isar)
                       debugPrint("CALLING LOGOUT ON AUTHSERVICE");
                       await ref.read(authServiceProvider).logout();
                       debugPrint("LOGOUT COMPLETED, context.mounted=${context.mounted}");
@@ -642,8 +639,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  // LOGICA DI PRESENTAZIONE SYNC
-  // Metodi per la gestione dinamica dei testi e degli indicatori di sincronizzazione
+  // SYNC PRESENTATION LOGIC
+  // Methods for dynamic formatting of synchronization indicators and states.
   String _getSyncSubtitle(SyncState? state, List<FacilityLayout> assessments) {
     final bool anyDirty = assessments.any((f) => f.isDirty);
     
@@ -691,8 +688,8 @@ class SettingsScreen extends ConsumerWidget {
     return const Icon(Icons.sync_rounded, color: Color(0xFF005DA8), size: 20);
   }
 
-  // COMPONENTI UI: SEZIONI E TILE
-  // Definizione dei widget per le intestazioni e le voci di impostazione
+  // UI COMPONENTS AND TILES
+  // Definitions for list sections and settings action items.
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -720,11 +717,11 @@ class SettingsScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
-        // color moved to Material to avoid ListTile assertion
+        // Note: Background color is assigned to the Material widget to prevent ListTile assertion failures.
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.04),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           )
@@ -739,7 +736,7 @@ class SettingsScreen extends ConsumerWidget {
           leading: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF005DA8).withOpacity(0.08),
+              color: const Color(0xFF005DA8).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: const Color(0xFF005DA8), size: 22),

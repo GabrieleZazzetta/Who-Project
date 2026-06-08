@@ -178,12 +178,12 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(
+        const MediaQuery(
+          data: MediaQueryData(
             size: Size(1600, 900),
             devicePixelRatio: 1.0,
           ),
-          child: const Scaffold(
+          child: Scaffold(
             body: PreAssessmentScreen(
               emergencyType: EmergencyType.ebola,
               facilityType: FacilityType.screeningAndIsolation,
@@ -209,11 +209,11 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(
+        const MediaQuery(
+          data: MediaQueryData(
             size: Size(400, 800),
           ),
-          child: const Scaffold(
+          child: Scaffold(
             body: PreAssessmentScreen(
               emergencyType: EmergencyType.mpox,
               facilityType: FacilityType.congregateSetting,
@@ -232,11 +232,11 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(createProviderAppWithRouter(
-        MediaQuery(
-          data: const MediaQueryData(
+        const MediaQuery(
+          data: MediaQueryData(
             size: Size(568, 320),
           ),
-          child: const Scaffold(
+          child: Scaffold(
             body: PreAssessmentScreen(
               emergencyType: EmergencyType.mpox,
               facilityType: FacilityType.existingFacilityWithWard,

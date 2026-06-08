@@ -5,11 +5,9 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assessment_models.dart';
-import '../services/database_service.dart';
 import '../providers/database_provider.dart';
 import '../helpers/global_map_helper.dart';
 import 'interactive_map_screen.dart';
@@ -27,7 +25,7 @@ class GlobalMapScreen3D extends ConsumerStatefulWidget {
 }
 
 class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
-  // STATO
+  // STATE
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
   bool _isLoading = true;
@@ -50,8 +48,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     _loadData();
   }
 
-  // CARICAMENTO DATI
-  // Genera gli asset grafici dei pin, recupera gli assessment e geocodifica le strutture
+  // DATA LOADING
+  // Generates map pins dynamically, retrieves assessments, and applies geocoding.
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
@@ -80,8 +78,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     });
   }
 
-  // GENERAZIONE PIN
-  // Disegno su Canvas di un marker a goccia con ombra ellittica e cerchio interno
+  // PIN GENERATION
+  // Dynamically draws custom teardrop-shaped markers with elliptical shadows using the Flutter Canvas API.
   Future<Uint8List> _generatePinImage(Color color) async {
     const double size = 120.0;
     const double canvasSize = size * 1.2;
@@ -133,15 +131,15 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     return byteData!.buffer.asUint8List();
   }
 
-  // UTILITÀ SCORE
+  // SCORE UTILITY
   Uint8List _pinForScore(double score) {
     if (score >= 80) return _pinGreen!;
     if (score >= 50) return _pinAmber!;
     return _pinRed!;
   }
 
-  // INIZIALIZZAZIONE MAPPA
-  // Proiezione globe, creazione annotazioni e registrazione tap handler
+  // MAP INITIALIZATION
+  // Configures the globe projection, creates point annotations, and registers tap event handlers.
   Future<void> _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
@@ -189,14 +187,14 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
             _showFacilityPreview(_loadedFacilities[index]);
           }
         } catch (e) {
-          debugPrint("Errore parsing pin: $e");
+          debugPrint("Error parsing pin: $e");
         }
       },
     );
   }
 
-  // ANTEPRIMA STRUTTURA
-  // BottomSheet con header informativo e sezione score + navigazione ai dettagli
+  // FACILITY PREVIEW
+  // Bottom sheet component displaying a summary header, overall score, and details navigation.
   void _showFacilityPreview(FacilityLayout facility) {
     final Color color =
         GlobalMapHelper.scoreColor(facility.globalReadinessScore);
@@ -212,7 +210,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-              color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1),
           boxShadow: const [
             BoxShadow(color: Colors.black54, blurRadius: 20, spreadRadius: 5)
           ],
@@ -231,7 +229,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     );
   }
 
-  // Header con icona, nome struttura, posizione e data assessment
+  // PREVIEW HEADER COMPONENT
   Widget _buildPreviewHeader(FacilityLayout facility, Color color) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,9 +237,9 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.5), width: 2),
+            border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
           ),
           child: Icon(Icons.health_and_safety, color: color, size: 32),
         ),
@@ -303,7 +301,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     );
   }
 
-  // Barra con punteggio numerico e pulsante navigazione dettagli
+  // SCORE BAR COMPONENT
   Widget _buildScoreBar(FacilityLayout facility, double score, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -359,15 +357,15 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
             onPressed: () => _navigateToDetails(facility),
             icon: const Icon(Icons.analytics_rounded, size: 20),
             label: Text(AppLocalizations.of(context)!.viewDetails,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ),
         ],
       ),
     );
   }
 
-  // NAVIGAZIONE
-  // Mappatura tipo struttura e push verso la schermata di dettaglio interattiva
+  // NAVIGATION
+  // Resolves the facility type and pushes to the appropriate interactive details screen.
   void _navigateToDetails(FacilityLayout facility) {
     Navigator.pop(context);
 
@@ -395,8 +393,8 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
     );
   }
 
-  // GESTIONE TELECAMERA
-  // Calcola i bounds geografici e anima il flyTo per inquadrare tutti i pin
+  // CAMERA MANAGEMENT
+  // Computes geographical bounds and animates the camera to encompass all loaded map markers.
   Future<void> _flyToFacilities() async {
     if (_allCoordinates.isEmpty || _mapboxMap == null) return;
 
@@ -442,15 +440,16 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
   @override
   Widget build(BuildContext context) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    // Layout Premium: Zoom maggiore per IPAD ORIZZONTALE per far risaltare il globo
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    // Increases the default zoom level on landscape tablets to better highlight the 3D globes.
     final double initialZoom = (isTablet && isLandscape) ? 1.8 : 1.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.globalAssessmentMap,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -460,11 +459,11 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(
+                  const CircularProgressIndicator(
                       color: Color(0xFF38BDF8), strokeWidth: 3),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   Text(AppLocalizations.of(context)!.initializing3dEngine,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16)),
@@ -490,7 +489,7 @@ class _GlobalMapScreen3DState extends ConsumerState<GlobalMapScreen3D> {
               elevation: 6,
               icon: const Icon(Icons.my_location_rounded),
               label: Text(AppLocalizations.of(context)!.fitToExtent,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
     );
   }

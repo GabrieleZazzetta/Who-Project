@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
@@ -150,9 +151,9 @@ class AuthService {
         cred.oldPassword = null;
         await _db.saveLocalCredential(cred);
         
-        print("Password synchronization successful for: ${cred.email}");
+        debugPrint("Password synchronization successful for: ${cred.email}");
       } catch (e) {
-        print("Error during password synchronization for ${cred.email}: $e");
+        debugPrint("Error during password synchronization for ${cred.email}: $e");
       }
     }
   }
