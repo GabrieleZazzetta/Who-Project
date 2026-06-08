@@ -7,15 +7,15 @@ class UserSession {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
-  String? uid; // Firebase UID
+  String? uid; // Remote Firebase Identifier
 
   String? email;
   String? displayName;
   
-  // Informazioni di sessione
+  // Session metadata
   DateTime? lastLogin;
   bool isLoggedIn = false;
 
-  // Ruoli o permessi (opzionale)
+  // Role-based access control flags
   bool isWhoStaff = false;
 }

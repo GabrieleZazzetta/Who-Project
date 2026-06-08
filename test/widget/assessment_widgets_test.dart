@@ -8,18 +8,19 @@ import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/l10n/app_localizations.dart';
 
 void main() {
+  // TEST SUITE: ASSESSMENT WIDGETS
   group('Assessment Widgets Tests', () {
 
-    // ==========================================
-    // ASSESSMENT SCREEN (widget_assessment_test.dart)
-    // ==========================================
+    // ASSESSMENT SCREEN
     group('AssessmentScreen Tests', () {
       testWidgets('renders questions and updates compliance', (WidgetTester tester) async {
+        // Setup device viewport
         tester.view.physicalSize = const Size(1200, 1000);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
 
+        // Provision initial test data
         final testQuestion = AssessmentQuestion(id: 'q_1', text: 'Is the facility clean?');
         final zone = SpatialZone(id: 'z_1', name: 'Test Zone', checklist: [testQuestion]);
 
@@ -28,6 +29,7 @@ void main() {
           routes: [GoRoute(path: '/', builder: (context, state) => AssessmentScreen(zone: zone))],
         );
 
+        // Mount widget
         await tester.pumpWidget(MaterialApp.router(
           routerConfig: router,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -35,9 +37,11 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Validate initial rendering
         expect(find.text('Test Zone'), findsOneWidget);
         expect(find.text('Is the facility clean?'), findsOneWidget);
 
+        // Execute compliance update to Meets Target
         final meetsTargetIcon = find.byIcon(Icons.check_circle);
         await tester.ensureVisible(meetsTargetIcon);
         await tester.tap(meetsTargetIcon);
@@ -45,6 +49,7 @@ void main() {
 
         expect(testQuestion.selectedCompliance, ComplianceLevel.meetsTarget);
 
+        // Execute compliance update to Partially Meets
         final partiallyMeetsIcon = find.byIcon(Icons.warning_amber_rounded);
         await tester.ensureVisible(partiallyMeetsIcon);
         await tester.tap(partiallyMeetsIcon);
@@ -53,6 +58,7 @@ void main() {
         expect(testQuestion.selectedCompliance, ComplianceLevel.partiallyMeets);
         expect(find.byIcon(Icons.lightbulb), findsOneWidget);
 
+        // Execute note addition flow
         final addNoteButton = find.byIcon(Icons.edit_note);
         await tester.ensureVisible(addNoteButton);
         await tester.tap(addNoteButton);
@@ -73,13 +79,16 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
+        
         final zone = SpatialZone(id: 'z_1', name: 'Test Zone', checklist: [AssessmentQuestion(id: 'q_1', text: 'Q1')]);
+        
         await tester.pumpWidget(MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: AssessmentScreen(zone: zone)
         ));
         await tester.pump(const Duration(milliseconds: 500));
+        
         expect(find.byType(AssessmentScreen), findsOneWidget);
       });
 
@@ -88,20 +97,21 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
+        
         final zone = SpatialZone(id: 'z_1', name: 'Test Zone', checklist: [AssessmentQuestion(id: 'q_1', text: 'Q1')]);
+        
         await tester.pumpWidget(MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: AssessmentScreen(zone: zone)
         ));
         await tester.pump(const Duration(milliseconds: 500));
+        
         expect(find.byType(AssessmentScreen), findsOneWidget);
       });
     });
 
-    // ==========================================
-    // PRE-ASSESSMENT SCREEN (widget_pre_assessment_test.dart)
-    // ==========================================
+    // PRE-ASSESSMENT SCREEN
     group('PreAssessmentScreen Tests', () {
       testWidgets('renders all steps and completes pre-assessment form', (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1000);
@@ -128,38 +138,49 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Validate step 1 rendering
         expect(find.byType(PreAssessmentScreen), findsOneWidget);
         expect(find.byIcon(Icons.person_pin), findsWidgets);
         
         await tester.enterText(find.byType(TextFormField).first, 'Test Facility Name');
         await tester.pump();
 
+        // Execute step 1 completion
         final btn1 = find.byType(ElevatedButton).first;
         await tester.ensureVisible(btn1);
         await tester.tap(btn1);
         await tester.pumpAndSettle();
+        
+        // Validate step 2 rendering
         expect(find.byIcon(Icons.location_on), findsWidgets);
 
+        // Execute step 2 completion
         final btn2 = find.byType(ElevatedButton).first;
         await tester.ensureVisible(btn2);
         await tester.tap(btn2);
         await tester.pumpAndSettle();
+        
+        // Validate step 3 rendering
         expect(find.byIcon(Icons.local_hospital), findsWidgets);
 
+        // Execute step 3 completion
         final btn3 = find.byType(ElevatedButton).first;
         await tester.ensureVisible(btn3);
         await tester.tap(btn3);
         await tester.pumpAndSettle();
+        
+        // Validate step 4 rendering
         expect(find.byIcon(Icons.medical_services), findsWidgets);
-
         expect(find.text('Start Assessment'), findsWidgets);
 
+        // Execute final submission
         final btnSubmit = find.byType(ElevatedButton).first;
         await tester.ensureVisible(btnSubmit);
         await tester.tap(btnSubmit);
         await tester.pump();
         await tester.pumpAndSettle();
 
+        // Validate routing to map screen
         expect(mapScreenVisited, isTrue);
         expect(find.text('Map Screen Placeholder'), findsOneWidget);
       });
@@ -169,12 +190,14 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
+        
         await tester.pumpWidget(MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
         ));
         await tester.pump(const Duration(milliseconds: 500));
+        
         expect(find.byType(PreAssessmentScreen), findsOneWidget);
       });
 
@@ -183,19 +206,19 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
         addTearDown(() => tester.view.resetDevicePixelRatio());
+        
         await tester.pumpWidget(MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const PreAssessmentScreen(emergencyType: EmergencyType.mpox, facilityType: FacilityType.existingFacilityWithWard)
         ));
         await tester.pump(const Duration(milliseconds: 500));
+        
         expect(find.byType(PreAssessmentScreen), findsOneWidget);
       });
     });
 
-    // ==========================================
-    // CAMERA PERMISSIONS (camera_permissions_test.dart)
-    // ==========================================
+    // CAMERA PERMISSIONS
     group('Camera & Image Acquisition Tests', () {
       const channel = MethodChannel('plugins.flutter.io/image_picker');
       bool shouldFail = false;
@@ -223,9 +246,11 @@ void main() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
       });
 
-      testWidgets('Permessi Fotocamera Negati: Mostra il dialogo premium esplicativo in caso di eccezione permessi', (WidgetTester tester) async {
+      testWidgets('Camera Permissions Denied: Shows permission dialog on exception', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
+        
+        // Inject permission failure
         shouldFail = true;
 
         final dummyZone = SpatialZone(
@@ -241,6 +266,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Execute camera invocation
         final addPhotoBtn = find.text("Add Photo");
         await tester.tap(addPhotoBtn);
         await tester.pumpAndSettle();
@@ -249,8 +275,10 @@ void main() {
         await tester.tap(takePhotoOption);
         await tester.pumpAndSettle();
 
+        // Validate dialog rendering
         expect(find.text("Camera Access Required"), findsOneWidget);
 
+        // Execute dialog dismissal
         final understoodBtn = find.byKey(const Key('btn_close_permission_dialog'));
         await tester.tap(understoodBtn);
         await tester.pumpAndSettle();
@@ -258,9 +286,11 @@ void main() {
         expect(find.text("Camera Access Required"), findsNothing);
       });
 
-      testWidgets('Camera Image Acquisition: Memorizza il percorso e visualizza la miniatura in checklist', (WidgetTester tester) async {
+      testWidgets('Camera Image Acquisition: Saves path and displays thumbnail', (WidgetTester tester) async {
         await tester.binding.setSurfaceSize(const Size(1200, 1000));
         addTearDown(() => tester.binding.setSurfaceSize(null));
+        
+        // Inject success state
         shouldFail = false;
 
         final dummyQuestion = AssessmentQuestion(id: 'q_photo_test', text: 'Verify standard isolation signage.', selectedCompliance: ComplianceLevel.meetsTarget);
@@ -273,6 +303,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Execute camera invocation
         final addPhotoBtn = find.text("Add Photo");
         await tester.tap(addPhotoBtn);
         await tester.pumpAndSettle();
@@ -281,6 +312,7 @@ void main() {
         await tester.tap(takePhotoOption);
         await tester.pumpAndSettle();
 
+        // Validate state update and UI rendering
         expect(find.text("Camera Access Required"), findsNothing);
         expect(dummyQuestion.mediaPaths, isNotNull);
         expect(dummyQuestion.mediaPaths!.contains('/tmp/fake_evidence.jpg'), isTrue);

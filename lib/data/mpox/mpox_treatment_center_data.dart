@@ -1,8 +1,8 @@
 import '../../models/assessment_models.dart';
 
 class MpoxTreatmentCenterData {
-  // LAYOUT TREATMENT CENTER
-  // Struttura stand-alone Mpox Treatment Centre (OMS Sez. 2/4)
+  // TREATMENT CENTER LAYOUT
+  // Stand-alone Mpox Treatment Centre structure (WHO Section 2/4)
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Mpox Treatment Center",
@@ -10,7 +10,7 @@ class MpoxTreatmentCenterData {
       mapImagePath: 'assets/maps/facility_map_treatment_center.png',
       zones: [
         // SCREENING
-        // Primo filtro all'ingresso: separazione flussi sospetti e non sospetti
+        // Primary entrance filter: separation of suspect and non-suspect flows
         SpatialZone(
           id: 'z1_screening',
           name: 'Screening',
@@ -69,8 +69,8 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // ZONA DI ATTESA
-        // Area dedicata ai soli casi sospetti tra screening e triage
+        // WAITING AREA
+        // Dedicated area exclusively for suspected cases between screening and triage
         SpatialZone(
           id: 'z2_waiting',
           name: 'Waiting Area',
@@ -178,7 +178,7 @@ class MpoxTreatmentCenterData {
         ),
 
         // TRIAGE
-        // Valutazione clinica e smistamento verso i reparti
+        // Clinical evaluation and sorting towards wards
         SpatialZone(
           id: 'z3_triage',
           name: 'Triage Room',
@@ -221,7 +221,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Rianimazione
+        // Resuscitation
         SpatialZone(
           id: 'z3b_resuscitation',
           name: 'Resuscitation Room',
@@ -256,7 +256,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Diagnostica e laboratorio
+        // Diagnostic and Laboratory
         SpatialZone(
           id: 'z3c_diagnostic_lab',
           name: 'Diagnostic & Laboratory',
@@ -291,7 +291,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // DPI Triage
+        // PPE Triage
         SpatialZone(
           id: 'z4_triage_donning',
           name: 'Triage Donning',
@@ -309,7 +309,7 @@ class MpoxTreatmentCenterData {
           checklist: _getTriagePPEChecklist(),
         ),
 
-        // AREA STAFF E AMMINISTRAZIONE
+        // STAFF AND ADMINISTRATION AREA
         SpatialZone(
           id: 'z6_staff_admin',
           name: 'Staff & Admin Area',
@@ -376,8 +376,8 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // LOGISTICA E SERVIZI
-        // Stoccaggio
+        // LOGISTICS AND SERVICES
+        // Storage
         SpatialZone(
           id: 'z7_storage',
           name: 'Storage & Pharmacy',
@@ -412,7 +412,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Farmacia
+        // Pharmacy
         SpatialZone(
           id: 'z7b_pharmacy',
           name: 'Pharmacy',
@@ -439,7 +439,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Gestione rifiuti
+        // Waste Management
         SpatialZone(
           id: 'z8_waste',
           name: 'Waste Area',
@@ -482,7 +482,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // RICONDIZIONAMENTO ATTREZZATURE
+        // EQUIPMENT REPROCESSING
         SpatialZone(
           id: 'z9_reprocessing',
           name: 'Reprocessing',
@@ -533,7 +533,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Lavanderia
+        // Laundry
         SpatialZone(
           id: 'z10_laundry',
           name: 'Laundry',
@@ -552,7 +552,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Obitorio
+        // Morgue
         SpatialZone(
           id: 'z11_morgue',
           name: 'Morgue',
@@ -571,7 +571,7 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // Area dimissioni
+        // Discharge Area
         SpatialZone(
           id: 'z12_discharge',
           name: 'Discharge Area',
@@ -598,9 +598,9 @@ class MpoxTreatmentCenterData {
           ],
         ),
 
-        // CLUSTER REPARTI
-        // Ogni cluster (suspect, probable, confirmed) replica la stessa struttura:
-        // stanza, donning, doffing, nursing station, clean utility, soiled utility
+        // WARD CLUSTERS
+        // Each cluster (suspect, probable, confirmed) replicates the same structure:
+        // room, donning, doffing, nursing station, clean utility, soiled utility
 
         // Cluster Suspect
         SpatialZone(
@@ -740,10 +740,10 @@ class MpoxTreatmentCenterData {
     );
   }
 
-  // CHECKLIST CONDIVISE
-  // Blocchi di domande riutilizzati da zone con requisiti identici
+  // SHARED CHECKLISTS
+  // Reusable question blocks for zones with identical requirements
 
-  // DPI triage: donning e doffing condividono gli stessi criteri
+  // PPE triage: donning and doffing share identical criteria
   static List<AssessmentQuestion> _getTriagePPEChecklist() {
     return [
       AssessmentQuestion(
@@ -765,7 +765,7 @@ class MpoxTreatmentCenterData {
     ];
   }
 
-  // Stanza reparto: criteri comuni a suspect, probable e confirmed
+  // Ward room: common criteria for suspect, probable and confirmed
   static List<AssessmentQuestion> _getWardRoomChecklist() {
     return [
       AssessmentQuestion(

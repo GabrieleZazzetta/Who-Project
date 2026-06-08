@@ -1,16 +1,16 @@
 import '../../models/assessment_models.dart';
 
 class MpoxCongregateSettingData {
-  // LAYOUT CONGREGATE SETTING
-  // Struttura Fig. 6 OMS: flusso di screening e isolamento in contesto congregato
+  // CONGREGATE SETTING LAYOUT
+  // WHO Fig 6 Structure: Screening and isolation flow within a congregate context
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Screening & Isolation in Congregate Setting",
       emergencyType: EmergencyType.mpox,
       mapImagePath: 'assets/maps/facility_map_congregate.png',
       zones: [
-        // ZONE DI SCREENING
-        // Due punti di filtro: ingresso nuovi arrivi e accesso interni sintomatici
+        // SCREENING ZONES
+        // Dual filter points: New arrivals entry and symptomatic internal access
         SpatialZone(
           id: 'cs_z1_screening_reception',
           name: 'Screening Reception',
@@ -29,8 +29,8 @@ class MpoxCongregateSettingData {
           checklist: _getScreeningChecklist(),
         ),
 
-        // ZONA DI ATTESA
-        // Area cuscinetto tra screening e consultazione
+        // WAITING ZONE
+        // Buffer area between screening and consultation
         SpatialZone(
           id: 'cs_z3_waiting',
           name: 'Waiting Room',
@@ -81,8 +81,8 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // CONSULTAZIONE
-        // Visita clinica e triage dei casi sospetti
+        // CONSULTING
+        // Clinical examination and triage of suspected cases
         SpatialZone(
           id: 'cs_z4_consulting',
           name: 'Consulting Room',
@@ -125,7 +125,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // DPI Consultazione
+        // PPE Consulting
         SpatialZone(
           id: 'cs_z4a_consulting_donning',
           name: 'Consulting Donning',
@@ -144,8 +144,8 @@ class MpoxCongregateSettingData {
           checklist: _getConsultingPPEChecklist(),
         ),
 
-        // ISOLAMENTO TEMPORANEO
-        // Contenimento casi sospetti in attesa di conferma o trasferimento
+        // TEMPORARY ISOLATION
+        // Containment of suspected cases awaiting confirmation or transfer
         SpatialZone(
           id: 'cs_z5_temp_isolation',
           name: 'Temporary Isolation',
@@ -196,7 +196,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // DPI Isolamento temporaneo
+        // PPE Temporary Isolation
         SpatialZone(
           id: 'cs_z5a_temp_iso_donning',
           name: 'Temp Iso Donning',
@@ -215,8 +215,8 @@ class MpoxCongregateSettingData {
           checklist: _getTempIsolationPPEChecklist(),
         ),
 
-        // AREA TRATTAMENTO
-        // Gestione e isolamento dei casi lievi confermati
+        // TREATMENT AREA
+        // Management and isolation of confirmed mild cases
         SpatialZone(
           id: 'cs_z6_treatment_area',
           name: 'Treatment Area',
@@ -291,7 +291,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // DPI Trattamento
+        // PPE Treatment
         SpatialZone(
           id: 'cs_z6a_treatment_donning',
           name: 'Treatment Donning',
@@ -310,8 +310,8 @@ class MpoxCongregateSettingData {
           checklist: _getTreatmentPPEChecklist(),
         ),
 
-        // AREA STAFF
-        // Zone operative riservate al personale sanitario
+        // STAFF AREA
+        // Operational zones reserved for healthcare personnel
         SpatialZone(
           id: 'cs_z7_staff_area',
           name: 'Staff Area',
@@ -338,7 +338,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // Postazione infermieristica
+        // Nursing Station
         SpatialZone(
           id: 'cs_z7b_nursing_station',
           name: 'Staff Nursing Station',
@@ -365,7 +365,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // Spogliatoio staff
+        // Staff Changing Room
         SpatialZone(
           id: 'cs_z7c_staff_changing',
           name: 'Staff Changing Room',
@@ -384,8 +384,8 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // LOGISTICA E SERVIZI
-        // Stoccaggio
+        // LOGISTICS AND SERVICES
+        // Storage
         SpatialZone(
           id: 'cs_z8_storage',
           name: 'Storage',
@@ -420,7 +420,7 @@ class MpoxCongregateSettingData {
           ],
         ),
 
-        // Gestione rifiuti
+        // Waste Management
         SpatialZone(
           id: 'cs_z9_waste',
           name: 'Waste Area',
@@ -466,10 +466,10 @@ class MpoxCongregateSettingData {
     );
   }
 
-  // CHECKLIST CONDIVISE
-  // Blocchi di domande riutilizzati da zone con requisiti identici
+  // SHARED CHECKLISTS
+  // Reusable question blocks for zones with identical requirements
 
-  // Screening: requisiti comuni a reception e settlement
+  // Screening: common requirements for reception and settlement
   static List<AssessmentQuestion> _getScreeningChecklist() {
     return [
       AssessmentQuestion(
@@ -531,7 +531,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
-  // DPI consultazione: donning e doffing condividono gli stessi criteri
+  // PPE Consulting: Donning and doffing share identical criteria
   static List<AssessmentQuestion> _getConsultingPPEChecklist() {
     return [
       AssessmentQuestion(
@@ -553,7 +553,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
-  // DPI isolamento temporaneo
+  // PPE Temporary Isolation
   static List<AssessmentQuestion> _getTempIsolationPPEChecklist() {
     return [
       AssessmentQuestion(
@@ -575,7 +575,7 @@ class MpoxCongregateSettingData {
     ];
   }
 
-  // DPI trattamento
+  // PPE Treatment
   static List<AssessmentQuestion> _getTreatmentPPEChecklist() {
     return [
       AssessmentQuestion(

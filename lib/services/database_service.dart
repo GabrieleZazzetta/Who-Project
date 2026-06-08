@@ -4,8 +4,8 @@ import '../models/assessment_models.dart';
 import '../models/user_model.dart';
 import '../models/local_user_credential.dart';
 
-// SERVIZIO DATABASE
-// Singleton che gestisce il ciclo di vita di Isar e le operazioni CRUD sugli assessment
+// DATABASE SERVICE
+// Singleton managing Isar lifecycle and assessment CRUD operations
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._internal();
@@ -14,7 +14,7 @@ class DatabaseService {
   late Isar _isar;
   bool _isInitialized = false;
 
-  // Inizializzazione
+  // INITIALIZATION
   Future<void> init() async {
     if (_isInitialized) return;
 
@@ -26,22 +26,22 @@ class DatabaseService {
     _isInitialized = true;
   }
 
-  // Consente di iniettare un'istanza Isar di test (in-memory)
+  // Inject in-memory Isar instance for testing purposes
   void setTestIsar(Isar testIsar) {
     _isar = testIsar;
     _isInitialized = true;
   }
 
-  // OPERAZIONI CRUD
+  // CRUD OPERATIONS
 
-  // Isar sovrascrive automaticamente se l'ID esiste, clone della lista zones
-  // necessario per forzare la rilevazione delle modifiche agli oggetti embedded
+  // Isar overwrites on ID match
+  // Zone list cloning required to enforce embedded object modification detection
   Future<Id> saveAssessment(FacilityLayout facility) async {
     facility.dateCreated ??= DateTime.now().toUtc();
     facility.zones = List.from(facility.zones);
     
-    // LOGICA DI DIRTY FLAG
-    // Ogni salvataggio locale marca il record come da sincronizzare
+    // DIRTY FLAG LOGIC
+    // Mark local saves as pending synchronization
     facility.isDirty = true;
     facility.updatedAt = DateTime.now().toUtc();
 
@@ -52,7 +52,7 @@ class DatabaseService {
     });
   }
 
-  // Metodo per il salvataggio diretto senza marcare come dirty (usato durante la sync)
+  // Direct persist without dirty flag allocation
   Future<void> saveFromSync(FacilityLayout facility) async {
     await _isar.writeTxn(() async {
       await _isar.facilityLayouts.put(facility);
@@ -63,7 +63,7 @@ class DatabaseService {
     return await _isar.facilityLayouts.where().findAll();
   }
 
-  // Recupera tutti i record che hanno modifiche locali pendenti
+  // Retrieve all records with pending local modifications
   Future<List<FacilityLayout>> getDirtyAssessments() async {
     return await _isar.facilityLayouts.filter().isDirtyEqualTo(true).findAll();
   }
@@ -82,7 +82,7 @@ class DatabaseService {
     });
   }
 
-  // --- SESSION MANAGEMENT ---
+  // SESSION MANAGEMENT
 
   Future<void> saveSession(UserSession session) async {
     await _isar.writeTxn(() async {
@@ -104,11 +104,11 @@ class DatabaseService {
     await _isar.writeTxn(() async {
       await _isar.facilityLayouts.clear();
       await _isar.userSessions.clear();
-      // DO NOT clear localUserCredentials to preserve offline login
+      // Preserve localUserCredentials to maintain offline capabilities
     });
   }
 
-  // --- LOCAL USER CREDENTIALS (Offline Password Recovery) ---
+  // LOCAL USER CREDENTIALS (Offline Password Recovery)
 
   Future<void> saveLocalCredential(LocalUserCredential credential) async {
     if (credential.email != null) {

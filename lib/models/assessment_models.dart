@@ -3,7 +3,7 @@ import 'package:isar/isar.dart';
 
 part 'assessment_models.g.dart';
 
-// ENUMERAZIONI
+// CORE ENUMERATIONS
 enum EmergencyType { mpox, ebola, sars }
 
 enum FacilityType {
@@ -28,8 +28,8 @@ enum AssessmentCategory {
   logistics
 }
 
-// MODELLO DOMANDA
-// Singola domanda della checklist con livello di compliance e punteggio derivato
+// ASSESSMENT QUESTION ENTITY
+// Represents a single checklist item with compliance level and derived scoring
 
 @embedded
 class AssessmentQuestion {
@@ -76,8 +76,8 @@ class AssessmentQuestion {
       selectedCompliance == ComplianceLevel.doesNotMeet;
 }
 
-// MODELLI SPAZIALI
-// Coordinate di posizionamento e aree di tocco per le zone sulla mappa interattiva
+// SPATIAL MODELS
+// Positional coordinates and touch areas for interactive map zones
 
 @embedded
 class MapCoordinates {
@@ -110,7 +110,7 @@ class SpatialZone {
     this.checklist = const [],
   });
 
-  // Punteggio di readiness calcolato sulle domande compilate, escludendo pending e N/A
+  // Calculate readiness score based on completed questions (excluding pending and N/A)
   @ignore
   double get readinessScore {
     int totalPossibleScore = 0;
@@ -137,8 +137,7 @@ class SpatialZone {
     return (completed / checklist.length) * 100;
   }
 
-  // Colore derivato dalla criticità: rosso se fallimenti, arancione se incompleto,
-  // ambra se parziale, verde se tutto conforme
+  // Determine status color based on criticality and completion
   @ignore
   Color get statusColor {
     if (completionPercentage == 0) return Colors.grey.shade400;
@@ -152,8 +151,8 @@ class SpatialZone {
   }
 }
 
-// ENTITÀ PRINCIPALE
-// Rappresenta una struttura sanitaria completa con le sue zone spaziali e i metadati
+// FACILITY LAYOUT ENTITY
+// Represents a complete health facility with spatial zones and metadata
 
 @collection
 class FacilityLayout {
@@ -169,12 +168,12 @@ class FacilityLayout {
 
   List<SpatialZone> zones;
 
-  // METADATI DI SINCRONIZZAZIONE
-  // Campi necessari per gestire l'allineamento dei dati tra locale e remoto
-  String? remoteId;       // ID univoco assegnato dal server
-  bool isDirty;           // Flag: true se ci sono modifiche locali non sincronizzate
-  DateTime? lastSyncedAt; // Timestamp dell'ultima sincronizzazione avvenuta con successo
-  DateTime? updatedAt;    // Timestamp dell'ultima modifica effettuata sul dispositivo
+  // SYNCHRONIZATION METADATA
+  // Fields required for data alignment between local and remote storage
+  String? remoteId;       // Unique remote server identifier
+  bool isDirty;           // Unsynchronized local modifications flag
+  DateTime? lastSyncedAt; // Last successful synchronization timestamp
+  DateTime? updatedAt;    // Last local modification timestamp
 
   FacilityLayout({
     this.facilityName = '',
@@ -188,7 +187,7 @@ class FacilityLayout {
     this.updatedAt,
   });
 
-  // Media ponderata dei readiness score delle zone compilate
+  // Weighted average of completed zone readiness scores
   @ignore
   double get globalReadinessScore {
     double totalScore = 0;
@@ -204,8 +203,8 @@ class FacilityLayout {
   }
 }
 
-// INFORMAZIONI GENERALI STRUTTURA
-// Dati anagrafici, geografici e organizzativi raccolti in fase di profilazione
+// GENERAL FACILITY INFORMATION
+// Demographic, geographic, and organizational data collected during profiling
 
 @embedded
 class GeneralFacilityInfo {
@@ -243,8 +242,8 @@ class GeneralFacilityInfo {
   String? hasIcuOrHdu;
 }
 
-// Dizionario globale per le motivazioni di valutazione (Compliance Criteria)
-// Questo permette di aggiungere spiegazioni didattiche ai bottoni senza alterare lo schema Isar
+// COMPLIANCE CRITERIA DICTIONARY
+// Static dictionary for educational button explanations mapping without altering Isar schema
 final Map<String, Map<ComplianceLevel, String>> globalComplianceCriteria = {
   'q1_screening_location': {
     ComplianceLevel.meetsTarget: 'A screening area is placed at the entrance of the facility. All patients pass through the screening before accessing the facility. The screening is visible, clearly labelled and proper wayfinding guides the flow of patients.',

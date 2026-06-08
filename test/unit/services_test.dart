@@ -22,6 +22,7 @@ void main() {
   late Directory tempDir;
   late DatabaseService dbService;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_services_test');
@@ -37,7 +38,7 @@ void main() {
 
   tearDownAll(() async {
     testIsar.close();
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(_){}}
   });
 
   setUp(() async {
@@ -48,11 +49,10 @@ void main() {
     });
   });
 
+  // TEST SUITE: CORE SERVICES
   group('Services Unit Tests', () {
 
-    // ==========================================
     // DATABASE SERVICE
-    // ==========================================
     group('DatabaseService CRUD Tests', () {
       test('saveAssessment should persist layout and auto-mark as dirty', () async {
         final facility = FacilityLayout(
@@ -92,10 +92,10 @@ void main() {
         final f1 = FacilityLayout(facilityName: 'Local Change');
         final f2 = FacilityLayout(facilityName: 'Synced Change');
 
-        await dbService.saveAssessment(f1); // marked dirty automatically
+        await dbService.saveAssessment(f1); 
         
         f2.isDirty = false;
-        await dbService.saveFromSync(f2); // remains clean
+        await dbService.saveFromSync(f2);
 
         final dirty = await dbService.getDirtyAssessments();
         expect(dirty.length, equals(1));
@@ -103,9 +103,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // AUTH SERVICE (MOCKTAIL)
-    // ==========================================
     group('AuthService Tests', () {
       late MockFirebaseAuth mockAuth;
       late AuthService authService;
@@ -116,6 +114,7 @@ void main() {
       });
 
       test('register should create user in firebase and save session locally', () async {
+        // Configure Firebase User Mock
         final mockUser = MockUser();
         when(() => mockUser.uid).thenReturn('fake_uid_123');
         when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
@@ -127,6 +126,7 @@ void main() {
           password: any(named: 'password')
         )).thenAnswer((_) async => mockCred);
 
+        // Execute registration
         final credential = await authService.register(
           'test@who.int',
           'password123',
@@ -134,9 +134,11 @@ void main() {
           displayName: 'Test Doctor',
         );
 
+        // Validate remote credential creation
         expect(credential, isNotNull);
         expect(credential?.user?.uid, 'fake_uid_123');
 
+        // Validate local session instantiation
         final session = await DatabaseService.instance.getCurrentSession();
         expect(session, isNotNull);
         expect(session?.email, 'test@who.int');
@@ -157,7 +159,7 @@ void main() {
           
         await DatabaseService.instance.saveLocalCredential(localCred);
         
-        // Simula fallimento rete
+        // Simulate network failure
         when(() => mockAuth.signInWithEmailAndPassword(
           email: any(named: 'email'), 
           password: any(named: 'password')
@@ -165,7 +167,8 @@ void main() {
 
         final credential = await authService.login('offline@who.int', 'pass123');
         
-        expect(credential, isNull); // Credential is null for offline success
+        // Credential is null for offline success fallback
+        expect(credential, isNull);
 
         final session = await DatabaseService.instance.getCurrentSession();
         expect(session, isNotNull);
@@ -174,9 +177,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // SYNC SERVICE (MOCKTAIL)
-    // ==========================================
     group('SyncService Tests', () {
       late MockSyncRepository mockRepo;
       late MockAuthService mockAuth;
@@ -200,14 +201,17 @@ void main() {
       test('pushPendingData sets error state on failure', () async {
         final container = createContainer();
         
+        // Provision dirty assessment
         final dirtyFacility = FacilityLayout(facilityName: 'Dirty', emergencyType: EmergencyType.mpox);
         dirtyFacility.isDirty = true;
         await DatabaseService.instance.saveAssessment(dirtyFacility);
 
+        // Inject push failure
         when(() => mockRepo.pushAssessment(any())).thenThrow(Exception('Server unreachable'));
 
         final notifier = container.read(syncProvider.notifier);
         
+        // Assert execution rejection
         try {
           await notifier.pushPendingData();
           fail('Should throw exception');
@@ -224,6 +228,7 @@ void main() {
         
         final remoteDate = DateTime.now().add(const Duration(days: 1)).toUtc().toIso8601String();
         
+        // Mock remote data pull
         when(() => mockRepo.pullAssessments(any())).thenAnswer((_) async => [
           {
             'remoteId': 'remote_123',
@@ -252,12 +257,15 @@ void main() {
         ]);
         when(() => mockRepo.pushAssessment(any())).thenAnswer((_) async => 'remote_999');
 
+        // Execute sync cycle
         final notifier = container.read(syncProvider.notifier);
         await notifier.syncAll();
 
+        // Verify state update
         final state = container.read(syncProvider).value;
         expect(state?.status, SyncStatus.success);
 
+        // Verify local database persistence of remote payload
         final localAssessment = await DatabaseService.instance.getAssessmentByRemoteId('remote_123');
         expect(localAssessment, isNotNull);
         expect(localAssessment?.facilityName, 'Remote Clinic');
@@ -265,11 +273,9 @@ void main() {
       });
     });
 
-    // ==========================================
-    // SUPPORT SERVICES (GEO & EXPORT)
-    // ==========================================
+    // SUPPORT SERVICES
     group('Support Services (Geocoding & Export)', () {
-      test('Validazione Coordinate: Rifiuto Null Island', () {
+      test('Coordinate Validation: Reject Null Island', () {
         final RegExp coordRegExp = RegExp(r'([-+]?[0-9]*\.?[0-9]+)[\s,]+([-+]?[0-9]*\.?[0-9]+)');
 
         bool isValidCoordinate(String text) {
@@ -294,7 +300,7 @@ void main() {
         expect(isValidCoordinate("invalid text"), isFalse);
       });
 
-      test('Export Word Resilience: non deve crashare senza dati', () {
+      test('Export Word Resilience: should not crash without data', () {
         final facilityVuota = FacilityLayout(
           facilityName: '',
           zones: [],

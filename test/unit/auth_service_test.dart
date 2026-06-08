@@ -10,9 +10,9 @@ import 'dart:convert';
 import 'package:assessment_tool/services/auth_service.dart';
 import 'package:assessment_tool/models/user_model.dart';
 import 'package:assessment_tool/models/local_user_credential.dart';
-
 import '../helpers/mocks.dart' hide MockFirebaseAuth, MockUser, MockUserCredential;
 
+// TEST UTILITIES
 class FakePathProviderPlatform extends PathProviderPlatform {
   final Directory tempDir;
   FakePathProviderPlatform(this.tempDir);
@@ -29,9 +29,8 @@ void main() {
   late MockDatabaseService mockDb;
   late Directory tempDir;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
-    // NON chiamare Isar.initializeIsarCore qui.
-    // DatabaseService è mockato, Isar non è necessario.
     tempDir = Directory.systemTemp.createTempSync('auth_test_dir');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir);
     registerFallbackValues();
@@ -41,15 +40,13 @@ void main() {
     if (tempDir.existsSync()) {
       try {
         tempDir.deleteSync(recursive: true);
-      } catch (e) {}
+      } catch (_) {}
     }
   });
 
   setUp(() async {
-    // Crea MockDatabaseService — nessun Isar richiesto
     mockDb = MockDatabaseService();
 
-    // Default stubs: saveSession, clearAllLocalData → no-op
     when(() => mockDb.saveSession(any())).thenAnswer((_) async {});
     when(() => mockDb.clearAllLocalData()).thenAnswer((_) async {});
     when(() => mockDb.getCurrentSession()).thenAnswer((_) async => null);
@@ -65,11 +62,13 @@ void main() {
     );
     mockFirebaseAuth = MockFirebaseAuth(mockUser: mockUser);
 
-    // Inietta sia il MockFirebaseAuth che il MockDatabaseService
     authService = AuthService(auth: mockFirebaseAuth, db: mockDb);
   });
 
+  // TEST SUITE: AUTHENTICATION FLOWS
   group('AuthService Tests', () {
+
+    // REGISTRATION
     test('register creates user and saves local session', () async {
       final cred = await authService.register(
         'test@who.int',
@@ -80,13 +79,11 @@ void main() {
 
       expect(cred, isNotNull);
       expect(cred!.user!.email, 'test@who.int');
-
-      // Verifica che saveSession sia stato chiamato con i dati corretti
       verify(() => mockDb.saveSession(any())).called(1);
     });
 
+    // STANDARD LOGIN
     test('login authenticates and updates local session', () async {
-      // Mock getCurrentSession per restituire una sessione dopo il login
       final fakeSession = UserSession()
         ..uid = 'someuid'
         ..email = 'test@who.int'
@@ -98,18 +95,16 @@ void main() {
 
       expect(cred, isNotNull);
       expect(cred!.user!.uid, 'someuid');
-
-      // Verifica che saveSession sia stato chiamato
       verify(() => mockDb.saveSession(any())).called(1);
 
-      // Verifica la sessione tramite il mock
       final session = await authService.getLocalSession();
       expect(session, isNotNull);
       expect(session!.isWhoStaff, true);
     });
 
+    // OFFLINE LOGIN FALLBACK
     test('login fallback to local auth when firebase fails', () async {
-      // Prepara una credenziale locale valida nel mock
+      // Provision valid offline credential with pre-hashed password
       const cleanEmail = 'offline@test.com';
       const password = 'mySecretPassword';
       final hash = sha256.convert(utf8.encode(password)).toString();
@@ -120,24 +115,22 @@ void main() {
         ..displayName = 'Offline User'
         ..isWhoStaff = false;
 
-      // MockDB restituisce la credenziale locale quando richiesta
+      // Mock local database to intercept the offline fallback lookup
       when(() => mockDb.getLocalCredential(cleanEmail))
           .thenAnswer((_) async => localCred);
 
-      // Auth con Firebase che fallisce
+      // Inject network failure via mock and trigger login
       final failingAuth = FailingFirebaseAuth();
       final offlineService = AuthService(auth: failingAuth, db: mockDb);
 
-      // Login offline: Firebase fallisce, localCred ha successo
       final cred = await offlineService.login(cleanEmail, password);
 
-      // Ritorna null = successo offline (come da implementazione)
+      // Validate that fallback successfully intercepted the failure and authenticated locally
       expect(cred, isNull);
-
-      // Verifica che saveSession sia stato chiamato per la sessione offline
       verify(() => mockDb.saveSession(any())).called(1);
     });
 
+    // INVALID OFFLINE LOGIN
     test('login fallback fails if offline password is wrong', () async {
       const cleanEmail = 'offline@test.com';
       const password = 'wrongPassword';
@@ -159,14 +152,15 @@ void main() {
       );
     });
 
+    // LOGOUT
     test('logout clears local data and signs out from firebase', () async {
       await authService.logout();
-      
-      // verify che clearAllLocalData sia stato chiamato
       verify(() => mockDb.clearAllLocalData()).called(1);
     });
 
+    // PASSWORD SYNC
     test('syncPendingPasswordChanges syncs successfully when user is logged in', () async {
+      // Mock an existing pending password change request
       final cred = LocalUserCredential()
         ..email = 'test@who.int'
         ..pendingPassword = 'newPassword123'
@@ -174,12 +168,10 @@ void main() {
         
       when(() => mockDb.getPendingPasswordSyncs()).thenAnswer((_) async => [cred]);
 
-      // authService usa mockFirebaseAuth che ha test@who.int loggato
+      // Trigger synchronization loop
       await authService.syncPendingPasswordChanges();
 
-      // Verifica che il mock aggiorni la password
-      // Purtroppo MockFirebaseAuth non traccia le chiamate interne a updatePassword in modo semplice,
-      // ma possiamo verificare che il LocalUserCredential sia stato aggiornato per ripulire la pendingPassword.
+      // Verify that sync loop successfully resolved and cleared the pending flag
       verify(() => mockDb.saveLocalCredential(any(that: predicate<LocalUserCredential>((c) {
         return c.passwordNeedsSync == false && c.pendingPassword == null;
       })))).called(1);
@@ -189,14 +181,12 @@ void main() {
       when(() => mockDb.getPendingPasswordSyncs()).thenAnswer((_) async => []);
       
       await authService.syncPendingPasswordChanges();
-      
-      // Assicurati che non tenti di salvare credenziali
       verifyNever(() => mockDb.saveLocalCredential(any()));
     });
   });
 }
 
-/// Classe per forzare l'eccezione di rete Firebase
+// MOCK FIREBASE ERROR INJECTOR
 class FailingFirebaseAuth implements FirebaseAuth {
   @override
   Future<UserCredential> signInWithEmailAndPassword({

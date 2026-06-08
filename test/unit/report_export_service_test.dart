@@ -15,7 +15,6 @@ class FakeSharePlatform extends SharePlatform {
     String? text,
     Rect? sharePositionOrigin,
   }) async {
-    print('ShareXFiles called');
     return ShareResult('Success', ShareResultStatus.success);
   }
 }
@@ -26,7 +25,6 @@ class FakePathProviderPlatform extends PathProviderPlatform {
 
   @override
   Future<String?> getTemporaryPath() async {
-    print('getTemporaryPath called');
     return tempDir.path;
   }
 }
@@ -35,6 +33,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory tempDir;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() {
     tempDir = Directory.systemTemp.createTempSync('export_test_dir');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir);
@@ -48,8 +47,10 @@ void main() {
     }
   });
 
+  // TEST SUITE: REPORT EXPORT SERVICE
   group('ReportExportService Tests', () {
     testWidgets('exportAssessmentToEditableWord creates file and calls share', (WidgetTester tester) async {
+      // Initialize mock facility data
       final facility = FacilityLayout(
         facilityName: 'Export Clinic',
         emergencyType: EmergencyType.ebola,
@@ -78,7 +79,7 @@ void main() {
       // Mock SharePlatform
       SharePlatform.instance = FakeSharePlatform();
 
-      // Abbiamo bisogno di un context finto per Share.shareXFiles
+      // Mock context for Share.shareXFiles
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -91,16 +92,16 @@ void main() {
 
       final context = tester.element(find.text('Export Context'));
       
-      // Chiamata diretta così possiamo fare await dentro runAsync
+      // Execute export asynchronously
       await tester.runAsync(() async {
         await ReportExportService.exportAssessmentToEditableWord(context, facility);
       });
 
-      // Verifica che il file esista
+      // Verify file existence
       final expectedFile = File('${tempDir.path}/WHO_Report_Export_Clinic.doc');
       expect(expectedFile.existsSync(), true);
 
-      // Verifica contenuto file
+      // Verify file content integrity
       final content = expectedFile.readAsStringSync();
       expect(content, contains('Export Clinic'));
       expect(content, contains('Uganda'));

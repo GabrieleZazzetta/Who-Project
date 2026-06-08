@@ -8,6 +8,7 @@ import 'package:assessment_tool/models/user_model.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // TEST SUITE INITIALIZATION
   group('Analytics & Outbreak Reporting E2E', () {
     setUp(() async {
       try {
@@ -19,18 +20,19 @@ void main() {
       } catch (_) {}
     });
 
+    // ANALYTICS GLOBAL DASHBOARD
     testWidgets('Analytics global dashboard loads', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
-      // Vai alla schermata Search/List per cercare il tasto Analytics
+      // Navigate to assignment list view
       final bottomNav = find.byType(BottomNavigationBar);
       final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
       if (listTab.evaluate().isNotEmpty) {
         await tester.tap(listTab.first);
         await tester.pumpAndSettle();
 
-        // Cerca il tasto premium per le Analytics
+        // Access the analytics feature via dedicated button
         final analyticsBtn = find.byIcon(Icons.analytics_rounded);
         if (analyticsBtn.evaluate().isNotEmpty) {
           await tester.tap(analyticsBtn.first);
@@ -40,26 +42,27 @@ void main() {
       }
     });
 
+    // GLOBAL MAP 3D INTERACTION
     testWidgets('Global Map 3D interaction', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
+      // Navigate to assignment list view
       final bottomNav = find.byType(BottomNavigationBar);
       final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
       if (listTab.evaluate().isNotEmpty) {
         await tester.tap(listTab.first);
         await tester.pumpAndSettle();
 
-        // Trova l'icona mappamondo (Global Map) nella search bar
+        // Access global map interaction view
         final mapIcon = find.byIcon(Icons.map_outlined);
         if (mapIcon.evaluate().isNotEmpty) {
           await tester.tap(mapIcon.first);
           await tester.pumpAndSettle(const Duration(seconds: 4));
 
-          // Dovremmo essere sulla Global Map
           expect(find.byType(Scaffold), findsWidgets);
           
-          // Fai tap sul pulsante "Fit to extent"
+          // Focus map to specific geographical extent
           final focusBtn = find.byIcon(Icons.my_location_rounded);
           if (focusBtn.evaluate().isNotEmpty) {
             await tester.tap(focusBtn.first);
@@ -69,29 +72,31 @@ void main() {
       }
     });
 
+    // INTERACTIVE MAP ASSESSMENT
     testWidgets('Interactive Map opens assessment', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
+      // Navigate to assignment list view
       final bottomNav = find.byType(BottomNavigationBar);
       final listTab = find.descendant(of: bottomNav, matching: find.byIcon(Icons.assignment));
       if (listTab.evaluate().isNotEmpty) {
         await tester.tap(listTab.first);
         await tester.pumpAndSettle();
 
-        // Apri un assessment
+        // Select specific assessment to view details
         final tiles = find.byType(Card);
         if (tiles.evaluate().isNotEmpty) {
           await tester.tap(tiles.first);
           await tester.pumpAndSettle(const Duration(seconds: 2));
 
-          // Apri Interactive Map
+          // Open interactive map for selected assessment
           final interactiveMapBtn = find.byIcon(Icons.map);
           if (interactiveMapBtn.evaluate().isNotEmpty) {
             await tester.tap(interactiveMapBtn.first);
             await tester.pumpAndSettle(const Duration(seconds: 3));
 
-            // Cerca un'area tappabile sulla mappa
+            // Simulate interaction on specific map pin
             final interactiveViewer = find.byType(InteractiveViewer);
             if (interactiveViewer.evaluate().isNotEmpty) {
               final mapPins = find.descendant(of: interactiveViewer, matching: find.byType(GestureDetector));

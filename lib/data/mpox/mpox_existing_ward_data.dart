@@ -1,8 +1,8 @@
 import '../../models/assessment_models.dart';
 
-// DEFINIZIONE LAYOUT E DATI STATICI
-// Classe factory per la generazione della struttura dati topologica e ispettiva.
-// Mappa le dipendenze spaziali e le checklist per un reparto Mpox integrato in una struttura sanitaria esistente.
+// LAYOUT DEFINITION AND STATIC DATA
+// Factory class for generating topological and inspection data structure
+// Maps spatial dependencies and checklists for an integrated Mpox ward in an existing health facility
 class MpoxExistingWardData {
   static FacilityLayout getLayout() {
     return FacilityLayout(
@@ -10,8 +10,8 @@ class MpoxExistingWardData {
       emergencyType: EmergencyType.mpox,
       mapImagePath: 'assets/maps/facility_map_fig4.png',
       zones: [
-        // ACCESSO E VALUTAZIONE INIZIALE
-        // Gestione dei flussi di ingresso, separazione dei pazienti sospetti e primo inquadramento clinico.
+        // ACCESS AND INITIAL EVALUATION
+        // Entry flow management, separation of suspected patients, and primary clinical assessment
         SpatialZone(
           id: 'z1',
           name: 'Screening',
@@ -119,8 +119,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // ZONE STAFF E VESTIZIONE PRIMARIA
-        // Aree dedicate al personale per le procedure di vestizione/svestizione DPI e zone sicure di riposo.
+        // STAFF ZONES AND PRIMARY PPE
+        // Dedicated personnel areas for PPE donning/doffing procedures and secure rest zones
         SpatialZone(
           id: 'z4',
           name: 'Doffing',
@@ -221,8 +221,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // AREE CLINICHE DI EMERGENZA
-        // Infrastrutture per la stabilizzazione dei pazienti critici.
+        // EMERGENCY CLINICAL AREAS
+        // Infrastructure for stabilization of critical patients
         SpatialZone(
           id: 'z7',
           name: 'Resuscitation',
@@ -251,8 +251,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // INFRASTRUTTURA LOGISTICA E AMMINISTRATIVA
-        // Blocco operativo per uffici, stoccaggio, gestione farmaci, smaltimento rifiuti e decontaminazione.
+        // LOGISTICS AND ADMINISTRATIVE INFRASTRUCTURE
+        // Operational block for offices, storage, pharmacy, waste management, and decontamination
         SpatialZone(
           id: 'z8',
           name: 'Offices',
@@ -515,8 +515,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // UTILITIES PULITE
-        // Stoccaggio e preparazione di materiale clinico sterile per le diverse aree di rischio.
+        // CLEAN UTILITIES
+        // Storage and preparation of sterile clinical materials for different risk areas
         SpatialZone(
           id: 'z15_clean_utility_confirmed',
           name: 'Clean Utility Confirmed',
@@ -626,8 +626,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // FILTRI DI ACCESSO AI REPARTI (DONNING)
-        // Punti di vestizione specifici per l'ingresso nei reparti confermati, probabili e sospetti.
+        // WARD ACCESS FILTERS (DONNING)
+        // Specific donning points for entering confirmed, probable, and suspect wards
         SpatialZone(
           id: 'z18_donning_confirmed',
           name: 'Donning (Confirmed)',
@@ -737,8 +737,8 @@ class MpoxExistingWardData {
           ],
         ),
 
-        // STAZIONI DI MONITORAGGIO INFERMIERISTICO
-        // Aree pulite all'interno delle zone cliniche per l'osservazione continua dei pazienti.
+        // NURSING MONITORING STATIONS
+        // Clean areas within clinical zones for continuous patient observation
         SpatialZone(
           id: 'z21_nursing_confirmed',
           name: 'Nursing Station (Confirmed)',

@@ -1,8 +1,8 @@
 import '../models/assessment_models.dart';
 
-// ZONA VIRTUALE: VALUTAZIONE GENERALE STRUTTURA
-// Zona con coordinate fuori viewport, non renderizzata sulla mappa.
-// Raccoglie i requisiti trasversali applicabili all'intera struttura sanitaria.
+// VIRTUAL ZONE: GENERAL FACILITY ASSESSMENT
+// Out-of-viewport coordinates, unrendered on map
+// Aggregates transversal requirements applicable to the entire health facility
 
 SpatialZone getGeneralFacilityZone() {
   return SpatialZone(
@@ -12,7 +12,7 @@ SpatialZone getGeneralFacilityZone() {
       touchArea:
           const MapCoordinates(top: -1000, left: -1000, width: 0, height: 0),
       checklist: [
-        // Accessi e flussi
+        // ACCESS AND FLOWS
         AssessmentQuestion(
           id: 'gen_2_1_1',
           category: AssessmentCategory.spatialLayout,
@@ -54,7 +54,7 @@ SpatialZone getGeneralFacilityZone() {
               'Install a continuous perimeter fence and control all access points to the facility.',
         ),
 
-        // Impianti e finiture
+        // UTILITIES AND FINISHES
         AssessmentQuestion(
           id: 'gen_2_2_1',
           category: AssessmentCategory.logistics,
@@ -96,7 +96,7 @@ SpatialZone getGeneralFacilityZone() {
               'Replace surfaces with smooth, non-porous materials that are easy to clean and resist microbial growth.',
         ),
 
-        // Gestione rifiuti
+        // WASTE MANAGEMENT
         AssessmentQuestion(
           id: 'gen_2_3_1',
           category: AssessmentCategory.wash,
@@ -122,7 +122,7 @@ SpatialZone getGeneralFacilityZone() {
               'Ensure hazardous waste is strictly separated and safely treated/disposed of on-site or regularly collected.',
         ),
 
-        // Acqua e servizi igienici
+        // WATER AND SANITATION
         AssessmentQuestion(
           id: 'gen_2_4_1',
           category: AssessmentCategory.wash,

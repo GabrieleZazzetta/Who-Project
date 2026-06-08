@@ -49,6 +49,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1200, 2400));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
+      // Configure mock to simulate Firebase email collision error
       when(() => mockAuth.register(any(), any(), isWhoStaff: any(named: 'isWhoStaff'), displayName: any(named: 'displayName')))
           .thenThrow(Exception('email-already-in-use'));
 
@@ -56,7 +57,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Fill valid form
+      // Execute valid form submission
       await tester.enterText(find.byKey(const Key('input_firstname')), 'New');
       await tester.enterText(find.byKey(const Key('input_lastname')), 'User');
       await tester.enterText(find.byKey(const Key('input_email')), 'newuser@who.int');
@@ -66,7 +67,7 @@ void main() {
       await tester.ensureVisible(dateInput);
       await tester.tap(dateInput);
       await tester.pump();
-      await tester.tap(find.text('OK')); // select date
+      await tester.tap(find.text('OK')); // Execute date selection
       await tester.pump();
 
       final registerBtn = find.byKey(const Key('btn_create_account'));
@@ -75,8 +76,9 @@ void main() {
       await tester.tap(registerBtn);
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // async delay
-      await tester.pump(const Duration(milliseconds: 300)); // snackbar
+      // Validate snackbar rendering triggered by Firebase error
+      await tester.pump(const Duration(milliseconds: 100)); // Wait for async execution
+      await tester.pump(const Duration(milliseconds: 300)); // Validate snackbar rendering
 
       expect(find.byType(SnackBar), findsOneWidget);
     });
@@ -89,6 +91,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Execute navigation fallback to login screen
       final loginLink = find.byType(TextButton).last;
       await tester.ensureVisible(loginLink);
       await tester.pump(const Duration(milliseconds: 300));

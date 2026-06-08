@@ -1,8 +1,7 @@
 import 'package:assessment_tool/models/assessment_models.dart';
 import 'package:assessment_tool/models/user_model.dart';
 
-/// Contiene costanti e factory fittizie riutilizzabili per i test,
-/// evitando duplicazioni nei vari file.
+// MOCK DATA FACTORIES
 class MockData {
   static final UserSession dummyUserSession = UserSession()
     ..email = 'test@who.int'

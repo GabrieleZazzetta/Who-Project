@@ -126,9 +126,7 @@ void main() {
   }
 
   group('Core Widgets Tests', () {
-    // ==========================================
-    // MAIN DASHBOARD (widget_main_dashboard_test.dart)
-    // ==========================================
+    // MAIN DASHBOARD
     group('MainDashboardScreen Tests', () {
       testWidgets('renders home content with outbreak cards',
           (WidgetTester tester) async {
@@ -216,9 +214,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // SETTINGS SCREEN (widget_settings_test.dart)
-    // ==========================================
+    // SETTINGS SCREEN
     group('SettingsScreen Tests', () {
       testWidgets('renders all sections and user profile info',
           (WidgetTester tester) async {
@@ -265,7 +261,7 @@ void main() {
           return [facility];
         });
 
-        // Crea router app mockando esplicitamente il db
+        // Initialize router with explicit mock database
         final mockAuth = MockAuthService();
         when(() => mockAuth.syncPendingPasswordChanges())
             .thenAnswer((_) async {});
@@ -304,18 +300,18 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // Scrolla fino al bottone Log Out
+        // Execute scroll to logout button
         await tester.scrollUntilVisible(find.text('Log Out'), 200.0);
         await tester.pumpAndSettle();
 
-        // Esegui il tap
+        // Execute logout action
         await tester.tap(find.text('Log Out'));
         await tester.pumpAndSettle();
 
-        // Il dialog di warning deve apparire
+        // Validate warning dialog rendering
         expect(find.text('Warning: Unsaved Data'), findsOneWidget);
 
-        // Tap su 'Logout & Lose Data' per proseguire ed eseguire context.go('/login')
+        // Confirm data loss and navigate to login
         await tester.tap(find.text('Logout & Lose Data'));
         await tester.pumpAndSettle();
 
@@ -344,22 +340,20 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Tap Language
+        // Execute language selection
         final langTile = find.text('Language');
         await tester.scrollUntilVisible(langTile, 200.0);
         await tester.tap(langTile);
         await tester.pumpAndSettle();
 
-        // Dialog/BottomSheet opens
+        // Validate language selector rendering
         expect(find.text('Italiano'), findsOneWidget);
 
-        // Seleziona Italiano
+        // Select Italian locale
         await tester.tap(find.text('Italiano'));
         await tester.pumpAndSettle();
 
-        // Dialog should be closed, and in a real app locale changes,
-        // the Settings screen should now show 'Italiano' as subtitle.
-        // We verify that 'Italiano' is exactly one widget (the subtitle, not the dialog).
+        // Validate locale update and dialog closure
         expect(find.text('Italiano'), findsOneWidget);
         expect(find.byType(BottomSheet), findsNothing);
         expect(find.byType(Dialog), findsNothing);
@@ -441,9 +435,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // ASSESSMENTS LIST (widget_list_test.dart)
-    // ==========================================
+    // ASSESSMENTS LIST
     group('AssessmentsListScreen Tests', () {
       testWidgets(
           'should render empty state placeholder when no assessments exist',
@@ -533,14 +525,14 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Tap sort dropdown
+        // Execute sort dropdown tap
         final sortButton = find.byIcon(Icons.sort);
         if (sortButton.evaluate().isNotEmpty) {
           await tester.tap(sortButton);
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 300));
           await tester.pump(const Duration(milliseconds: 300));
-          // Attempt to tap a sort option
+          // Execute sort option selection
           final highToLow = find.text('Score: High to Low');
           if (highToLow.evaluate().isNotEmpty) {
             await tester.tap(highToLow);
@@ -576,8 +568,6 @@ void main() {
 
         final item = find.text('Tap Clinic');
         expect(item, findsWidgets);
-
-        // Removed tap testing since it invokes GoRouter which is not provided in createProviderApp
       });
 
       testWidgets('renders tablet portrait layout',
@@ -609,9 +599,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // REGISTER SCREEN (widget_register_test.dart)
-    // ==========================================
+    // REGISTER SCREEN
     group('RegisterScreen Tests', () {
       testWidgets('should render all input fields and branding elements',
           (WidgetTester tester) async {
@@ -631,8 +619,7 @@ void main() {
 
       testWidgets('password requirements checkmark state updates dynamically',
           (WidgetTester tester) async {
-        await tester.binding.setSurfaceSize(const Size(400,
-            800)); // Usiamo Mobile Portrait per evitare layout multipli e semplificare la ricerca
+        await tester.binding.setSurfaceSize(const Size(400, 800)); // Use Mobile Portrait to isolate elements
         addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.pumpWidget(
@@ -667,7 +654,7 @@ void main() {
         final emailField = find.byType(TextFormField).at(2);
         final submitButton = find.byType(ElevatedButton).last;
 
-        // WHO Staff - invalid email
+        // Execute invalid WHO email path
         await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "test@gmail.com");
         await tester.ensureVisible(submitButton);
@@ -676,12 +663,12 @@ void main() {
         expect(
             find.text("WHO Staff must use a @who.int email"), findsOneWidget);
 
-        // Cambia a External Partner
+        // Toggle to External Partner mode
         await tester.ensureVisible(find.text("External Partner"));
         await tester.tap(find.text("External Partner"));
         await tester.pumpAndSettle();
 
-        // External Partner - invalid email
+        // Execute invalid external email path
         await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "invalid-email");
         await tester.ensureVisible(submitButton);
@@ -689,29 +676,26 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text("Please enter a valid email address"), findsOneWidget);
 
-        // Fix email ma data mancante
+        // Correct email but leave date blank
         await tester.ensureVisible(emailField);
         await tester.enterText(emailField, "test@example.com");
         await tester.ensureVisible(find.byType(TextFormField).at(0));
         await tester.enterText(find.byType(TextFormField).at(0), "John");
         await tester.ensureVisible(find.byType(TextFormField).at(1));
         await tester.enterText(find.byType(TextFormField).at(1), "Doe");
-        // Simulate a tap on Submit to trigger form validation
+        // Execute form submission
         await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
 
-        // Form is valid but Date of birth is null (trigger SnackBar)
+        // Validate missing date error
         expect(find.byType(SnackBar), findsOneWidget);
-        // The snackbar should say the date error
         expect(find.textContaining('Please select your Date of Birth'),
             findsWidgets);
       });
     });
 
-    // ==========================================
-    // FACILITY SELECTION (widget_facility_selection_test.dart)
-    // ==========================================
+    // FACILITY SELECTION
     group('FacilitySelectionScreen Tests', () {
       testWidgets('renders all facility types and handles navigation for mpox',
           (WidgetTester tester) async {
@@ -815,7 +799,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 
-        // Split layout renders sidebar with title
+        // Validate sidebar rendering in split layout
         expect(find.text('Select Facility Type'), findsOneWidget);
         expect(find.text('Screening, Triage & Temporary Isolation'),
             findsOneWidget);
@@ -980,19 +964,12 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 
-        // Tap on a locked module (Stand-alone Center is NOT locked for mpox... wait.
-        // Let's use ebola to tap a locked one? Wait, Community Settings is locked in dev maybe?)
-        // Let's just tap 'Stand-alone Center' or 'Community Settings' and see if it shows Snackbar.
-        // We know that `isImplemented` is false for some.
-        // Let's just tap 'Existing Healthcare Facility with Ward' if we can't find 'Community Settings'.
+        // Execute locked module interaction
         final lockedFacility = find.text('Community Settings');
         if (lockedFacility.evaluate().isNotEmpty) {
           await tester.tap(lockedFacility);
           await tester.pump();
         } else {
-          // just tap anything that is locked. Let's tap the second facility which is usually locked for mpox if not implemented.
-          // Actually, 'Stand-alone Center' is implemented for Mpox.
-          // What is NOT implemented? 'Treatment Unit'?
           final treatmentUnit = find.text('Treatment Unit');
           if (treatmentUnit.evaluate().isNotEmpty) {
             await tester.tap(treatmentUnit);
@@ -1029,9 +1006,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // SETTINGS ADDITIONAL TESTS
-    // ==========================================
     group('SettingsScreen Additional Tests', () {
       testWidgets('renders mobile layout with SliverAppBar',
           (WidgetTester tester) async {
@@ -1060,7 +1035,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
 
-        // Mobile layout should have sections rendered
+        // Validate mobile layout sections rendering
         expect(find.text('ACCOUNT & SYNC'), findsOneWidget);
         expect(find.byType(CustomScrollView), findsOneWidget);
       });
@@ -1094,7 +1069,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 
-        // Mobile uses BottomSheet with Choose Language title
+        // Validate language selector bottom sheet
         expect(find.text('Choose Language'), findsOneWidget);
         expect(find.text('Español'), findsOneWidget);
         expect(find.text('Français'), findsOneWidget);
@@ -1131,9 +1106,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // ASSESSMENTS LIST ADDITIONAL TESTS
-    // ==========================================
     group('AssessmentsListScreen Additional Tests', () {
       testWidgets('delete confirmation dialog appears on swipe/long-press',
           (WidgetTester tester) async {
@@ -1243,8 +1216,6 @@ void main() {
       });
     });
 
-    // ==========================================
-    // LOGIN SCREEN / FORMS (widget_forms_test.dart)
-    // ==========================================
+    // LOGIN SCREEN / FORMS
   });
 }

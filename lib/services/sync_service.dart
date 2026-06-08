@@ -9,7 +9,7 @@ import '../repositories/sync_repository.dart';
 import '../services/database_service.dart';
 import '../services/auth_service.dart';
 
-// STATO DELLA SINCRONIZZAZIONE
+// SYNCHRONIZATION STATE
 enum SyncStatus { idle, syncing, success, error }
 
 class SyncState {
@@ -36,8 +36,8 @@ class SyncState {
   }
 }
 
-// PROVIDER GLOBALE DI SINCRONIZZAZIONE
-// Gestisce lo stato e la logica di allineamento dati tra Isar e l'API remota.
+// GLOBAL SYNCHRONIZATION PROVIDER
+// Manages state and data alignment logic between local Isar DB and remote API
 final syncProvider = AsyncNotifierProvider<SyncNotifier, SyncState>(() {
   return SyncNotifier();
 });
@@ -47,16 +47,17 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
   final _db = DatabaseService.instance;
   StreamSubscription? _connectivitySubscription;
 
-  // Consente di iniettare un repository simulato nei test di integrazione
+  // Inject simulated repository for integration testing
   set repository(SyncRepository repo) => _repository = repo;
 
   @override
   Future<SyncState> build() async {
-    // Inizializzazione: monitoraggio della connettività per sync automatica (solo in produzione)
+    // INITIALIZATION
+    // Monitor network connectivity for automated background sync (production only)
     if (!Platform.environment.containsKey('FLUTTER_TEST')) {
       _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
         if (result.isNotEmpty && result.first != ConnectivityResult.none) {
-          syncAll(); // Tenta la sincronizzazione quando torna il segnale
+          syncAll(); // Trigger synchronization upon connectivity restoration
         }
       });
     }
@@ -67,11 +68,12 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     return SyncState(status: SyncStatus.idle);
   }
 
-  // PUSH SELETTIVO (Usato prima del logout per evitare pull di dati che verranno subito cancellati)
+  // SELECTIVE PUSH EXECUTION
+  // Pre-logout operation to prevent unnecessary data pulls before local clear
   Future<void> pushPendingData() async {
     final current = state.value ?? SyncState(status: SyncStatus.idle);
     if (current.status == SyncStatus.syncing) {
-      // Se c'è già una sync in corso, attendiamo un istante per permetterle di finire
+      // Await completion of ongoing synchronization processes
       await Future.delayed(const Duration(seconds: 2));
     }
 
@@ -81,7 +83,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
       try {
         await ref.read(authServiceProvider).syncPendingPasswordChanges();
       } catch (pwErr) {
-        print("Errore sync password in background: $pwErr");
+        print("Background password sync error: $pwErr");
       }
 
       final dirtyAssessments = await _db.getDirtyAssessments();
@@ -106,12 +108,12 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
         status: SyncStatus.error,
         errorMessage: "Sync failed. Please check connection.",
       ));
-      throw e; // Rilancia per notificare il chiamante (es. SettingsScreen)
+      throw e; // Bubble exception to notify caller UI
     }
   }
 
-  // LOGICA DI SINCRONIZZAZIONE GLOBALE CON RESILIENZA
-  // Esegue Push e Pull con sistema di retry automatico (Exponential Backoff)
+  // RESILIENT SYNCHRONIZATION LOGIC
+  // Executes bidirectional Push/Pull with Exponential Backoff retry system
   Future<void> syncAll({int attempt = 0, bool forcePullAll = false}) async {
     final current = state.value ?? SyncState(status: SyncStatus.idle);
     if (current.status == SyncStatus.syncing && attempt == 0) return;
@@ -119,14 +121,14 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     state = AsyncData(current.copyWith(status: SyncStatus.syncing));
 
     try {
-      // 0. SYNC PENDING PASSWORDS (OFFLINE RESETS)
+      // STAGE 0: OFFLINE PASSWORD SYNCHRONIZATION
       try {
         await ref.read(authServiceProvider).syncPendingPasswordChanges();
       } catch (pwErr) {
-        print("Errore sync password in background: $pwErr");
+        print("Background password sync error: $pwErr");
       }
 
-      // 1. OUTGOING SYNC (PUSH)
+      // STAGE 1: OUTGOING DATA (PUSH)
       final dirtyAssessments = await _db.getDirtyAssessments();
       for (var facility in dirtyAssessments) {
         final remoteId = await _repository.pushAssessment(facility);
@@ -136,12 +138,12 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
           facility.lastSyncedAt = DateTime.now().toUtc();
           await _db.saveFromSync(facility);
         } else if (attempt < 3) {
-          // Innesca retry se fallisce l'invio
+          // Trigger retry on transmission failure
           throw Exception("Network failure during push");
         }
       }
 
-      // 2. INCOMING SYNC (PULL)
+      // STAGE 2: INCOMING DATA (PULL)
       final lastSync = forcePullAll ? null : state.value?.lastSyncedAt;
       final remoteData = await _repository.pullAssessments(lastSync);
       
@@ -154,7 +156,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
         lastSyncedAt: DateTime.now().toUtc(),
       ));
     } catch (e) {
-      // GESTIONE RETRY CON EXPONENTIAL BACKOFF
+      // EXPONENTIAL BACKOFF RETRY HANDLER
       if (attempt < 3) {
         final delay = Platform.environment.containsKey('FLUTTER_TEST')
             ? const Duration(milliseconds: 1)
@@ -170,8 +172,8 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     }
   }
 
-  // GESTIONE CONFLITTI (LAST WRITE WINS)
-  // Verifica se il record remoto è più recente di quello locale prima di sovrascrivere
+  // CONFLICT RESOLUTION (LAST WRITE WINS)
+  // Validate remote record recency before local overwrite
   Future<void> _handleIncomingAssessment(Map<String, dynamic> json) async {
     final remoteId = json['remoteId'] as String;
     final remoteUpdatedAt = DateTime.parse(json['updatedAt']);
@@ -179,7 +181,7 @@ class SyncNotifier extends AsyncNotifier<SyncState> {
     final local = await _db.getAssessmentByRemoteId(remoteId);
     
     if (local == null || remoteUpdatedAt.isAfter(local.updatedAt ?? DateTime(0))) {
-      // Se il record non esiste o il remoto è più recente, aggiorna il database locale (LWW)
+      // Apply LWW strategy to update local DB on missing or outdated records
       final facility = local ?? FacilityLayout(
         facilityName: json['facilityName'] ?? 'Remote Facility',
         emergencyType: EmergencyType.values.firstWhere(

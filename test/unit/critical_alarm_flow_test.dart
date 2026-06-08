@@ -9,7 +9,7 @@ import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/services/database_service.dart';
 import 'package:assessment_tool/services/report_export_service.dart';
 
-// MOCK BUILD CONTEXT PER EVITARE IL PUMP DI WIDGET NEI TEST DI SERVIZIO ASINCRONI
+// MOCK BUILD CONTEXT
 class MockBuildContext implements BuildContext {
   @override
   RenderObject? findRenderObject() => null;
@@ -25,6 +25,7 @@ void main() {
   late Directory tempDir;
   final List<MethodCall> shareMethodCalls = [];
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_alarm_test_dir');
@@ -53,7 +54,7 @@ void main() {
 
   tearDownAll(() async {
     testIsar.close();
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(_){}}
   });
 
   setUp(() async {
@@ -65,11 +66,14 @@ void main() {
     }
   });
 
+  // TEST SUITE: ALARM AND REPORT INTEGRATION
   group('Critical Alarm & Report Flow', () {
     
+    // E2E ALARM GENERATION
     test('E2E Alarm and Report Generation: transitions to Red and exports Word doc via native share', () async {
       final db = DatabaseService.instance;
 
+      // Initialize base facility structure and mock responses
       final facility = FacilityLayout(
         facilityName: 'Gaza Al-Shifa Hospital',
         emergencyType: EmergencyType.sars,
@@ -96,6 +100,7 @@ void main() {
         ..country = 'Palestine'
         ..facilityAddressOrGps = '31.5, 34.4';
 
+      // Persist initial state and verify baseline scoring (100% / Green)
       final savedId = await db.saveAssessment(facility);
       expect(savedId, isNotNull);
 
@@ -105,9 +110,11 @@ void main() {
       expect(loaded!.globalReadinessScore, equals(100.0));
       expect(loaded.zones.first.statusColor, equals(Colors.green.shade600));
 
+      // Simulate a critical failure triggering a status downgrade
       loaded.zones.first.checklist.first.selectedCompliance = ComplianceLevel.doesNotMeet;
       await db.saveAssessment(loaded);
 
+      // Verify that score recalculation flagged the zone as Critical (Red)
       var updated = await db.getAssessmentById(savedId);
       expect(updated, isNotNull);
 
@@ -116,6 +123,7 @@ void main() {
       bool hasCritical = updated.zones.any((z) => z.checklist.any((q) => q.isCriticalFailure));
       expect(hasCritical, isTrue);
 
+      // Trigger report export and intercept native share channel
       final mockContext = MockBuildContext();
       await ReportExportService.exportAssessmentToEditableWord(mockContext, updated);
 
@@ -130,6 +138,7 @@ void main() {
       final String filePath = paths.first.toString();
       expect(filePath, contains('WHO_Report_Gaza_Al-Shifa_Hospital.doc'));
       
+      // Validate generated document contents and variables injection
       final generatedFile = File(filePath);
       expect(generatedFile.existsSync(), isTrue);
 

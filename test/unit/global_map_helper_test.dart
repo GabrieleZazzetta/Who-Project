@@ -7,7 +7,10 @@ import 'package:assessment_tool/helpers/global_map_helper.dart';
 import 'package:assessment_tool/models/assessment_models.dart';
 
 void main() {
+  // TEST SUITE: GLOBAL MAP HELPER
   group('GlobalMapHelper Unit Tests', () {
+    
+    // COLOR SCORING
     test('scoreColor returns correct colors', () {
       expect(GlobalMapHelper.scoreColor(85), equals(Colors.green.shade500));
       expect(GlobalMapHelper.scoreColor(80), equals(Colors.green.shade500));
@@ -16,6 +19,7 @@ void main() {
       expect(GlobalMapHelper.scoreColor(40), equals(Colors.red.shade600));
     });
 
+    // GEOCODING PARSER
     test('parseOrGeocode returns direct coordinates if formatted lat/lng', () async {
       final point = await GlobalMapHelper.parseOrGeocode('12.34, 56.78');
       expect(point, isNotNull);
@@ -23,8 +27,8 @@ void main() {
       expect(point.coordinates.lng, equals(56.78));
     });
 
+    // FALLBACK GEOCODING BEHAVIOR
     test('parseOrGeocode handles invalid direct coordinates and falls back to HTTP', () async {
-      // It should call Nominatim because 900 is invalid lat. We mock HTTP to return empty array.
       final mockClient = MockClient((request) async {
         return http.Response('[]', 200);
       });
@@ -46,6 +50,7 @@ void main() {
       expect(point.coordinates.lng, equals(12.5));
     });
 
+    // LOCATION RESOLUTION
     test('resolveLocation falls back to city and country if direct fails', () async {
       final mockClient = MockClient((request) async {
         if (request.url.toString().contains('Paris%2C%20France')) {

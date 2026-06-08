@@ -16,24 +16,24 @@ class AuthService {
       : _auth = auth ?? FirebaseAuth.instance,
         _db = db ?? DatabaseService.instance;
 
-  // Stream per ascoltare i cambiamenti dello stato auth di Firebase
+  // Firebase authentication state stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Utente attuale Firebase
+  // Current authenticated user
   User? get currentUser => _auth.currentUser;
 
-  // Registrazione
+  // REGISTRATION LOGIC
   Future<UserCredential?> register(String email, String password, {bool isWhoStaff = false, String? displayName}) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       
       if (credential.user != null) {
-        // Aggiorna il profilo Firebase (opzionale, asincrono)
+        // Update remote user profile asynchronously
         if (displayName != null) {
           credential.user!.updateDisplayName(displayName);
         }
         
-        // Salva sessione locale in Isar IMMEDIATAMENTE con i dati certi della registrazione
+        // Persist local session immediately with confirmed registration data
         await _db.saveSession(UserSession()
           ..uid = credential.user!.uid
           ..email = email
@@ -49,7 +49,7 @@ class AuthService {
     }
   }
 
-  // Login
+  // AUTHENTICATION LOGIC
   Future<UserCredential?> login(String email, String password) async {
     final cleanEmail = email.toLowerCase().trim();
     try {
@@ -59,10 +59,10 @@ class AuthService {
       ).timeout(const Duration(seconds: 8));
       
       if (credential.user != null) {
-        // Determina se è WHO Staff dall'email (come logica attuale nella UI)
+        // Determine staff status based on email domain
         bool isWho = cleanEmail.endsWith("@who.int");
         
-        // Salva/Aggiorna sessione locale
+        // Persist local session
         await _db.saveSession(UserSession()
           ..uid = credential.user!.uid
           ..email = cleanEmail
@@ -74,15 +74,15 @@ class AuthService {
       }
       return credential;
     } catch (e) {
-      // OFFLINE OR FALLBACK LOCAL AUTHENTICATION
-      // Se Firebase fallisce per problemi di rete, tentiamo l'accesso locale sicuro
+      // OFFLINE AUTHENTICATION FALLBACK
+      // Attempt secure local authentication when remote connection fails
       final LocalUserCredential? localCred = await _db.getLocalCredential(cleanEmail);
       if (localCred != null) {
         final bytes = utf8.encode(password);
         final inputHash = sha256.convert(bytes).toString();
         
         if (localCred.passwordHash == inputHash) {
-          // Password locale corretta! Creiamo una sessione offline
+          // Provision offline session on password match
           await _db.saveSession(UserSession()
             ..uid = "local_${localCred.id}"
             ..email = cleanEmail
@@ -91,25 +91,25 @@ class AuthService {
             ..isWhoStaff = localCred.isWhoStaff
             ..lastLogin = DateTime.now().toUtc()
           );
-          return null; // Ritorna null per indicare successo offline
+          return null; // Return null to indicate offline success
         }
       }
       rethrow;
     }
   }
 
-  // Logout
+  // LOGOUT LOGIC
   Future<void> logout() async {
     try {
       await _auth.signOut();
     } catch (e) {
-      // Anche se il logout firebase fallisce (es. no internet), puliamo locale
+      // Ensure local data cleanup regardless of remote logout success
     } finally {
       await _db.clearAllLocalData();
     }
   }
 
-  // Sincronizza qualsiasi cambio password effettuato offline
+  // OFFLINE PASSWORD SYNC
   Future<void> syncPendingPasswordChanges() async {
     final pendingSyncs = await _db.getPendingPasswordSyncs();
     if (pendingSyncs.isEmpty) return;
@@ -118,12 +118,12 @@ class AuthService {
       if (cred.pendingPassword == null || cred.email == null) continue;
       
       try {
-        // Scenario 1: Utente Firebase è già loggato e corrisponde
+        // Handle scenario 1: Remote user is actively authenticated
         if (currentUser != null && currentUser!.email?.toLowerCase() == cred.email!.toLowerCase()) {
           await currentUser!.updatePassword(cred.pendingPassword!);
         } else {
-          // Scenario 2: Utente Firebase non è loggato o sessione scaduta
-          // Proviamo ad autenticare con la nuova password (se fosse già sincronizzata)
+          // Handle scenario 2: Remote session expired or unavailable
+          // Attempt authentication with pending password
           try {
             await _auth.signInWithEmailAndPassword(
               email: cred.email!,
@@ -131,12 +131,12 @@ class AuthService {
             );
           } on FirebaseAuthException catch (e) {
             if (e.code == 'wrong-password' && cred.oldPassword != null) {
-              // Se fallisce per password errata, proviamo con la vecchia password
+              // Attempt fallback authentication with previous password
               await _auth.signInWithEmailAndPassword(
                 email: cred.email!,
                 password: cred.oldPassword!,
               );
-              // Aggiorniamo alla nuova password
+              // Apply pending password update
               await _auth.currentUser!.updatePassword(cred.pendingPassword!);
             } else {
               rethrow;
@@ -144,20 +144,20 @@ class AuthService {
           }
         }
 
-        // Sincronizzazione riuscita! Puliamo i dati temporanei in chiaro per sicurezza
+        // Cleanup sensitive temporary credentials upon successful sync
         cred.passwordNeedsSync = false;
         cred.pendingPassword = null;
         cred.oldPassword = null;
         await _db.saveLocalCredential(cred);
         
-        print("Sincronizzazione password riuscita con successo per: ${cred.email}");
+        print("Password synchronization successful for: ${cred.email}");
       } catch (e) {
-        print("Errore durante la sincronizzazione password per ${cred.email}: $e");
+        print("Error during password synchronization for ${cred.email}: $e");
       }
     }
   }
 
-  // Verifica se esiste una sessione valida locale (Offline mode)
+  // Validate local session for offline mode
   Future<UserSession?> getLocalSession() async {
     return await _db.getCurrentSession();
   }

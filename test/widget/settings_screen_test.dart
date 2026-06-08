@@ -101,20 +101,23 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
+      // Mount SettingsScreen in tablet layout
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
       await tester.pumpAndSettle();
 
-      // Find language tile
+      // Validate language tile rendering
       final languageTile = find.text('Language');
       expect(languageTile, findsOneWidget);
 
+      // Execute language tile tap to open bottom sheet
       await tester.tap(languageTile);
       await tester.pumpAndSettle();
 
-      // Find Italiano option
+      // Validate locale option rendering
       final italianoOption = find.text('Italiano');
       expect(italianoOption, findsOneWidget);
 
+      // Execute specific locale selection
       await tester.tap(italianoOption);
       await tester.pumpAndSettle();
     });
@@ -123,6 +126,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(400, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
+      // Mount SettingsScreen in mobile layout
       await tester.pumpWidget(createTestApp(
         MediaQuery(
           data: const MediaQueryData(size: Size(400, 800)),
@@ -131,16 +135,20 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
+      // Validate scroll interaction
       final languageTile = find.text('Language');
       await tester.dragFrom(const Offset(200, 400), const Offset(0, -400));
       await tester.pumpAndSettle();
       
+      // Execute language tile tap to open bottom sheet
       await tester.tap(languageTile);
       await tester.pumpAndSettle();
 
+      // Validate locale option rendering
       final espanolOption = find.text('Español');
       expect(espanolOption, findsOneWidget);
 
+      // Execute specific locale selection
       await tester.tap(espanolOption);
       await tester.pumpAndSettle();
     });
@@ -154,15 +162,16 @@ void main() {
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
       await tester.pumpAndSettle();
 
-      // Find User Profile tile and tap it
+      // Execute profile tile tap to open modal
       final profileTile = find.text('User Profile');
       await tester.tap(profileTile);
       await tester.pumpAndSettle();
 
+      // Validate profile modal data rendering
       expect(find.text('Test User'), findsWidgets);
       expect(find.text('test@who.int'), findsWidgets);
 
-      // Scroll to save button and tap
+      // Execute save action to persist local profile changes
       final saveBtn = find.text('Save Changes');
       await tester.tap(saveBtn);
       await tester.pumpAndSettle();
@@ -205,14 +214,14 @@ void main() {
       await tester.tap(logoutBtn);
       await tester.pumpAndSettle();
 
-      // Dialog should appear
+      // Validate warning dialog rendering
       expect(find.byType(AlertDialog), findsOneWidget);
       
-      // Tap cancel
+      // Execute dialog cancellation
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       
-      // Still on settings screen
+      // Validate navigation cancellation
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text('Login Screen'), findsNothing);
     });
@@ -236,14 +245,14 @@ void main() {
       await tester.tap(logoutBtn);
       await tester.pumpAndSettle();
 
-      // Dialog should appear
+      // Validate warning dialog rendering
       expect(find.byType(AlertDialog), findsOneWidget);
       
-      // Tap confirm (Log out & Lose Data)
+      // Execute logout confirmation
       await tester.tap(find.text('Logout & Lose Data'));
       await tester.pumpAndSettle();
       
-      // Should navigate to login screen
+      // Validate navigation to login
       expect(find.text('Login Screen'), findsOneWidget);
     });
     
@@ -259,9 +268,9 @@ void main() {
       ]);
 
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
-      await tester.pump(const Duration(milliseconds: 100)); // Resolve FutureBuilder
-      await tester.pump(const Duration(milliseconds: 100)); // Resolve next frame
-      await tester.pump(const Duration(seconds: 1)); // Advance animations
+      await tester.pump(const Duration(milliseconds: 100)); // Advance asynchronous execution
+      await tester.pump(const Duration(milliseconds: 100)); // Render subsequent frames
+      await tester.pump(const Duration(seconds: 1)); // Advance UI animations
 
       expect(find.text('Synchronizing data...'), findsOneWidget);
     });
@@ -278,9 +287,9 @@ void main() {
       ]);
 
       await tester.pumpWidget(createTestApp(const SettingsScreen()));
-      await tester.pump(const Duration(milliseconds: 100)); // Resolve FutureBuilder
-      await tester.pump(const Duration(milliseconds: 100)); // Resolve next frame
-      await tester.pump(const Duration(seconds: 1)); // Advance animations
+      await tester.pump(const Duration(milliseconds: 100)); // Advance asynchronous execution
+      await tester.pump(const Duration(milliseconds: 100)); // Render subsequent frames
+      await tester.pump(const Duration(seconds: 1)); // Advance UI animations
 
       expect(find.text('Sync failed. Tap to retry.'), findsOneWidget);
     });

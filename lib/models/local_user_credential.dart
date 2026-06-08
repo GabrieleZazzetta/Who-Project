@@ -13,16 +13,16 @@ class LocalUserCredential {
   
   DateTime? dateOfBirth;
 
-  // Hashing della password per la verifica offline sicura
+  // Password hash for secure offline verification
   String? passwordHash;
 
-  // Nuova password in attesa di sincronizzazione con Firebase (temporanea, azzerata dopo la sync)
+  // Pending password awaiting Firebase synchronization (cleared post-sync)
   String? pendingPassword;
 
-  // Vecchia password temporanea per re-autenticare in caso di sessione Firebase scaduta (temporanea, azzerata dopo la sync)
+  // Temporary previous password for re-authentication on expired Firebase session (cleared post-sync)
   String? oldPassword;
 
-  // Flag che indica se è richiesta la sincronizzazione con Firebase
+  // Synchronization requirement flag
   bool passwordNeedsSync = false;
 
   bool isWhoStaff = false;

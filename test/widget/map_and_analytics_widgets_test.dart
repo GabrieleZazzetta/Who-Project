@@ -85,11 +85,10 @@ void main() {
 
   group('Map and Analytics Widgets Tests', () {
 
-    // ==========================================
-    // ANALYTICS SCREEN (widget_analytics_test.dart)
-    // ==========================================
+    // ANALYTICS SCREEN
     group('AnalyticsScreen Tests', () {
       testWidgets('renders empty state when no assessments available', (tester) async {
+        // Mount AnalyticsScreen
         await tester.runAsync(() async {
           await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
@@ -97,11 +96,14 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
+        
+        // Validate empty state rendering
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.text('No reports available for this selection.'), findsWidgets);
       });
 
       testWidgets('renders metrics when data is available', (tester) async {
+        // Provision mock facility layout with test zone
         final facility = FacilityLayout()
           ..facilityName = 'Test Hospital'
           ..dateCreated = DateTime(2023, 1, 1)
@@ -116,12 +118,14 @@ void main() {
         zone.checklist = List.from(zone.checklist)..add(question);
         facility.zones = List.from(facility.zones)..add(zone);
 
+        // Persist mock data to Isar database
         await tester.runAsync(() async {
           await testIsar.writeTxn(() async {
             await testIsar.facilityLayouts.put(facility);
           });
         });
 
+        // Mount AnalyticsScreen
         await tester.runAsync(() async {
           await tester.pumpWidget(createTestWidget(const AnalyticsScreen()));
           await Future.delayed(const Duration(milliseconds: 500));
@@ -130,6 +134,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
         
+        // Validate metrics and charts scroll view rendering
         expect(find.text('No reports available for this selection.'), findsNothing);
         expect(find.byType(CustomScrollView), findsWidgets);
       });
@@ -165,7 +170,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
         
-        // Tap info icon
+        // Execute info icon tap
         final infoIcon = find.byIcon(Icons.info_outline_rounded).first;
         if (infoIcon.evaluate().isNotEmpty) {
            await tester.ensureVisible(infoIcon);
@@ -180,7 +185,7 @@ void main() {
            await tester.pump(const Duration(milliseconds: 500));
         }
 
-        // Tap country dropdown
+        // Execute country dropdown tap
         final dropdownFinder = find.byType(DropdownButton<String>).first;
         if (dropdownFinder.evaluate().isNotEmpty) {
            await tester.ensureVisible(dropdownFinder);
@@ -189,7 +194,7 @@ void main() {
            await tester.pump(const Duration(milliseconds: 500));
         }
         
-        // Select 'Italy'
+        // Select country option
         final italyItem = find.text('Italy').last;
         if (italyItem.evaluate().isNotEmpty) {
            await tester.ensureVisible(italyItem);
@@ -200,9 +205,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // ADVANCED ANALYTICS SCREEN (widget_advanced_analytics_test.dart)
-    // ==========================================
+    // ADVANCED ANALYTICS SCREEN
     group('AdvancedAnalyticsScreen Tests', () {
       testWidgets('renders empty state when no data provided', (tester) async {
         await tester.pumpWidget(createTestWidget(const AdvancedAnalyticsScreen(data: [])));
@@ -212,6 +215,7 @@ void main() {
       });
 
       testWidgets('renders charts when data is provided', (tester) async {
+        // Provision multiple facility layouts for historical data comparison
         final f1 = FacilityLayout()..facilityName = 'H1'..dateCreated = DateTime(2023, 1, 1);
         final zone1 = SpatialZone()..name = 'Z1';
         final q1 = AssessmentQuestion()..id = 'q1'..category = AssessmentCategory.infectionPreventionControl..selectedCompliance = ComplianceLevel.meetsTarget;
@@ -224,10 +228,12 @@ void main() {
         zone2.checklist = List.from(zone2.checklist)..add(q2);
         f2.zones = List.from(f2.zones)..add(zone2);
 
+        // Mount AdvancedAnalyticsScreen
         await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1, f2])));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
         
+        // Validate scrollable chart container rendering
         expect(find.text('No data to display.'), findsNothing);
         expect(find.byType(SingleChildScrollView), findsWidgets);
       });
@@ -284,7 +290,7 @@ void main() {
       });
 
       testWidgets('renders empty state when not enough valid historical data', (tester) async {
-        final f1 = FacilityLayout()..facilityName = 'H1'; // dateCreated is null
+        final f1 = FacilityLayout()..facilityName = 'H1';
         
         await tester.pumpWidget(createTestWidget(AdvancedAnalyticsScreen(data: [f1])));
         await tester.pump();
@@ -294,9 +300,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // INTERACTIVE MAP SCREEN (widget_interactive_map_test.dart)
-    // ==========================================
+    // INTERACTIVE MAP SCREEN
     group('InteractiveMapScreen Tests', () {
       testWidgets('renders map screen and pinch-to-explore text', (tester) async {
         await tester.runAsync(() async {
@@ -379,9 +383,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // GLOBAL MAP SCREEN 3D (widget_global_map_test.dart)
-    // ==========================================
+    // GLOBAL MAP SCREEN 3D
     group('GlobalMapScreen3D Tests', () {
       testWidgets('renders map screen when data is loaded', (tester) async {
         final facility = FacilityLayout()
@@ -405,8 +407,6 @@ void main() {
         } catch (e) {}
         
         expect(find.text('Global Assessment Map'), findsOneWidget);
-        // Mapbox widget crashes so FAB might not render in headless environment, 
-        // but we can check if it tries to load or shows map widget.
       });
 
       testWidgets('FAB toggles map style', (tester) async {

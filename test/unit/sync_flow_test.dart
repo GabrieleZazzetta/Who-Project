@@ -142,7 +142,8 @@ void main() {
     if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
   });
 
-  group('Sync Flow & Login/Logout Scenarios (MockRepo)', () {
+  // TEST SUITE: SYNC FLOW INTEGRATION
+  group('Sync Flow and Login/Logout Scenarios (MockRepo)', () {
     
     test('forcePullAll pulls all data ignoring local lastSyncedAt state', () async {
       mockRepo.addCloudData({
@@ -180,6 +181,7 @@ void main() {
     test('Complete End-to-End: Create, Push, Logout (Clear), Login (Pull)', () async {
       final syncNotifier = container.read(syncProvider.notifier);
 
+      // Provision local dirty state
       final facility = FacilityLayout(facilityName: 'My Assessment', emergencyType: EmergencyType.sars, isDirty: true);
       await DatabaseService.instance.saveAssessment(facility);
       
@@ -187,6 +189,7 @@ void main() {
       expect(localAssessments.length, 1);
       expect(localAssessments.first.isDirty, isTrue);
 
+      // Push local data to mock cloud
       await syncNotifier.syncAll();
       expect(mockRepo.cloudCount, 1);
       
@@ -194,12 +197,14 @@ void main() {
       expect(localAssessments.first.isDirty, isFalse);
       expect(localAssessments.first.remoteId, isNotNull);
 
+      // Simulate logout: clear local state
       await Future.delayed(const Duration(milliseconds: 50));
       await DatabaseService.instance.clearAllLocalData();
       
       localAssessments = await DatabaseService.instance.getAllAssessments();
       expect(localAssessments.isEmpty, isTrue);
 
+      // Simulate login: pull remote data down to device
       await syncNotifier.syncAll(forcePullAll: true);
       
       localAssessments = await DatabaseService.instance.getAllAssessments();
@@ -232,7 +237,8 @@ void main() {
     });
   });
 
-  group('Stress Testing - Offline Flow & Resilience (FakeRepo)', () {
+  // STRESS TESTING SCENARIOS
+  group('Stress Testing: Offline Flow and Resilience (FakeRepo)', () {
     
     test('Offline-to-Online: Create offline, save and auto-sync on connectivity restore', () async {
       final notifier = container.read(syncProvider.notifier);
@@ -260,20 +266,23 @@ void main() {
       expect(syncedFacility.remoteId, 'remote_$savedId'); 
     });
 
-    test('Exponential Backoff & Retry Resilience: 3 consecutive attempts before failure', () async {
+    test('Exponential Backoff and Retry Resilience: 3 consecutive attempts before failure', () async {
       final notifier = container.read(syncProvider.notifier);
       notifier.repository = fakeRepo;
 
+      // Provision offline local state
       final facility = FacilityLayout(facilityName: 'Retry Facility', emergencyType: EmergencyType.mpox);
       facility.isDirty = true;
       facility.updatedAt = DateTime.now().toUtc();
       await DatabaseService.instance.saveAssessment(facility);
 
+      // Inject strict network failure pattern
       fakeRepo.failPush = true;
       await notifier.syncAll();
       await Future.delayed(const Duration(milliseconds: 200));
 
-      expect(fakeRepo.pushCount, 4); 
+      // Verify retry loop executed precisely 3 times before final exception
+      expect(fakeRepo.pushCount, 4);
 
       final syncState = container.read(syncProvider).value;
       expect(syncState?.status, SyncStatus.error);

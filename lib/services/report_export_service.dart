@@ -5,18 +5,18 @@ import 'package:share_plus/share_plus.dart';
 import '../models/assessment_models.dart';
 import 'package:intl/intl.dart';
 
-// SERVIZIO DI ESPORTAZIONE REPORT
-// Gestisce la trasformazione dei dati strutturati della valutazione in formati
-// testuali portabili, delegando al sistema operativo la loro distribuzione
+// REPORT EXPORT SERVICE
+// Manages transformation of structured assessment data into portable text formats
+// Delegates OS-level distribution
 class ReportExportService {
   static Future<void> exportAssessmentToEditableWord(
       BuildContext context, FacilityLayout facility) async {
     try {
       final info = facility.generalInfo;
 
-      // Generazione Struttura Documento
-      // Sfrutta il markup HTML con i namespace XML di Microsoft Office per forzare
-      // l'interpretazione del payload testuale come documento Word (.doc) editabile.
+      // DOCUMENT STRUCTURE GENERATION
+      // Leverages HTML markup with MS Office XML namespaces to force
+      // text payload interpretation as an editable Word document (.doc)
       String htmlContent = '''
       <html xmlns:o="urn:schemas-microsoft-com:office:office"
             xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -79,8 +79,8 @@ class ReportExportService {
           </tr>
       ''';
 
-      // Compilazione Dati Spaziali
-      // Aggiunge dinamicamente tutte le zone valutate
+      // SPATIAL DATA COMPILATION
+      // Dynamically injects evaluated zones into document structure
       for (var zone in facility.zones) {
         if (zone.completionPercentage > 0) {
           htmlContent += '''
@@ -100,7 +100,7 @@ class ReportExportService {
       </html>
       ''';
 
-      //Crea un nome file sicuro e salva il contenuto HTML come file .doc nella directory temporanea del dispositivo.
+      // Persist HTML payload as .doc file in secure temporary directory
       final directory = await getTemporaryDirectory();
       final fileName =
           "WHO_Report_${facility.facilityName.replaceAll(' ', '_')}.doc";
@@ -108,10 +108,10 @@ class ReportExportService {
 
       await file.writeAsString(htmlContent);
 
-      // Finder (Cmd+Shift+G)
-      debugPrint("Report generato. Percorso su Mac: ${file.path}");
+      // Output debug path for macOS Simulator (Cmd+Shift+G)
+      debugPrint("Report generated. macOS path: ${file.path}");
 
-      // Attiva la finestra di condivisione nativa del sistema operativo (AirDrop, e-mail, file, ecc.).
+      // Trigger native OS sharing interface (AirDrop, email, file system)
       final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path)],
@@ -120,7 +120,7 @@ class ReportExportService {
             box != null ? box.localToGlobal(Offset.zero) & box.size : null,
       );
     } catch (e) {
-      debugPrint("Errore generazione Report Editabile: $e");
+      debugPrint("Editable Report generation error: $e");
       rethrow;
     }
   }

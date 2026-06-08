@@ -19,16 +19,16 @@ import 'screens/advanced_analytics_screen.dart';
 import 'screens/assessment_screen.dart';
 import 'screens/global_map_screen_3d.dart';
 
-// STATO GLOBALE FIREBASE
-// Previene crash critici ("Lost connection to device") se GMS non è disponibile
+// GLOBAL FIREBASE STATE
+// Prevents critical crashes on GMS-less devices
 bool isFirebaseInitialized = false;
 
-// AVVIO DELL'APPLICAZIONE
+// APPLICATION ENTRY POINT
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // INIZIALIZZAZIONE FIREBASE
-  // Gestione robusta per tablet senza Google Play Services (GMS)
+  // FIREBASE INITIALIZATION
+  // Graceful fallback for environments lacking Google Play Services
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -37,18 +37,18 @@ void main() async {
   } catch (e) {
     debugPrint("Firebase initialization failed: $e");
     isFirebaseInitialized = false;
-    // L'app continuerà a funzionare in modalità locale (offline-first)
+    // Application operates in offline-first mode
   }
 
 
 
-  // INIZIALIZZAZIONE DATABASE LOCALE
+  // LOCAL DATABASE INITIALIZATION
   await DatabaseService.instance.init();
 
-  // INIZIALIZZAZIONE PREFERENCES
+  // SHARED PREFERENCES INITIALIZATION
   final prefs = await SharedPreferences.getInstance();
 
-  // CONTROLLO SESSIONE LOCALE (Hybrid Auth)
+  // LOCAL SESSION VALIDATION (Hybrid Auth)
   final session = await DatabaseService.instance.getCurrentSession();
   final String initialLocation = (session != null && session.isLoggedIn) ? '/' : '/login';
 
@@ -62,22 +62,22 @@ void main() async {
   );
 }
 
-// LOGICA DI ROUTING GLOBALE
-// Definizione delle rotte dell'applicazione tramite go_router
+// GLOBAL ROUTING ARCHITECTURE
+// GoRouter configuration for application navigation
 GoRouter _buildRouter(String initialLocation) => GoRouter(
   initialLocation: initialLocation,
   routes: [
-    // Accesso iniziale
+    // Authentication endpoints
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
     ),
-    // Registrazione nuovi utenti
+    // Registration endpoints
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
     ),
-    // Dashboard principale e selezione moduli
+    // Primary dashboard and facility selection
     GoRoute(
       path: '/',
       builder: (context, state) {
@@ -94,7 +94,7 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
         ),
       ],
     ),
-    // Configurazione pre-assessment
+    // Pre-assessment configuration flow
     GoRoute(
       path: '/pre-assessment',
       builder: (context, state) {
@@ -105,7 +105,7 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
         );
       },
     ),
-    // Mappa interattiva e gestione dati spaziali
+    // Interactive map and spatial data visualization
     GoRoute(
       path: '/map',
       builder: (context, state) {
@@ -118,12 +118,12 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
         );
       },
     ),
-    // Analisi e reportistica
+    // Data analytics and reporting
     GoRoute(
       path: '/analytics',
       builder: (context, state) => const AnalyticsScreen(),
     ),
-    // Analisi avanzata con grafici dettagliati
+    // Advanced historical analytics
     GoRoute(
       path: '/advanced-analytics',
       builder: (context, state) {
@@ -131,12 +131,12 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
         return AdvancedAnalyticsScreen(data: data);
       },
     ),
-    // Mappa globale 3D delle strutture
+    // Global 3D facility distribution
     GoRoute(
       path: '/global-map',
       builder: (context, state) => const GlobalMapScreen3D(),
     ),
-    // Valutazione specifica di una zona o modulo
+    // Specific zone assessment execution
     GoRoute(
       path: '/assessment',
       builder: (context, state) {
@@ -147,7 +147,7 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
   ],
 );
 
-// CONFIGURAZIONE APP
+// APPLICATION CONFIGURATION
 class WHOAssessmentApp extends ConsumerStatefulWidget {
   final String initialLocation;
   const WHOAssessmentApp({super.key, required this.initialLocation});

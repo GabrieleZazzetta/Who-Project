@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Provides the SharedPreferences instance
+// SHARED PREFERENCES PROVIDER
+// Exposes synchronous access to local storage
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('Initialize sharedPreferencesProvider in main.dart');
 });
 
-// Provides the current Locale
+// LOCALE STATE PROVIDER
+// Manages global application language state and persistence
 final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return LocaleNotifier(prefs);

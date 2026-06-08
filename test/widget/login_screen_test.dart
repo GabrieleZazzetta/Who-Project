@@ -13,7 +13,6 @@ import 'package:assessment_tool/l10n/app_localizations.dart';
 import 'package:assessment_tool/services/sync_service.dart';
 import '../helpers/mocks.dart';
 import 'package:mocktail/mocktail.dart';
-
 void main() {
   setUpAll(() {
     registerFallbackValue(LocalUserCredential());
@@ -43,7 +42,7 @@ void main() {
       overrides: [
         authServiceProvider.overrideWithValue(mockAuth),
         syncProvider.overrideWith(() => mockSync),
-        // We mock database so we don't need Isar
+        // Mock database to bypass Isar
         databaseServiceProvider.overrideWithValue(mockDb ?? MockDatabaseService()),
       ],
       child: MaterialApp.router(
@@ -55,6 +54,7 @@ void main() {
     );
   }
 
+  // TEST SUITE: LOGIN SCREEN
   group('LoginScreen Tests', () {
     testWidgets('renders all form elements', (WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 800));
@@ -206,9 +206,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       
-      await tester.pump(); // form validate & setState isLoading = true
-      await tester.pump(const Duration(milliseconds: 100)); // allow async logic
-      await tester.pump(const Duration(milliseconds: 300)); // complete navigation
+      await tester.pump(); // Trigger validation and loading state
+      await tester.pump(const Duration(milliseconds: 100)); // Await async resolution
+      await tester.pump(const Duration(milliseconds: 300)); // Validate navigation completion
     });
 
     testWidgets('failed login shows snackbar', (WidgetTester tester) async {
@@ -229,9 +229,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(btn);
       
-      await tester.pump(); // form validate & setState isLoading = true
-      await tester.pump(const Duration(milliseconds: 100)); // allow async logic to fail
-      await tester.pump(const Duration(milliseconds: 300)); // snackbar appears
+      await tester.pump(); // Trigger validation and loading state
+      await tester.pump(const Duration(milliseconds: 100)); // Await async resolution
+      await tester.pump(const Duration(milliseconds: 300)); // Validate snackbar rendering
       
       expect(find.byType(SnackBar), findsOneWidget);
     });
@@ -244,17 +244,17 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Password field should start obscured - find visibility_off icon
+      // Validate initial obscured state
       final visOffIcon = find.byIcon(Icons.visibility_off);
       expect(visOffIcon, findsOneWidget);
 
-      // Scroll and tap the visibility toggle
+      // Execute visibility toggle
       await tester.ensureVisible(visOffIcon);
       await tester.tap(visOffIcon);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Now should show visibility icon (password visible)
+      // Validate unobscured state
       expect(find.byIcon(Icons.visibility), findsOneWidget);
     });
 
@@ -266,18 +266,18 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Enter email as WHO staff
+      // Provision WHO staff email
       await tester.enterText(find.byKey(const Key('input_email')), 'test@who.int');
       await tester.pump();
 
-      // Switch to External Partner
+      // Toggle to External Partner mode
       final toggleFinder = find.byKey(const Key('toggle_external_partner'));
       await tester.ensureVisible(toggleFinder);
       await tester.tap(toggleFinder);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Verify external partner mode is active - submit with non-who email should not show WHO error
+      // Validate external partner mode acceptance of generic email
       await tester.enterText(find.byKey(const Key('input_email')), 'partner@gmail.com');
       await tester.pump();
     });
@@ -290,14 +290,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Switch to External Partner
+      // Toggle to External Partner mode
       final toggleFinder = find.byKey(const Key('toggle_external_partner'));
       await tester.ensureVisible(toggleFinder);
       await tester.tap(toggleFinder);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Enter invalid email format (not a proper email)
+      // Execute invalid format path
       await tester.enterText(find.byKey(const Key('input_email')), 'not-an-email');
       await tester.enterText(find.byKey(const Key('input_password')), 'Password1!');
       
@@ -319,7 +319,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // The register link should be somewhere on screen
+      // Validate register link rendering
       final registerLink = find.text('Register Here');
       await tester.ensureVisible(registerLink);
       expect(registerLink, findsOneWidget);
@@ -338,7 +338,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Mobile portrait should show the form elements
+      // Validate mobile form rendering
       expect(find.byKey(const Key('input_email')), findsOneWidget);
       expect(find.byKey(const Key('input_password')), findsOneWidget);
       expect(find.byKey(const Key('btn_authenticate')), findsOneWidget);
@@ -357,7 +357,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Open Forgot Password modal
+      // Execute forgot password action
       final forgotPassBtn = find.text('Forgot Password?');
       await tester.ensureVisible(forgotPassBtn);
       await tester.ensureVisible(forgotPassBtn); await tester.pumpAndSettle(); await tester.tap(forgotPassBtn, warnIfMissed: false);
@@ -366,7 +366,7 @@ void main() {
 
       expect(find.text('Account Recovery'), findsOneWidget);
 
-      // Tap Verify & Continue without email
+      // Execute empty email submission
       final verifyBtn = find.text('Verify & Continue');
       await tester.ensureVisible(verifyBtn);
       await tester.tap(verifyBtn);
@@ -375,7 +375,7 @@ void main() {
 
       expect(find.text('Please enter your email.'), findsOneWidget);
 
-      // Enter email but no date
+      // Provision email without date
       final textFields = find.byType(TextField);
       await tester.enterText(textFields.last, 'test@who.int');
       
@@ -385,7 +385,7 @@ void main() {
 
       expect(find.text('Please select your date of birth.'), findsOneWidget);
       
-      // Close modal
+      // Execute modal closure
       final closeBtn = find.byIcon(Icons.close);
       await tester.tap(closeBtn);
       await tester.pump();
@@ -414,7 +414,7 @@ void main() {
 
       await tester.enterText(find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).first, 'test@example.com');
       
-      // select any date
+      // Provision valid date
       await tester.tap(find.byIcon(Icons.calendar_today_outlined));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
@@ -447,7 +447,7 @@ void main() {
 
       await tester.enterText(find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).first, 'test@example.com');
       
-      // select wrong date (today)
+      // Provision invalid date
       await tester.tap(find.byIcon(Icons.calendar_today_outlined));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
@@ -494,17 +494,17 @@ void main() {
       await tester.tap(find.text('Verify & Continue'));
       await tester.pumpAndSettle();
 
-      // We should be on step 2 now
+      // Validate step 2 rendering
       expect(find.text('Reset Password'), findsOneWidget);
 
-      // Enter invalid password
+      // Execute invalid password format path
       final passField = find.descendant(of: find.byType(ForgotPasswordModal), matching: find.byType(TextField)).last;
       await tester.enterText(passField, 'weak');
       await tester.tap(find.text('Save & Reset Password'));
       await tester.pumpAndSettle();
       expect(find.text('Please meet all password requirements.'), findsOneWidget);
 
-      // Enter valid password
+      // Execute valid password format path
       await tester.enterText(passField, 'Strong!123');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save & Reset Password'));

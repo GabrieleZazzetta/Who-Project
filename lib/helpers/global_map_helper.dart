@@ -5,7 +5,9 @@ import 'package:http/http.dart' as http;
 import '../models/assessment_models.dart';
 
 class GlobalMapHelper {
-  // Fallback a cascata: prima GPS/coordinate dirette, poi city+country via Nominatim
+  // LOCATION RESOLUTION STRATEGY
+  // Cascading fallback: Attempts direct GPS coordinate parsing first,
+  // defaults to Nominatim geocoding via city/country parameters
   static Future<Point?> resolveLocation(FacilityLayout facility, {http.Client? httpClient}) async {
     final String gpsText = facility.generalInfo?.facilityAddressOrGps ?? '';
     final Point? direct = await parseOrGeocode(gpsText, httpClient: httpClient);
@@ -21,7 +23,8 @@ class GlobalMapHelper {
     return fallback.isNotEmpty ? await parseOrGeocode(fallback, httpClient: httpClient) : null;
   }
 
-  // Tenta il parsing diretto lat/lng, altrimenti interroga Nominatim
+  // DIRECT PARSING OR GEOCODING
+  // Attempts literal coordinate extraction, falls back to remote Geocoding API
   static Future<Point?> parseOrGeocode(String text, {http.Client? httpClient}) async {
     if (text.trim().isEmpty) return null;
 
@@ -32,7 +35,7 @@ class GlobalMapHelper {
         final double lat = double.parse(match.group(1)!);
         final double lng = double.parse(match.group(2)!);
         if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-          if (lat == 0.0 && lng == 0.0) return null; // Prevenzione Null Island
+          if (lat == 0.0 && lng == 0.0) return null; // Prevent Null Island mapping
           return Point(coordinates: Position(lng, lat));
         }
       } catch (_) {}
@@ -50,7 +53,7 @@ class GlobalMapHelper {
         if (data is List && data.isNotEmpty) {
           final double lat = double.parse(data[0]['lat'].toString());
           final double lon = double.parse(data[0]['lon'].toString());
-          if (lat == 0.0 && lon == 0.0) return null; // Prevenzione Null Island
+          if (lat == 0.0 && lon == 0.0) return null; // Prevent Null Island mapping
           return Point(coordinates: Position(lon, lat));
         }
       }

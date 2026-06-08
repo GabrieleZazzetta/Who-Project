@@ -20,7 +20,7 @@ class FakePathProviderPlatform extends PathProviderPlatform {
   }
 }
 
-// Fake per AuthService
+// AUTH SERVICE MOCK
 class FakeAuthService implements AuthService {
   @override
   Future<void> syncPendingPasswordChanges() async {}
@@ -44,7 +44,7 @@ class FakeAuthService implements AuthService {
   Future<UserCredential?> register(String email, String password, {bool isWhoStaff = false, String? displayName}) async => null;
 }
 
-// Fake per SyncRepository
+// SYNC REPOSITORY MOCK
 class FakeSyncRepository implements SyncRepository {
   bool shouldFailPush = false;
   List<Map<String, dynamic>> pullResponse = [];
@@ -70,19 +70,20 @@ void main() {
   late DatabaseService dbService;
   late Directory tempDir;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
     tempDir = Directory.systemTemp.createTempSync('sync_test_dir');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir);
     
     dbService = DatabaseService.instance;
-    await dbService.init(); // Inizializza Isar per i test
+    await dbService.init();
   });
 
   setUp(() async {
     mockAuthService = FakeAuthService();
     mockSyncRepository = FakeSyncRepository();
     
-    // Ripulisci il DB prima di ogni test
+    // Clear database state
     final all = await dbService.getAllAssessments();
     for (var a in all) {
       await dbService.deleteAssessment(a.id);
@@ -94,7 +95,7 @@ void main() {
       ],
     );
 
-    // Inietta il repository mockato
+    // Inject mock repository
     container.read(syncProvider.notifier).repository = mockSyncRepository;
   });
 
@@ -102,6 +103,7 @@ void main() {
     container.dispose();
   });
 
+  // TEST SUITE: SYNC NOTIFIER
   group('SyncNotifier Tests', () {
     test('initial state is idle', () async {
       final state = await container.read(syncProvider.future);
@@ -109,7 +111,7 @@ void main() {
     });
 
     test('pushPendingData sets success state and updates dirty assessments', () async {
-      // Crea un assessment sporco nel DB
+      // Provision dirty assessment
       final facility = FacilityLayout(
         facilityName: 'Dirty Clinic',
         emergencyType: EmergencyType.ebola,
@@ -117,20 +119,20 @@ void main() {
       
       await dbService.saveAssessment(facility);
 
-      // Assicuriamoci che esista
+      // Validate database persistence
       final dirtyList = await dbService.getDirtyAssessments();
       expect(dirtyList.length, 1);
 
-      // Esegui il push
+      // Execute push sequence
       await container.read(syncProvider.notifier).pushPendingData();
 
-      // Verifica lo stato del provider
+      // Verify provider state
       final state = container.read(syncProvider).value!;
       expect(state.status, SyncStatus.success);
 
-      // Verifica che il DB sia stato aggiornato
+      // Verify database state
       final updatedList = await dbService.getDirtyAssessments();
-      expect(updatedList.length, 0); // Nessuno sporco
+      expect(updatedList.length, 0);
       
       final all = await dbService.getAllAssessments();
       expect(all.first.remoteId, 'mock_remote_id');
@@ -138,7 +140,7 @@ void main() {
     });
 
     test('pushPendingData sets error state on exception', () async {
-      // Configura il mock per fallire
+      // Inject push failure
       mockSyncRepository.shouldFailPush = true;
 
       final facility = FacilityLayout(
@@ -157,7 +159,7 @@ void main() {
     });
 
     test('syncAll performs push and pull', () async {
-      // Configura pullAssessments per ritornare dati finti
+      // Mock remote pull payload
       final fakeRemoteData = {
         'remoteId': 'remote_123',
         'updatedAt': DateTime.now().toUtc().toIso8601String(),
@@ -168,13 +170,13 @@ void main() {
       
       mockSyncRepository.pullResponse = [fakeRemoteData];
 
-      // Esegui syncAll
+      // Execute sync cycle
       await container.read(syncProvider.notifier).syncAll();
 
       final state = container.read(syncProvider).value!;
       expect(state.status, SyncStatus.success);
 
-      // Controlla se 'Remote Clinic' è stato salvato nel DB locale
+      // Verify local database persistence
       final localAssessment = await dbService.getAssessmentByRemoteId('remote_123');
       expect(localAssessment, isNotNull);
       expect(localAssessment!.facilityName, 'Remote Clinic');

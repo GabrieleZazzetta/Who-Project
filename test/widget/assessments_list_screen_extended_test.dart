@@ -19,6 +19,7 @@ import 'package:assessment_tool/providers/locale_provider.dart';
 
 import '../helpers/mocks.dart';
 
+// SYNC NOTIFIER MOCK
 class CustomSyncNotifier extends AsyncNotifier<SyncState> implements SyncNotifier {
   final SyncStatus initialStatus;
   CustomSyncNotifier(this.initialStatus);
@@ -51,6 +52,7 @@ void main() {
   late Directory tempDir;
   late SharedPreferences prefs;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_assessments_extended_test');
@@ -66,7 +68,7 @@ void main() {
 
   tearDownAll(() async {
     testIsar.close();
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(_){}}
   });
 
   setUp(() async {
@@ -95,9 +97,11 @@ void main() {
     );
   }
 
+  // TEST SUITE: ASSESSMENTS LIST EXTENDED
   group('AssessmentsListScreen Extended Tests', () {
+    
     testWidgets('Offline Sync indicator shows correct state based on isDirty', (tester) async {
-      // Add a dirty facility
+      // Provision dirty facility state
       await tester.runAsync(() async {
         await testIsar.writeTxn(() async {
           final facility = FacilityLayout(
@@ -118,9 +122,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Validate widget rendering
       expect(find.textContaining('Dirty Clinic'), findsWidgets);
 
-      // Should find the cloud_upload_outlined icon for isDirty = true
+      // Validate sync icon presence
       final syncIcon = find.byIcon(Icons.cloud_upload_outlined);
       expect(syncIcon, findsWidgets);
     });
@@ -133,17 +138,18 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Fling down on the list
+      // Execute pull-to-refresh gesture
       await tester.fling(find.byType(CustomScrollView), const Offset(0, 500), 1000.0);
-      await tester.pump(const Duration(milliseconds: 100)); // Start refresh
-      await tester.pump(const Duration(milliseconds: 500)); // Finish refresh
-      await tester.pump(const Duration(milliseconds: 500)); // Settle
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
 
+      // Validate refresh indicator rendering
       expect(find.byType(RefreshIndicator), findsWidgets);
     });
 
     testWidgets('Swipe to delete confirmation dialog', (tester) async {
-      // Add a facility to the DB
+      // Provision facility for deletion
       await tester.runAsync(() async {
         await testIsar.writeTxn(() async {
           final facility = FacilityLayout(
@@ -166,21 +172,23 @@ void main() {
 
       expect(find.textContaining('Clinic Rome'), findsWidgets);
 
-      // Tap the delete icon
+      // Execute delete action
       await tester.tap(find.byIcon(Icons.delete_outline).first);
-      await tester.pump(const Duration(milliseconds: 300)); // wait for dialog
+      await tester.pump(const Duration(milliseconds: 300));
 
-      // Expect dialog to appear
+      // Validate dialog rendering
       expect(find.text('Delete Assessment'), findsOneWidget);
 
-      // Cancel
+      // Execute cancel action
       await tester.tap(find.text('Cancel'));
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.textContaining('Clinic Rome').first, findsWidgets); // Still there
+      // Validate entity persistence
+      expect(find.textContaining('Clinic Rome').first, findsWidgets);
     });
 
     testWidgets('No results found placeholder for empty search', (tester) async {
+      // Provision initial state
       await tester.runAsync(() async {
         await testIsar.writeTxn(() async {
           final facility = FacilityLayout(
@@ -201,14 +209,16 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Enter search text
+      // Execute search query
       await tester.enterText(find.byType(TextField), 'NonExistentClinic');
       await tester.pump(const Duration(milliseconds: 500));
 
+      // Validate placeholder rendering
       expect(find.text('No assessments match your filters.'), findsOneWidget);
     });
 
     testWidgets('Filter popup interactions and Geographical Overview', (tester) async {
+      // Provision state with regional data
       await tester.runAsync(() async {
         await testIsar.writeTxn(() async {
           final facility = FacilityLayout(
@@ -243,16 +253,16 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Should see Geographical Overview with AFRO
+      // Validate overview rendering
       expect(find.text('Geographical Overview (Average Readiness)'), findsOneWidget);
       expect(find.text('AFRO'), findsOneWidget);
       expect(find.text('100%'), findsWidgets);
 
-      // Open filter popup
+      // Execute filter action
       await tester.tap(find.byIcon(Icons.tune_rounded));
       await tester.pumpAndSettle();
 
-      // Tap 'Highest Score'
+      // Select filter criteria
       await tester.tap(find.text('Highest Score').last, warnIfMissed: false);
       await tester.pumpAndSettle();
 
@@ -260,21 +270,20 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune_rounded), warnIfMissed: false);
       await tester.pumpAndSettle();
       
-      // Tap 'Date Filter'
+      // Select date filter
       await tester.tap(find.byIcon(Icons.date_range_rounded).last, warnIfMissed: false);
       await tester.pumpAndSettle();
       
-      // Select OK in date picker
+      // Confirm date selection
       await tester.tap(find.text('OK').last, warnIfMissed: false);
       await tester.pumpAndSettle();
       
-      // Open filter popup again and clear date
+      // Clear date filter
       await tester.tap(find.byIcon(Icons.tune_rounded), warnIfMissed: false);
       await tester.pumpAndSettle();
       
       await tester.tap(find.text('Clear Date Filter').last, warnIfMissed: false);
       await tester.pumpAndSettle();
-      
     });
   });
 }

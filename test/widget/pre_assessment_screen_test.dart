@@ -53,9 +53,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Step 1
+      // Execute Step 1: Assessment Information
       expect(find.text('Assessment Information'), findsWidgets);
       
+      // Provision valid inputs for step 1
       final textFieldsStep1 = find.byType(TextFormField);
       await tester.enterText(textFieldsStep1.at(0), 'Test Assessment');
       await tester.enterText(textFieldsStep1.at(1), 'John Doe');
@@ -66,8 +67,10 @@ void main() {
       await tester.tap(nextButton);
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Step 2
+      // Execute Step 2: Geographical Location
       expect(find.text('Geographical Location'), findsWidgets);
+      
+      // Provision geographical data
       final textFieldsStep2 = find.byType(TextFormField);
       await tester.enterText(textFieldsStep2.at(0), 'Country');
       await tester.enterText(textFieldsStep2.at(1), 'Region');
@@ -75,7 +78,7 @@ void main() {
       await tester.enterText(textFieldsStep2.at(3), 'City');
       await tester.enterText(textFieldsStep2.at(4), 'Address');
       
-      // Select Location Record dropdown
+      // Select location dropdown
       final dropdownsStep2 = find.byType(DropdownButtonFormField<String>);
       if (dropdownsStep2.evaluate().isNotEmpty) {
         await tester.tap(dropdownsStep2.first);
@@ -87,8 +90,10 @@ void main() {
       await tester.tap(nextButton);
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Step 3
+      // Execute Step 3: Facility Identification
       expect(find.text('Facility Identification'), findsWidgets);
+      
+      // Provision facility identification data
       final textFieldsStep3 = find.byType(TextFormField);
       await tester.enterText(textFieldsStep3.at(0), 'FAC-123');
       await tester.enterText(textFieldsStep3.at(1), 'Facility Name');
@@ -101,13 +106,13 @@ void main() {
       await tester.tap(nextButton);
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Step 4
+      // Execute Step 4: Existing Healthcare Services
       expect(find.text('Existing Healthcare Services'), findsWidgets);
       
-      // Select Dropdowns in Step 4
+      // Configure service availability
       final dropdownsStep4 = find.byType(DropdownButtonFormField<String>);
       
-      // Outpatient
+      // Configure outpatient setting
       if (dropdownsStep4.evaluate().isNotEmpty) {
         await tester.tap(dropdownsStep4.at(0));
         await tester.pump(const Duration(milliseconds: 300));
@@ -115,46 +120,46 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
       }
       
-      // Inpatient Yes
+      // Configure inpatient availability
       if (dropdownsStep4.evaluate().length > 1) {
         await tester.tap(dropdownsStep4.at(1));
         await tester.pump(const Duration(milliseconds: 300));
         await tester.tap(find.text('Yes').last);
         await tester.pump(const Duration(milliseconds: 300));
         
-        // Fill inpatient fields
+        // Provision inpatient capacity
         final numberFields = find.byType(TextFormField);
         await tester.enterText(numberFields.at(0), '100'); // total beds
         await tester.enterText(numberFields.at(1), '20'); // icu beds
         
         final conditionalDropdowns = find.byType(DropdownButtonFormField<String>);
         if (conditionalDropdowns.evaluate().length > 2) {
-          // Has 24h emergency
+          // Configure 24h emergency service
           await tester.tap(conditionalDropdowns.at(2));
           await tester.pump(const Duration(milliseconds: 300));
           await tester.tap(find.text('Yes').last);
           await tester.pump(const Duration(milliseconds: 300));
         }
         
-        // Inpatient No (to trigger clearing logic)
+        // Validate field clearing on negative selection
         await tester.tap(dropdownsStep4.at(1));
         await tester.pump(const Duration(milliseconds: 300));
         await tester.tap(find.text('No').last);
         await tester.pump(const Duration(milliseconds: 300));
       }
       
-      // Let's test the Back button first
+      // Execute back navigation
       final backButton = find.text('Back').hitTestable();
       await tester.tap(backButton);
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Facility Identification'), findsWidgets);
       
-      // Go next again
+      // Execute forward navigation
       await tester.tap(nextButton);
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Existing Healthcare Services'), findsWidgets);
 
-      // We are at step 4. Submit
+      // Execute form submission
       final submitButton = find.text('Start Assessment').hitTestable();
       await tester.ensureVisible(submitButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -164,7 +169,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Should have navigated to map
+      // Validate navigation to map screen after successful submission
       expect(find.text('Map Screen'), findsOneWidget);
     });
 
@@ -189,11 +194,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Verifica sidebar e form area
+      // Validate layout constraints
       expect(find.byType(AnimatedContainer), findsWidgets);
       expect(find.byIcon(Icons.menu_open_rounded), findsOneWidget);
       
-      // Testa collapse sidebar
+      // Execute sidebar toggle
       await tester.tap(find.byIcon(Icons.menu_open_rounded));
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
@@ -259,13 +264,13 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Vai allo step 2
+      // Navigate to Step 2
       await tester.ensureVisible(find.text('Next'));
       await tester.tap(find.text('Next').hitTestable());
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Geographical Location'), findsWidgets);
 
-      // Torna indietro
+      // Navigate to previous step
       await tester.ensureVisible(find.text('Back'));
       await tester.tap(find.text('Back').hitTestable());
       await tester.pump(const Duration(milliseconds: 300));
@@ -287,7 +292,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Naviga fino allo step 4
+      // Navigate to Step 4
       for (int i = 0; i < 3; i++) {
         await tester.ensureVisible(find.text('Next'));
         await tester.tap(find.text('Next').hitTestable());
@@ -296,17 +301,17 @@ void main() {
       
       expect(find.text('Existing Healthcare Services'), findsWidgets);
 
-      // Seleziona Inpatient Yes
+      // Configure inpatient positive selection to toggle dynamic fields
       final dropdowns = find.byType(DropdownButtonFormField<String>);
       await tester.tap(dropdowns.at(1));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.text('Yes').last);
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Verifica che appaiano i campi extra
+      // Validate dependent fields rendering
       expect(find.byType(TextFormField), findsWidgets);
       
-      // Seleziona No per nasconderli
+      // Configure inpatient negative selection
       await tester.tap(dropdowns.at(1));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.text('No').last);

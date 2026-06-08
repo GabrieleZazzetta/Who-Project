@@ -9,6 +9,7 @@ import 'package:assessment_tool/screens/main_dashboard_screen.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // TEST SUITE INITIALIZATION
   group('Navigation E2E', () {
     setUp(() async {
       try {
@@ -21,13 +22,14 @@ void main() {
       } catch (_) {}
     });
 
+    // BOTTOM NAVIGATION TABS
     testWidgets('Bottom navigation bar switches tabs',
         (WidgetTester tester) async {
       app.main();
       await Future.delayed(const Duration(seconds: 8));
       await tester.pumpAndSettle();
 
-      // Aspettiamo che l'app completi il main() e carichi una schermata
+      // Wait for app initialization and initial screen render
       for (int i = 0; i < 100; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         if (find.byType(MainDashboardScreen).evaluate().isNotEmpty ||
@@ -36,7 +38,7 @@ void main() {
         }
       }
 
-      // Fallback: se siamo nella schermata di login, facciamo login
+      // Fallback: Perform login if user is redirected to auth screen
       if (find.byType(MainDashboardScreen).evaluate().isEmpty) {
         final textFields = find.byType(TextFormField);
         if (textFields.evaluate().isNotEmpty) {
@@ -45,6 +47,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byType(ElevatedButton).first);
 
+          // Wait for main dashboard to appear post-login
           for (int i = 0; i < 100; i++) {
             await tester.pump(const Duration(milliseconds: 100));
             if (find.byType(MainDashboardScreen).evaluate().isNotEmpty) {
@@ -57,7 +60,7 @@ void main() {
       final mainDashboard = find.byType(MainDashboardScreen);
       expect(mainDashboard, findsOneWidget);
 
-      // Clicca sul tab della mappa (es. icona map o list)
+      // Verify map/list view toggle
       final assignmentTab = find.byIcon(Icons.assignment).evaluate().isNotEmpty
           ? find.byIcon(Icons.assignment)
           : find.byIcon(Icons.assignment_rounded);
@@ -66,7 +69,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      // Clicca sul tab settings
+      // Verify settings view access
       final settingsTab = find.byIcon(Icons.settings).evaluate().isNotEmpty
           ? find.byIcon(Icons.settings)
           : find.byIcon(Icons.settings_rounded);
@@ -74,10 +77,10 @@ void main() {
         await tester.tap(settingsTab.first);
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.person_outline),
-            findsWidgets); // Un'icona tipica dei settings
+            findsWidgets);
       }
 
-      // Torna alla home
+      // Verify home dashboard return
       final homeTab = find.byIcon(Icons.home_filled).evaluate().isNotEmpty
           ? find.byIcon(Icons.home_filled)
           : find.byIcon(Icons.grid_view_rounded);
@@ -87,13 +90,14 @@ void main() {
       }
     });
 
+    // MODULE NAVIGATION FLOW
     testWidgets('Navigate to Outbreak module and back',
         (WidgetTester tester) async {
       app.main();
       await Future.delayed(const Duration(seconds: 8));
       await tester.pumpAndSettle();
 
-      // Aspettiamo che l'app completi il main() e carichi una schermata
+      // Wait for app initialization and initial screen render
       for (int i = 0; i < 100; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         if (find.byType(MainDashboardScreen).evaluate().isNotEmpty ||
@@ -102,7 +106,7 @@ void main() {
         }
       }
 
-      // Fallback: se siamo nella schermata di login, facciamo login
+      // Fallback: Perform login if user is redirected to auth screen
       if (find.byType(MainDashboardScreen).evaluate().isEmpty) {
         final textFields = find.byType(TextFormField);
         if (textFields.evaluate().isNotEmpty) {
@@ -111,6 +115,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byType(ElevatedButton).first);
 
+          // Wait for main dashboard to appear post-login
           for (int i = 0; i < 100; i++) {
             await tester.pump(const Duration(milliseconds: 100));
             if (find.byType(MainDashboardScreen).evaluate().isNotEmpty) {
@@ -120,20 +125,18 @@ void main() {
         }
       }
 
-      // Cerca card Mpox o similare
+      // Access specific outbreak module details
       final cards = find.text('Mpox Outbreak');
       if (cards.evaluate().isNotEmpty) {
         await tester.tap(cards.first);
         await tester.pumpAndSettle(const Duration(seconds: 2));
 
-        // Dovremmo essere in facility selection
         expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
 
-        // Torniamo indietro
+        // Verify return navigation to main dashboard
         await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
         await tester.pumpAndSettle();
 
-        // Tornati in home
         expect(find.byType(MainDashboardScreen), findsOneWidget);
       }
     });

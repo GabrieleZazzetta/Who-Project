@@ -4,12 +4,12 @@ import 'mpox/mpox_treatment_center_data.dart';
 import 'mpox/mpox_congregate_setting_data.dart';
 import 'mpox/mpox_screening_triage_data.dart';
 
-// GESTORE SELEZIONE MAPPA
-// Sceglie quale mappa e quali domande caricare nell'app a seconda dell'emergenza sanitaria e del tipo di edificio selezionato.
+// MAP SELECTION MANAGER
+// Routes map and question loading based on emergency context and facility type
 class FacilityDataFactory {
   static FacilityLayout getLayout(
       EmergencyType emergency, FacilityType facility) {
-    // LOGICA DI SELEZIONE MPOX
+    // MPOX SELECTION LOGIC
     if (emergency == EmergencyType.mpox) {
       switch (facility) {
         case FacilityType.existingFacilityWithWard:
@@ -26,7 +26,8 @@ class FacilityDataFactory {
       }
     }
 
-    // Fallback di sicurezza: carica un layout di base per evitare che la schermata rimanga vuota
+    // SAFETY FALLBACK
+    // Loads base layout to prevent empty screen rendering
     return MpoxExistingWardData.getLayout();
   }
 }

@@ -9,22 +9,20 @@ import 'package:assessment_tool/l10n/app_localizations.dart';
 import '../helpers/mocks.dart';
 
 void main() {
+  // TEST SUITE: GLOBAL MAP SCREEN 3D
   group('GlobalMapScreen3D Tests', () {
     testWidgets('renders loading state initially', (WidgetTester tester) async {
+      // Setup device viewport
       await tester.binding.setSurfaceSize(const Size(1200, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
+      // Provision empty database mock
       final mockDb = MockDatabaseService();
-      // Setup mock to return empty list of assessments
-      // Assuming mockDb returns something for getAllAssessments. It's a mocktail mock so we need to stub it.
-      // But actually if we don't stub it, we can just use DatabaseService directly or a Fake.
-      // In this test environment, FLUTTER_TEST is set, so mapbox won't crash instantly.
       
+      // Mount widget
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            // If using real DatabaseService, we need it initialized. We can mock it.
-          ],
+          overrides: [],
           child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -33,7 +31,7 @@ void main() {
         ),
       );
 
-      // We expect the CircularProgressIndicator because it starts loading
+      // Validate loading indicator rendering
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.textContaining('Initializing'), findsWidgets);
     });

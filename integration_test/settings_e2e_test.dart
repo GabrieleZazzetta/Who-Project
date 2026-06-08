@@ -8,6 +8,7 @@ import 'package:assessment_tool/models/user_model.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // TEST SUITE INITIALIZATION
   group('Profile & Settings E2E', () {
     setUp(() async {
       try {
@@ -19,6 +20,7 @@ void main() {
       } catch (_) {}
     });
 
+    // PROFILE UPDATE FLOW
     testWidgets('Profile changes persist and restore',
         (WidgetTester tester) async {
       app.main();
@@ -32,19 +34,16 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      // Tap sul profilo
       final profileIcon = find.byIcon(Icons.person);
       if (profileIcon.evaluate().isNotEmpty) {
         await tester.tap(profileIcon.first);
         await tester.pumpAndSettle();
 
-        // Trova campo nome e modificalo
         final textFields = find.byType(TextFormField);
         if (textFields.evaluate().isNotEmpty) {
           await tester.enterText(textFields.first, 'Gabriele Zazzetta');
           await tester.pumpAndSettle();
 
-          // Cerca bottone di salvataggio ("Save Changes")
           if (find.text('Save Changes').evaluate().isNotEmpty) {
             await tester.tap(find.text('Save Changes').first);
             await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -56,6 +55,7 @@ void main() {
       }
     });
 
+    // LANGUAGE PREFERENCES
     testWidgets('Language changes successfully', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -68,7 +68,6 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      // Cerca il selettore lingua (DropdownButton o un ListTile con icona lingua)
       final languageIcon = find.byIcon(Icons.language);
       if (languageIcon.evaluate().isNotEmpty) {
         await tester.tap(languageIcon.first);

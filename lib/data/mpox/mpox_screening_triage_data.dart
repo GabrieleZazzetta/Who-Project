@@ -1,17 +1,17 @@
 import '../../models/assessment_models.dart';
 
 class MpoxScreeningTriageData {
-  // CONFIGURAZIONE LAYOUT MPOX
-  // Fornisce l'istanza predefinita per la struttura di screening e isolamento temporaneo, vincolando i metadati principali e le risorse grafiche associate.
+  // MPOX LAYOUT CONFIGURATION
+  // Provides the default instance for screening and temporary isolation structure, binding core metadata and graphic assets
   static FacilityLayout getLayout() {
     return FacilityLayout(
       facilityName: "Screening, Triage & Temporary Isolation",
       emergencyType: EmergencyType.mpox,
       mapImagePath: 'assets/maps/facility_map_fig2.png',
       zones: [
-        // MAPPATURA ZONE SPAZIALI E CHECKLIST
-        // Definisce la topologia interattiva della mappa e i vincoli di compliance per ogni area.
-        // I blocchi includono coordinate di rendering (touchArea) e i requisiti IPC/WASH specifici.
+        // SPATIAL ZONES AND CHECKLIST MAPPING
+        // Defines the interactive map topology and compliance constraints for each area
+        // Blocks include rendering coordinates (touchArea) and specific IPC/WASH requirements
 
         // Screening Reception
         SpatialZone(

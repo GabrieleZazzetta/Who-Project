@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // TEST SUITE INITIALIZATION
   group('Authentication E2E', () {
     setUp(() async {
       try {
@@ -16,6 +17,7 @@ void main() {
       } catch (_) {}
     });
 
+    // INVALID CREDENTIALS VALIDATION
     testWidgets('Login fails with wrong credentials',
         (WidgetTester tester) async {
       app.main();
@@ -31,7 +33,7 @@ void main() {
       final loginButton = find.byType(ElevatedButton).first;
       await tester.tap(loginButton);
 
-      // Aspetta che l'autenticazione fallisca e appaia la SnackBar (max 5 secondi)
+      // Poll for authentication failure SnackBar
       for (int i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         if (find.byType(SnackBar).evaluate().isNotEmpty) {
@@ -42,20 +44,18 @@ void main() {
       expect(find.byType(SnackBar), findsOneWidget);
     });
 
+    // SUCCESSFUL AUTHENTICATION FLOW
     testWidgets('Login succeeds with correct credentials',
         (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
-      // Crea l'utente nel test per evitare l'errore "invalid-credential"
       try {
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: 'nikoanto03@gmail.com', password: 'Antonio!2003');
-        // Effettua subito il logout per poi testare il flusso UI di login
         await FirebaseAuth.instance.signOut();
       } catch (_) {}
 
-      // Seleziona il tab External Partner
       final externalPartnerToggle =
           find.byKey(const Key('toggle_external_partner'));
       await tester.tap(externalPartnerToggle);
@@ -69,7 +69,7 @@ void main() {
       final loginButton = find.byType(ElevatedButton).first;
       await tester.tap(loginButton);
 
-      // Wait for navigation or SnackBar (max 10 seconds)
+      // Poll for successful navigation to MainDashboard or error SnackBar
       for (int i = 0; i < 100; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         if (find.byType(MainDashboardScreen).evaluate().isNotEmpty ||
@@ -78,6 +78,7 @@ void main() {
         }
       }
 
+      // Capture and output error if SnackBar intercepted
       if (find.byType(SnackBar).evaluate().isNotEmpty) {
         final snackBarText = find.descendant(
             of: find.byType(SnackBar), matching: find.byType(Text));
@@ -90,6 +91,7 @@ void main() {
       expect(find.byType(MainDashboardScreen), findsOneWidget);
     });
 
+    // PASSWORD VISIBILITY TOGGLE
     testWidgets('Toggle password visibility', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -106,12 +108,12 @@ void main() {
       }
     });
 
+    // LOGOUT PROCESS VALIDATION
     testWidgets('Logs out after successful Login', (WidgetTester tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       if (find.byType(MainDashboardScreen).evaluate().isEmpty) {
-        // Crea l'utente anche qui per sicurezza
         try {
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
               email: 'nikoanto03@gmail.com', password: 'Antonio!2003');
@@ -129,6 +131,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byType(ElevatedButton).first);
 
+        // Wait for dashboard to indicate successful login
         for (int i = 0; i < 100; i++) {
           await tester.pump(const Duration(milliseconds: 100));
           if (find.byType(MainDashboardScreen).evaluate().isNotEmpty) {
@@ -143,7 +146,6 @@ void main() {
       await tester.tap(settingsTab.first);
       await tester.pumpAndSettle();
 
-      // Scroll to the bottom of the SettingsScreen to reveal the logout button
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -1000));
       await tester.pumpAndSettle();
 

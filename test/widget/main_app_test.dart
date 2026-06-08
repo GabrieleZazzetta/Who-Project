@@ -36,18 +36,16 @@ void main() {
   });
 
   testWidgets('WHOAssessmentApp renders and configures router and theme', (tester) async {
-    // 1. Setup dependencies
+    // Provision test dependencies
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
-    // 2. Pump the root App widget with ProviderScope
+    // Mount root application widget
     await tester.runAsync(() async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
-            // The DatabaseService and others are mocked inside setUpAll typically,
-            // but we can just use the real mock isar here.
           ],
           child: const WHOAssessmentApp(initialLocation: '/login'),
         ),
@@ -58,10 +56,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // 3. Verify it routed to LoginScreen (which renders an AppBar or specific widgets)
+    // Validate navigation to LoginScreen
     expect(find.byType(MaterialApp), findsOneWidget);
-    
-    // LoginScreen has a text "WHO Health Facilities Assessment" in the header
     expect(find.textContaining('Health Facilities'), findsWidgets);
   });
 }

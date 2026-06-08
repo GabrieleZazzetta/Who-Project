@@ -5,8 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/assessment_models.dart';
 import '../main.dart'; // Importa isFirebaseInitialized
 
-// REPOSITORY DI SINCRONIZZAZIONE (FIREBASE)
-// Gestisce l'allineamento dei dati tra Isar (locale) e Cloud Firestore (remoto).
+// REMOTE SYNCHRONIZATION REPOSITORY (FIREBASE)
+// Manages data alignment between local Isar storage and Cloud Firestore
 
 class SyncRepository {
   final FirebaseFirestore? _firestoreInstance;
@@ -21,8 +21,8 @@ class SyncRepository {
         _storageInstance = storage,
         _authInstance = auth;
 
-  // GESTIONE SICURA ISTANZA FIRESTORE
-  // Evita eccezioni letali (e disconnessioni del device) se Firebase non si è inizializzato a causa di errori GMS
+  // FIRESTORE INSTANCE MANAGEMENT
+  // Prevents fatal exceptions on devices lacking Google Mobile Services (GMS)
   FirebaseFirestore? get _firestore {
     if (_firestoreInstance != null) return _firestoreInstance;
     if (isFirebaseInitialized) {
@@ -55,8 +55,8 @@ class SyncRepository {
   
   static const String _collectionName = 'assessments';
 
-  // INVIO DATI A CLOUD FIRESTORE E STORAGE (PUSH)
-  // Crea o aggiorna un documento su Firestore. Ritorna l'ID remoto.
+  // OUTGOING SYNCHRONIZATION (PUSH)
+  // Upserts document to Firestore and returns the generated remote identifier
   Future<String?> pushAssessment(FacilityLayout facility) async {
     final firestore = _firestore;
     if (firestore == null) {
@@ -65,16 +65,16 @@ class SyncRepository {
     }
 
     try {
-      // 1. Assegna un ID remoto se non esiste, in modo da usarlo per lo Storage
+      // Provision remote identifier if absent for Storage association
       facility.remoteId ??= firestore.collection(_collectionName).doc().id;
 
-      // 2. Carica eventuali immagini locali su Firebase Storage
+      // Upload local media assets to Firebase Storage
       await _uploadLocalImages(facility);
 
-      // 3. Converte il FacilityLayout aggiornato in un Map per Firestore
+      // Serialize updated FacilityLayout to Firestore-compatible Map
       final data = _facilityToMap(facility);
 
-      // 4. Salva il documento su Firestore con l'ID assegnato
+      // Persist document to Firestore using assigned identifier
       await firestore
           .collection(_collectionName)
           .doc(facility.remoteId)
@@ -87,8 +87,8 @@ class SyncRepository {
     }
   }
 
-  // CARICAMENTO IMMAGINI
-  // Cerca percorsi locali nelle risposte e li carica su Storage, sostituendoli con gli URL remoti
+  // MEDIA UPLOAD LOGIC
+  // Scans for local paths, uploads to Storage, and replaces with remote URLs
   Future<void> _uploadLocalImages(FacilityLayout facility) async {
     if (!isFirebaseInitialized && _storageInstance == null) return;
     
@@ -104,7 +104,7 @@ class SyncRepository {
             
             for (var path in question.mediaPaths!) {
               if (path.startsWith('http')) {
-                // Già un URL remoto
+                // Skip existing remote URL
                 updatedPaths.add(path);
               } else {
                 try {
@@ -122,7 +122,7 @@ class SyncRepository {
                   }
                 } catch (e) {
                   print("Failed to upload image $path: $e");
-                  updatedPaths.add(path); // Conserviamo il path originale in caso di errore
+                  updatedPaths.add(path); // Retain original path on upload failure
                 }
               }
             }
@@ -135,8 +135,8 @@ class SyncRepository {
     }
   }
 
-  // DOWNLOAD DATI DA CLOUD FIRESTORE (PULL)
-  // Recupera record modificati dall'ultima sincronizzazione.
+  // INCOMING SYNCHRONIZATION (PULL)
+  // Retrieves modified records since last synchronization timestamp
   Future<List<Map<String, dynamic>>> pullAssessments(DateTime? lastSync) async {
     final firestore = _firestore;
     if (firestore == null) {
@@ -162,8 +162,8 @@ class SyncRepository {
         final data = doc.data() as Map<String, dynamic>;
         data['remoteId'] = doc.id;
         
-        // Convertiamo i Timestamp nativi di Firestore in stringhe ISO8601 
-        // per compatibilità con il parsing nel SyncService
+        // Convert native Firestore Timestamps to ISO8601 strings
+        // Ensures parsing compatibility with SyncService
         if (data['updatedAt'] is Timestamp) {
           data['updatedAt'] = (data['updatedAt'] as Timestamp).toDate().toUtc().toIso8601String();
         }
@@ -179,8 +179,8 @@ class SyncRepository {
     }
   }
 
-  // MAPPATURA PER FIRESTORE
-  // Converte l'oggetto FacilityLayout in un formato compatibile con Firestore.
+  // FIRESTORE SERIALIZATION
+  // Converts FacilityLayout entity to Firestore-compatible payload
   Map<String, dynamic> _facilityToMap(FacilityLayout facility) {
     final uid = _auth.currentUser?.uid ?? 'unknown';
     return {

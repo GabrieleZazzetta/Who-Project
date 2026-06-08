@@ -7,9 +7,7 @@ import 'package:assessment_tool/models/local_user_credential.dart';
 void main() {
   group('Models Unit Tests', () {
     
-    // ==========================================
-    // FACILITY LAYOUT & GENERAL INFO
-    // ==========================================
+    // FACILITY LAYOUT AND GENERAL INFO
     group('FacilityLayout & GeneralFacilityInfo Unit Tests', () {
       test('should initialize FacilityLayout with correct default values', () {
         final facility = FacilityLayout();
@@ -153,9 +151,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // ASSESSMENT QUESTION
-    // ==========================================
     group('AssessmentQuestion Unit Tests', () {
       test('should initialize with correct default values', () {
         final question = AssessmentQuestion();
@@ -240,9 +236,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // USER SESSION & CREDENTIALS
-    // ==========================================
+    // USER SESSION AND CREDENTIALS
     group('UserSession & LocalUserCredential Unit Tests', () {
       group('UserSession Tests', () {
         test('should initialize UserSession with correct default values', () {
@@ -304,9 +298,7 @@ void main() {
       });
     });
 
-    // ==========================================
     // SPATIAL ZONE
-    // ==========================================
     group('SpatialZone Unit Tests', () {
       test('should initialize with correct default values', () {
         final zone = SpatialZone();

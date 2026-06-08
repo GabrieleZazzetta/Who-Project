@@ -31,7 +31,7 @@ void main() {
     return ProviderScope(
       overrides: [
         authServiceProvider.overrideWithValue(mockAuth),
-        // We mock database so we don't need Isar
+        // Mock database explicitly
         databaseServiceProvider.overrideWithValue(MockDatabaseService()),
       ],
       child: MaterialApp.router(
@@ -52,6 +52,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Validate all input fields and form UI are rendered correctly on load
       expect(find.byKey(const Key('input_firstname')), findsOneWidget);
       expect(find.byKey(const Key('input_lastname')), findsOneWidget);
       expect(find.byKey(const Key('input_email')), findsOneWidget);
@@ -69,15 +70,15 @@ void main() {
 
       final passwordField = find.byKey(const Key('input_password'));
       
-      // Before typing, all checkmarks should be unchecked (Icons.radio_button_unchecked)
-      // Since there are 4 requirements, there are 4 unchecked icons.
+      // Validate initial requirement checkmarks rendering
       expect(find.byIcon(Icons.radio_button_unchecked), findsWidgets);
       
+      // Populate password field with compliant string
       await tester.enterText(passwordField, 'Password123!');
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       
-      // After typing a valid password, they should all be checked (Icons.check_circle)
+      // Validate updated requirement checkmarks reflecting success state
       expect(find.byIcon(Icons.check_circle), findsWidgets);
     });
 
@@ -89,12 +90,13 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Populate registration form with non-compliant WHO email
       await tester.enterText(find.byKey(const Key('input_firstname')), 'John');
       await tester.enterText(find.byKey(const Key('input_lastname')), 'Doe');
       await tester.enterText(find.byKey(const Key('input_email')), 'test@gmail.com');
       await tester.enterText(find.byKey(const Key('input_password')), 'ValidPass123!');
       
-      // Set DOB
+      // Execute date selection
       final datePickerIcon = find.byIcon(Icons.calendar_today_outlined);
       await tester.ensureVisible(datePickerIcon);
       await tester.tap(datePickerIcon);
@@ -104,6 +106,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Execute account creation submission and validate validation failure
       final btn = find.byKey(const Key('btn_create_account'));
       await tester.ensureVisible(btn);
       await tester.tap(btn);
@@ -117,7 +120,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1200, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      // Return a fake UserCredential from register
+      // Mock successful registration
       when(() => mockAuth.register(any(), any(), isWhoStaff: any(named: 'isWhoStaff'), displayName: any(named: 'displayName')))
           .thenAnswer((_) async => null);
 
@@ -125,17 +128,18 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Toggle external partner
+      // Toggle external partner mode
       await tester.tap(find.byKey(const Key('toggle_external_partner')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Populate registration form with external partner details
       await tester.enterText(find.byKey(const Key('input_firstname')), 'Partner');
       await tester.enterText(find.byKey(const Key('input_lastname')), 'User');
       await tester.enterText(find.byKey(const Key('input_email')), 'test@gmail.com');
       await tester.enterText(find.byKey(const Key('input_password')), 'ValidPass123!');
       
-      // Set DOB
+      // Execute date selection
       final datePickerIcon = find.byIcon(Icons.calendar_today_outlined);
       await tester.ensureVisible(datePickerIcon);
       await tester.tap(datePickerIcon);
@@ -145,6 +149,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Execute account creation submission and validate success
       final btn = find.byKey(const Key('btn_create_account'));
       await tester.ensureVisible(btn);
       await tester.tap(btn);

@@ -6,13 +6,13 @@ import 'package:assessment_tool/models/local_user_credential.dart';
 import 'package:assessment_tool/data/facility_data_factory.dart';
 
 void main() {
+  // TEST SUITE: ENGINE AND MATH LOGIC
   group('Engine & Math Unit Tests', () {
 
-    // ==========================================
-    // MOTORE DI CALCOLO COMPLIANCE (assessment_math_test.dart)
-    // ==========================================
-    group('Motore di Calcolo Compliance - Unit Tests', () {
-      test('Calcolo Base e Ponderazione: Risposte miste escludendo N/A e Pending', () {
+    // COMPLIANCE CALCULATION ENGINE
+    group('Compliance Engine - Unit Tests', () {
+      
+      test('Base Calculation and Weighting: Mixed responses excluding N/A and Pending', () {
         final zone = SpatialZone(
           id: 'zone_test',
           name: 'Zone Test',
@@ -28,7 +28,7 @@ void main() {
         expect(zone.completionPercentage, equals(80.0));
       });
 
-      test('Critical Failures: Una risposta "Does Not Meet" deve flaggare la zona in Rosso', () {
+      test('Critical Failures: A "Does Not Meet" response flags the zone as Red', () {
         final zone = SpatialZone(
           id: 'zone_critical_test',
           name: 'Zone Critical Test',
@@ -42,7 +42,7 @@ void main() {
         expect(zone.statusColor, equals(Colors.red.shade600));
       });
 
-      test('Aggregazione: globalReadinessScore calcolato correttamente dalle sole zone compilate', () {
+      test('Aggregation: globalReadinessScore calculated correctly only from compiled zones', () {
         final layout = FacilityLayout(
           facilityName: 'Clinic Alpha',
           zones: [
@@ -60,7 +60,7 @@ void main() {
         expect(layout.globalReadinessScore, closeTo(83.33, 0.01));
       });
 
-      test('Edge Case - Division By Zero: SpatialZone senza domande o solo N/A deve restituire 0.0 e non crashare', () {
+      test('Edge Case - Division By Zero: SpatialZone with no questions or only N/A returns 0.0 without crashing', () {
         final emptyZone = SpatialZone(id: 'z_empty', name: 'Empty Zone', checklist: []);
         expect(() => emptyZone.readinessScore, returnsNormally);
         expect(emptyZone.readinessScore, equals(0.0));
@@ -78,10 +78,9 @@ void main() {
       });
     });
 
-    // ==========================================
-    // ADVANCED COMPLIANCE MATH (unit_advanced_math_test.dart)
-    // ==========================================
+    // ADVANCED COMPLIANCE MATH
     group('Advanced Compliance Math & Domain Logic', () {
+      
       test('WHO domain validation matches case-insensitive patterns', () {
         expect('staff@who.int'.toLowerCase().endsWith('@who.int'), isTrue);
         expect('STAFF@WHO.INT'.toLowerCase().endsWith('@who.int'), isTrue);
@@ -137,10 +136,9 @@ void main() {
       });
     });
 
-    // ==========================================
-    // ASSESSMENT COMPLIANCE ENGINE (unit_assessment_engine_test.dart)
-    // ==========================================
+    // ASSESSMENT COMPLIANCE ENGINE
     group('Assessment Compliance Engine Logic', () {
+      
       test('Tapping a compliance level sets it on the question', () {
         final question = AssessmentQuestion(id: 'q1');
         question.selectedCompliance = ComplianceLevel.meetsTarget;
@@ -186,10 +184,9 @@ void main() {
       });
     });
 
-    // ==========================================
-    // PRE-ASSESSMENT INIT (unit_pre_assessment_test.dart)
-    // ==========================================
+    // PRE-ASSESSMENT INIT
     group('PreAssessment & Data Factory Logic', () {
+      
       test('Mpox ScreeningAndIsolation layout returns non-empty zones with checklists', () {
         final layout = FacilityDataFactory.getLayout(EmergencyType.mpox, FacilityType.screeningAndIsolation);
         expect(layout.zones, isNotEmpty);

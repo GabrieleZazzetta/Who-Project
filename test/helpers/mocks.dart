@@ -8,30 +8,25 @@ import 'package:assessment_tool/repositories/sync_repository.dart';
 import 'package:assessment_tool/services/sync_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// --- MOCK DEFINITIONS ---
+// MOCK DEFINITIONS
 
 class MockAuthService extends Mock implements AuthService {}
-
 class MockDatabaseService extends Mock implements DatabaseService {}
-
 class MockSyncRepository extends Mock implements SyncRepository {}
-
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
 class MockUser extends Mock implements User {}
-
 class MockUserCredential extends Mock implements UserCredential {}
 
-// --- FALLBACK CONFIGURATION ---
-// Usa questo metodo in un setUpAll() se mocktail ha bisogno di registrare fallback
-// per tipi personalizzati usati con 'any()'.
+// FALLBACK CONFIGURATIONS
+
 void registerFallbackValues() {
   registerFallbackValue(UserSession());
   registerFallbackValue(LocalUserCredential());
 }
 
-class MockSyncNotifier extends AsyncNotifier<SyncState>
-    implements SyncNotifier {
+// ASYNC NOTIFIER MOCKS
+
+class MockSyncNotifier extends AsyncNotifier<SyncState> implements SyncNotifier {
   bool syncAllCalled = false;
 
   @override

@@ -12,6 +12,7 @@ void main() {
   late Isar isar;
   late Directory tempDir;
 
+  // TEST ENVIRONMENT SETUP
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     tempDir = Directory.systemTemp.createTempSync('isar_db_analytics_test');
@@ -24,7 +25,7 @@ void main() {
 
   tearDownAll(() async {
     await isar.close();
-    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(e){}}
+    if(tempDir.existsSync()){try{tempDir.deleteSync(recursive:true);}catch(_){}}
   });
 
   setUp(() async {
@@ -35,13 +36,14 @@ void main() {
     });
   });
 
+  // TEST SUITE: DATABASE AND ANALYTICS
   group('Database & Analytics Unit Tests', () {
 
-    // ==========================================
-    // ASSESSMENT DATABASE & AUTH (assessment_database_test.dart & logout_flaw_test.dart)
-    // ==========================================
+    // ASSESSMENT DATABASE & AUTHENTICATION
     group('Database integrity and Auth flows', () {
-      test('CRUD e Atomicità: Salvataggio, lettura e aggiornamento di FacilityLayout annidato', () async {
+      
+      test('CRUD and Atomicity: Save, read, and update nested FacilityLayout', () async {
+        // Initialize hierarchical assessment structure
         final facility = FacilityLayout(
           facilityName: 'Isolamento Beta',
           emergencyType: EmergencyType.ebola,
@@ -58,6 +60,7 @@ void main() {
           ],
         );
 
+        // Persist initial state
         late Id savedId;
         await isar.writeTxn(() async {
           savedId = await isar.facilityLayouts.put(facility);
@@ -68,6 +71,7 @@ void main() {
         expect(retrieved, isNotNull);
         expect(retrieved!.facilityName, equals('Isolamento Beta'));
         
+        // Mutate and update nested data
         retrieved.zones.first.checklist[1].selectedCompliance = ComplianceLevel.doesNotMeet;
         await isar.writeTxn(() async {
           await isar.facilityLayouts.put(retrieved);
@@ -77,7 +81,7 @@ void main() {
         expect(updated!.zones.first.checklist[1].selectedCompliance, equals(ComplianceLevel.doesNotMeet));
       });
 
-      test('Hashing e Login Locale: Verifica correttezza SHA256 e simulazione login offline', () async {
+      test('Hashing and Local Login: Verify SHA256 correctness and simulate offline login', () async {
         final email = 'medico@who.int';
         final password = 'SafePassword2026!';
         final bytes = utf8.encode(password);
@@ -123,7 +127,7 @@ void main() {
         expect(pending.first.email, equals('sync1@who.int'));
       });
 
-      test('clearAllLocalData wipes UserSessions but preserves LocalUserCredential (logout_flaw_test)', () async {
+      test('clearAllLocalData wipes UserSessions but preserves LocalUserCredential', () async {
         final cred = LocalUserCredential()
           ..email = 'test@who.int'
           ..passwordHash = 'hash123'
@@ -133,15 +137,14 @@ void main() {
         await DatabaseService.instance.clearAllLocalData();
 
         var savedCred = await DatabaseService.instance.getLocalCredential('test@who.int');
-        expect(savedCred, isNotNull, reason: "LocalUserCredential was preserved, offline login works!");
+        expect(savedCred, isNotNull);
       });
     });
 
-    // ==========================================
-    // ACID ROLLBACK (database_acid_rollback_test.dart)
-    // ==========================================
-    group('Test Interruzione Transazione (ACID Rollback)', () {
-      test('Un fallimento a metà writeTxn deve eseguire il rollback ed escludere record corrotti o parziali', () async {
+    // ACID ROLLBACK TRANSACTIONS
+    group('Test Transaction Interruption (ACID Rollback)', () {
+      test('A failure mid-writeTxn should trigger rollback and exclude corrupted records', () async {
+        // Prepare initial consistent state
         final originalFacility = FacilityLayout(
           facilityName: 'Gaza Northern Hospital (Consistent)',
           emergencyType: EmergencyType.sars,
@@ -157,6 +160,8 @@ void main() {
         });
 
         final initialRecord = await isar.facilityLayouts.get(savedId);
+        
+        // Simulate corrupted update and crash within the same transaction
         bool exceptionThrown = false;
         try {
           await isar.writeTxn(() async {
@@ -176,6 +181,7 @@ void main() {
 
         expect(exceptionThrown, isTrue);
 
+        // Verify rollback preserved the previous consistent state
         final afterCrashRecord = await isar.facilityLayouts.get(savedId);
         expect(afterCrashRecord!.facilityName, 'Gaza Northern Hospital (Consistent)');
         expect(afterCrashRecord.zones.first.checklist.first.selectedCompliance, ComplianceLevel.meetsTarget);
@@ -185,9 +191,7 @@ void main() {
       });
     });
 
-    // ==========================================
-    // ANALYTICS AGGREGATION (unit_analytics_aggregation_test.dart)
-    // ==========================================
+    // ANALYTICS AGGREGATION CALCULATIONS
     group('Analytics Aggregation Engine Computations', () {
       double getCategoryPercentage(List<FacilityLayout> data, AssessmentCategory category) {
         int earned = 0;
