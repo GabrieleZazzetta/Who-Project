@@ -54,13 +54,18 @@ jobs:
           fail_ci_if_error: true
           skip_validation: true
 
-      - name: Install lcov
+      - name: Install lcov 2.4
         if: always()
-        run: sudo apt-get update && sudo apt-get install -y lcov
+        run: |
+          sudo apt-get update && sudo apt-get install -y lcov
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.4/lcov-2.4.tar.gz
+          tar xzf lcov-2.4.tar.gz
+          cd lcov-2.4
+          sudo make install
 
       - name: Generate HTML Report
         if: always()
-        run: genhtml coverage/lcov.info -o coverage/html
+        run: genhtml coverage/lcov.info -o coverage/html --no-function-coverage
 
       - name: Upload HTML Report Artifact
         uses: actions/upload-artifact@v4

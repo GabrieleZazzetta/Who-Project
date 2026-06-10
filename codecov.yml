@@ -9,7 +9,7 @@ coverage:
   status:
     project:
       default:
-        # Il nostro obiettivo di copertura
+        # Our target
         target: 90%
         threshold: 2%
     patch:
